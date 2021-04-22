@@ -1,41 +1,14 @@
-"""
-Generic dylib path manipulation
-"""
-
+"\nGeneric dylib path manipulation\n"
 import re
 
-__all__ = ['dylib_info']
-
-DYLIB_RE = re.compile(r"""(?x)
-(?P<location>^.*)(?:^|/)
-(?P<name>
-    (?P<shortname>\w+?)
-    (?:\.(?P<version>[^._]+))?
-    (?:_(?P<suffix>[^._]+))?
-    \.dylib$
+__all__ = ["dylib_info"]
+DYLIB_RE = re.compile(
+    "(?x)\n(?P<location>^.*)(?:^|/)\n(?P<name>\n    (?P<shortname>\\w+?)\n    (?:\\.(?P<version>[^._]+))?\n    (?:_(?P<suffix>[^._]+))?\n    \\.dylib$\n)\n"
 )
-""")
+
 
 def dylib_info(filename):
-    """
-    A dylib name can take one of the following four forms:
-        Location/Name.SomeVersion_Suffix.dylib
-        Location/Name.SomeVersion.dylib
-        Location/Name_Suffix.dylib
-        Location/Name.dylib
-
-    returns None if not found or a mapping equivalent to:
-        dict(
-            location='Location',
-            name='Name.SomeVersion_Suffix.dylib',
-            shortname='Name',
-            version='SomeVersion',
-            suffix='Suffix',
-        )
-
-    Note that SomeVersion and Suffix are optional and may be None
-    if not present.
-    """
+    "\n    A dylib name can take one of the following four forms:\n        Location/Name.SomeVersion_Suffix.dylib\n        Location/Name.SomeVersion.dylib\n        Location/Name_Suffix.dylib\n        Location/Name.dylib\n\n    returns None if not found or a mapping equivalent to:\n        dict(\n            location='Location',\n            name='Name.SomeVersion_Suffix.dylib',\n            shortname='Name',\n            version='SomeVersion',\n            suffix='Suffix',\n        )\n\n    Note that SomeVersion and Suffix are optional and may be None\n    if not present.\n    "
     is_dylib = DYLIB_RE.match(filename)
     if not is_dylib:
         return None
@@ -49,15 +22,23 @@ def test_dylib_info():
             name=name,
             shortname=shortname,
             version=version,
-            suffix=suffix
+            suffix=suffix,
         )
-    assert dylib_info('completely/invalid') is None
-    assert dylib_info('completely/invalide_debug') is None
-    assert dylib_info('P/Foo.dylib') == d('P', 'Foo.dylib', 'Foo')
-    assert dylib_info('P/Foo_debug.dylib') == d('P', 'Foo_debug.dylib', 'Foo', suffix='debug')
-    assert dylib_info('P/Foo.A.dylib') == d('P', 'Foo.A.dylib', 'Foo', 'A')
-    assert dylib_info('P/Foo_debug.A.dylib') == d('P', 'Foo_debug.A.dylib', 'Foo_debug', 'A')
-    assert dylib_info('P/Foo.A_debug.dylib') == d('P', 'Foo.A_debug.dylib', 'Foo', 'A', 'debug')
 
-if __name__ == '__main__':
+    assert dylib_info("completely/invalid") is None
+    assert dylib_info("completely/invalide_debug") is None
+    assert dylib_info("P/Foo.dylib") == d("P", "Foo.dylib", "Foo")
+    assert dylib_info("P/Foo_debug.dylib") == d(
+        "P", "Foo_debug.dylib", "Foo", suffix="debug"
+    )
+    assert dylib_info("P/Foo.A.dylib") == d("P", "Foo.A.dylib", "Foo", "A")
+    assert dylib_info("P/Foo_debug.A.dylib") == d(
+        "P", "Foo_debug.A.dylib", "Foo_debug", "A"
+    )
+    assert dylib_info("P/Foo.A_debug.dylib") == d(
+        "P", "Foo.A_debug.dylib", "Foo", "A", "debug"
+    )
+
+
+if __name__ == "__main__":
     test_dylib_info()

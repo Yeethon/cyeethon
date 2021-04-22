@@ -1,25 +1,21 @@
 from test.support import import_helper
-syslog = import_helper.import_module("syslog") #skip if not supported
+
+syslog = import_helper.import_module("syslog")
 import unittest
 
-# XXX(nnorwitz): This test sucks.  I don't know of a platform independent way
-# to verify that the messages were really logged.
-# The only purpose of this test is to verify the code doesn't crash or leak.
 
 class Test(unittest.TestCase):
-
     def test_openlog(self):
-        syslog.openlog('python')
-        # Issue #6697.
-        self.assertRaises(UnicodeEncodeError, syslog.openlog, '\uD800')
+        syslog.openlog("python")
+        self.assertRaises(UnicodeEncodeError, syslog.openlog, "\ud800")
 
     def test_syslog(self):
-        syslog.openlog('python')
-        syslog.syslog('test message from python test_syslog')
-        syslog.syslog(syslog.LOG_ERR, 'test error from python test_syslog')
+        syslog.openlog("python")
+        syslog.syslog("test message from python test_syslog")
+        syslog.syslog(syslog.LOG_ERR, "test error from python test_syslog")
 
     def test_closelog(self):
-        syslog.openlog('python')
+        syslog.openlog("python")
         syslog.closelog()
 
     def test_setlogmask(self):
@@ -33,7 +29,8 @@ class Test(unittest.TestCase):
 
     def test_openlog_noargs(self):
         syslog.openlog()
-        syslog.syslog('test message from python test_syslog')
+        syslog.syslog("test message from python test_syslog")
+
 
 if __name__ == "__main__":
     unittest.main()

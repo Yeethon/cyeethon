@@ -6,7 +6,6 @@ import unittest
 from test import support
 from test.support import threading_helper
 
-
 TIMEOUT = support.SHORT_TIMEOUT
 
 
@@ -20,7 +19,6 @@ class Timer:
         with self._cond:
             return self._time
 
-    # increase the time but not beyond the established limit
     def sleep(self, t):
         assert t >= 0
         with self._cond:
@@ -30,7 +28,6 @@ class Timer:
                 self._cond.wait()
             self._time = t
 
-    # advance time limit for user code
     def advance(self, t):
         assert t >= 0
         with self._cond:
@@ -39,7 +36,6 @@ class Timer:
 
 
 class TestCase(unittest.TestCase):
-
     def test_enter(self):
         l = []
         fun = lambda x: l.append(x)
@@ -71,7 +67,7 @@ class TestCase(unittest.TestCase):
         self.assertEqual(q.get(timeout=TIMEOUT), 1)
         self.assertTrue(q.empty())
         for x in [4, 5, 2]:
-            z = scheduler.enter(x - 1, 1, fun, (x,))
+            z = scheduler.enter((x - 1), 1, fun, (x,))
         timer.advance(2)
         self.assertEqual(q.get(timeout=TIMEOUT), 2)
         self.assertEqual(q.get(timeout=TIMEOUT), 3)
@@ -101,11 +97,11 @@ class TestCase(unittest.TestCase):
         fun = lambda x: l.append(x)
         scheduler = sched.scheduler(time.time, time.sleep)
         now = time.time()
-        event1 = scheduler.enterabs(now + 0.01, 1, fun, (0.01,))
-        event2 = scheduler.enterabs(now + 0.02, 1, fun, (0.02,))
-        event3 = scheduler.enterabs(now + 0.03, 1, fun, (0.03,))
-        event4 = scheduler.enterabs(now + 0.04, 1, fun, (0.04,))
-        event5 = scheduler.enterabs(now + 0.05, 1, fun, (0.05,))
+        event1 = scheduler.enterabs((now + 0.01), 1, fun, (0.01,))
+        event2 = scheduler.enterabs((now + 0.02), 1, fun, (0.02,))
+        event3 = scheduler.enterabs((now + 0.03), 1, fun, (0.03,))
+        event4 = scheduler.enterabs((now + 0.04), 1, fun, (0.04,))
+        event5 = scheduler.enterabs((now + 0.05), 1, fun, (0.05,))
         scheduler.cancel(event1)
         scheduler.cancel(event5)
         scheduler.run()
@@ -117,11 +113,11 @@ class TestCase(unittest.TestCase):
         timer = Timer()
         scheduler = sched.scheduler(timer.time, timer.sleep)
         now = timer.time()
-        event1 = scheduler.enterabs(now + 1, 1, fun, (1,))
-        event2 = scheduler.enterabs(now + 2, 1, fun, (2,))
-        event4 = scheduler.enterabs(now + 4, 1, fun, (4,))
-        event5 = scheduler.enterabs(now + 5, 1, fun, (5,))
-        event3 = scheduler.enterabs(now + 3, 1, fun, (3,))
+        event1 = scheduler.enterabs((now + 1), 1, fun, (1,))
+        event2 = scheduler.enterabs((now + 2), 1, fun, (2,))
+        event4 = scheduler.enterabs((now + 4), 1, fun, (4,))
+        event5 = scheduler.enterabs((now + 5), 1, fun, (5,))
+        event3 = scheduler.enterabs((now + 3), 1, fun, (3,))
         t = threading.Thread(target=scheduler.run)
         t.start()
         timer.advance(1)
@@ -143,7 +139,6 @@ class TestCase(unittest.TestCase):
         self.assertEqual(timer.time(), 4)
 
     def test_cancel_correct_event(self):
-        # bpo-19270
         events = []
         scheduler = sched.scheduler()
         scheduler.enterabs(1, 1, events.append, ("a",))
@@ -169,17 +164,16 @@ class TestCase(unittest.TestCase):
         fun = lambda x: l.append(x)
         scheduler = sched.scheduler(time.time, time.sleep)
         now = time.time()
-        e5 = scheduler.enterabs(now + 0.05, 1, fun)
-        e1 = scheduler.enterabs(now + 0.01, 1, fun)
-        e2 = scheduler.enterabs(now + 0.02, 1, fun)
-        e4 = scheduler.enterabs(now + 0.04, 1, fun)
-        e3 = scheduler.enterabs(now + 0.03, 1, fun)
-        # queue property is supposed to return an order list of
-        # upcoming events
+        e5 = scheduler.enterabs((now + 0.05), 1, fun)
+        e1 = scheduler.enterabs((now + 0.01), 1, fun)
+        e2 = scheduler.enterabs((now + 0.02), 1, fun)
+        e4 = scheduler.enterabs((now + 0.04), 1, fun)
+        e3 = scheduler.enterabs((now + 0.03), 1, fun)
         self.assertEqual(scheduler.queue, [e1, e2, e3, e4, e5])
 
     def test_args_kwargs(self):
         seq = []
+
         def fun(*a, **b):
             seq.append((a, b))
 
@@ -187,15 +181,12 @@ class TestCase(unittest.TestCase):
         scheduler = sched.scheduler(time.time, time.sleep)
         scheduler.enterabs(now, 1, fun)
         scheduler.enterabs(now, 1, fun, argument=(1, 2))
-        scheduler.enterabs(now, 1, fun, argument=('a', 'b'))
+        scheduler.enterabs(now, 1, fun, argument=("a", "b"))
         scheduler.enterabs(now, 1, fun, argument=(1, 2), kwargs={"foo": 3})
         scheduler.run()
-        self.assertCountEqual(seq, [
-            ((), {}),
-            ((1, 2), {}),
-            (('a', 'b'), {}),
-            ((1, 2), {'foo': 3})
-        ])
+        self.assertCountEqual(
+            seq, [((), {}), ((1, 2), {}), (("a", "b"), {}), ((1, 2), {"foo": 3})]
+        )
 
     def test_run_non_blocking(self):
         l = []

@@ -1,41 +1,30 @@
-""" List all available codec modules.
-
-(c) Copyright 2005, Marc-Andre Lemburg (mal@lemburg.com).
-
-    Licensed to PSF under a Contributor Agreement.
-
-"""
-
+" List all available codec modules.\n\n(c) Copyright 2005, Marc-Andre Lemburg (mal@lemburg.com).\n\n    Licensed to PSF under a Contributor Agreement.\n\n"
 import os, codecs, encodings
 
 _debug = 0
 
+
 def listcodecs(dir):
     names = []
     for filename in os.listdir(dir):
-        if filename[-3:] != '.py':
+        if filename[(-3):] != ".py":
             continue
-        name = filename[:-3]
-        # Check whether we've found a true codec
+        name = filename[:(-3)]
         try:
             codecs.lookup(name)
         except LookupError:
-            # Codec not found
             continue
         except Exception as reason:
-            # Probably an error from importing the codec; still it's
-            # a valid code name
             if _debug:
-                print('* problem importing codec %r: %s' % \
-                      (name, reason))
+                print(("* problem importing codec %r: %s" % (name, reason)))
         names.append(name)
     return names
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     names = listcodecs(encodings.__path__[0])
     names.sort()
-    print('all_codecs = [')
+    print("all_codecs = [")
     for name in names:
-        print('    %r,' % name)
-    print(']')
+        print(("    %r," % name))
+    print("]")

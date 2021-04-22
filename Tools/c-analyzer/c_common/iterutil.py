@@ -1,19 +1,20 @@
-
 _NOT_SET = object()
 
 
 def peek_and_iter(items):
     if not items:
-        return None, None
+        return (None, None)
     items = iter(items)
     try:
         peeked = next(items)
     except StopIteration:
-        return None, None
+        return (None, None)
+
     def chain():
-        yield peeked
-        yield from items
-    return chain(), peeked
+        (yield peeked)
+        (yield from items)
+
+    return (chain(), peeked)
 
 
 def iter_many(items, onempty=None):
@@ -23,7 +24,7 @@ def iter_many(items, onempty=None):
         if not callable(onempty):
             raise onEmpty
         items = onempty(items)
-        yield from iter_many(items, onempty=None)
+        (yield from iter_many(items, onempty=None))
         return
     items = iter(items)
     try:
@@ -34,15 +35,15 @@ def iter_many(items, onempty=None):
         if not callable(onempty):
             raise onEmpty
         items = onempty(items)
-        yield from iter_many(items, onempty=None)
+        (yield from iter_many(items, onempty=None))
     else:
         try:
             second = next(items)
         except StopIteration:
-            yield first, False
+            (yield (first, False))
             return
         else:
-            yield first, True
-            yield second, True
+            (yield (first, True))
+            (yield (second, True))
         for item in items:
-            yield item, True
+            (yield (item, True))

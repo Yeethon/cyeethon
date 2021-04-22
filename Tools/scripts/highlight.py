@@ -1,8 +1,5 @@
-#!/usr/bin/env python3
-'''Add syntax highlighting to Python source code'''
-
-__author__ = 'Raymond Hettinger'
-
+"Add syntax highlighting to Python source code"
+__author__ = "Raymond Hettinger"
 import builtins
 import functools
 import html as html_module
@@ -10,190 +7,166 @@ import keyword
 import re
 import tokenize
 
-#### Analyze Python Source #################################
 
 def is_builtin(s):
-    'Return True if s is the name of a builtin'
+    "Return True if s is the name of a builtin"
     return hasattr(builtins, s)
 
+
 def combine_range(lines, start, end):
-    'Join content from a range of lines between start and end'
-    (srow, scol), (erow, ecol) = start, end
+    "Join content from a range of lines between start and end"
+    ((srow, scol), (erow, ecol)) = (start, end)
     if srow == erow:
-        return lines[srow-1][scol:ecol], end
-    rows = [lines[srow-1][scol:]] + lines[srow: erow-1] + [lines[erow-1][:ecol]]
-    return ''.join(rows), end
+        return (lines[(srow - 1)][scol:ecol], end)
+    rows = ([lines[(srow - 1)][scol:]] + lines[srow : (erow - 1)]) + [
+        lines[(erow - 1)][:ecol]
+    ]
+    return ("".join(rows), end)
+
 
 def analyze_python(source):
-    '''Generate and classify chunks of Python for syntax highlighting.
-       Yields tuples in the form: (category, categorized_text).
-    '''
+    "Generate and classify chunks of Python for syntax highlighting.\n       Yields tuples in the form: (category, categorized_text).\n    "
     lines = source.splitlines(True)
-    lines.append('')
-    readline = functools.partial(next, iter(lines), '')
-    kind = tok_str = ''
+    lines.append("")
+    readline = functools.partial(next, iter(lines), "")
+    kind = tok_str = ""
     tok_type = tokenize.COMMENT
     written = (1, 0)
     for tok in tokenize.generate_tokens(readline):
-        prev_tok_type, prev_tok_str = tok_type, tok_str
-        tok_type, tok_str, (srow, scol), (erow, ecol), logical_lineno = tok
-        kind = ''
+        (prev_tok_type, prev_tok_str) = (tok_type, tok_str)
+        (tok_type, tok_str, (srow, scol), (erow, ecol), logical_lineno) = tok
+        kind = ""
         if tok_type == tokenize.COMMENT:
-            kind = 'comment'
-        elif tok_type == tokenize.OP and tok_str[:1] not in '{}[](),.:;@':
-            kind = 'operator'
+            kind = "comment"
+        elif (tok_type == tokenize.OP) and (tok_str[:1] not in "{}[](),.:;@"):
+            kind = "operator"
         elif tok_type == tokenize.STRING:
-            kind = 'string'
-            if prev_tok_type == tokenize.INDENT or scol==0:
-                kind = 'docstring'
+            kind = "string"
+            if (prev_tok_type == tokenize.INDENT) or (scol == 0):
+                kind = "docstring"
         elif tok_type == tokenize.NAME:
-            if tok_str in ('def', 'class', 'import', 'from'):
-                kind = 'definition'
-            elif prev_tok_str in ('def', 'class'):
-                kind = 'defname'
+            if tok_str in ("def", "class", "import", "from"):
+                kind = "definition"
+            elif prev_tok_str in ("def", "class"):
+                kind = "defname"
             elif keyword.iskeyword(tok_str):
-                kind = 'keyword'
-            elif is_builtin(tok_str) and prev_tok_str != '.':
-                kind = 'builtin'
+                kind = "keyword"
+            elif is_builtin(tok_str) and (prev_tok_str != "."):
+                kind = "builtin"
         if kind:
-            text, written = combine_range(lines, written, (srow, scol))
-            yield '', text
-            text, written = tok_str, (erow, ecol)
-            yield kind, text
-    line_upto_token, written = combine_range(lines, written, (erow, ecol))
-    yield '', line_upto_token
+            (text, written) = combine_range(lines, written, (srow, scol))
+            (yield ("", text))
+            (text, written) = (tok_str, (erow, ecol))
+            (yield (kind, text))
+    (line_upto_token, written) = combine_range(lines, written, (erow, ecol))
+    (yield ("", line_upto_token))
 
-#### Raw Output  ###########################################
 
 def raw_highlight(classified_text):
-    'Straight text display of text classifications'
+    "Straight text display of text classifications"
     result = []
-    for kind, text in classified_text:
-        result.append('%15s:  %r\n' % (kind or 'plain', text))
-    return ''.join(result)
+    for (kind, text) in classified_text:
+        result.append(("%15s:  %r\n" % ((kind or "plain"), text)))
+    return "".join(result)
 
-#### ANSI Output ###########################################
 
 default_ansi = {
-    'comment': ('\033[0;31m', '\033[0m'),
-    'string': ('\033[0;32m', '\033[0m'),
-    'docstring': ('\033[0;32m', '\033[0m'),
-    'keyword': ('\033[0;33m', '\033[0m'),
-    'builtin': ('\033[0;35m', '\033[0m'),
-    'definition': ('\033[0;33m', '\033[0m'),
-    'defname': ('\033[0;34m', '\033[0m'),
-    'operator': ('\033[0;33m', '\033[0m'),
+    "comment": ("\x1b[0;31m", "\x1b[0m"),
+    "string": ("\x1b[0;32m", "\x1b[0m"),
+    "docstring": ("\x1b[0;32m", "\x1b[0m"),
+    "keyword": ("\x1b[0;33m", "\x1b[0m"),
+    "builtin": ("\x1b[0;35m", "\x1b[0m"),
+    "definition": ("\x1b[0;33m", "\x1b[0m"),
+    "defname": ("\x1b[0;34m", "\x1b[0m"),
+    "operator": ("\x1b[0;33m", "\x1b[0m"),
 }
+
 
 def ansi_highlight(classified_text, colors=default_ansi):
-    'Add syntax highlighting to source code using ANSI escape sequences'
-    # http://en.wikipedia.org/wiki/ANSI_escape_code
+    "Add syntax highlighting to source code using ANSI escape sequences"
     result = []
-    for kind, text in classified_text:
-        opener, closer = colors.get(kind, ('', ''))
+    for (kind, text) in classified_text:
+        (opener, closer) = colors.get(kind, ("", ""))
         result += [opener, text, closer]
-    return ''.join(result)
+    return "".join(result)
 
-#### HTML Output ###########################################
 
-def html_highlight(classified_text,opener='<pre class="python">\n', closer='</pre>\n'):
-    'Convert classified text to an HTML fragment'
+def html_highlight(classified_text, opener='<pre class="python">\n', closer="</pre>\n"):
+    "Convert classified text to an HTML fragment"
     result = [opener]
-    for kind, text in classified_text:
+    for (kind, text) in classified_text:
         if kind:
-            result.append('<span class="%s">' % kind)
+            result.append(('<span class="%s">' % kind))
         result.append(html_module.escape(text))
         if kind:
-            result.append('</span>')
+            result.append("</span>")
     result.append(closer)
-    return ''.join(result)
+    return "".join(result)
+
 
 default_css = {
-    '.comment': '{color: crimson;}',
-    '.string':  '{color: forestgreen;}',
-    '.docstring': '{color: forestgreen; font-style:italic;}',
-    '.keyword': '{color: darkorange;}',
-    '.builtin': '{color: purple;}',
-    '.definition': '{color: darkorange; font-weight:bold;}',
-    '.defname': '{color: blue;}',
-    '.operator': '{color: brown;}',
+    ".comment": "{color: crimson;}",
+    ".string": "{color: forestgreen;}",
+    ".docstring": "{color: forestgreen; font-style:italic;}",
+    ".keyword": "{color: darkorange;}",
+    ".builtin": "{color: purple;}",
+    ".definition": "{color: darkorange; font-weight:bold;}",
+    ".defname": "{color: blue;}",
+    ".operator": "{color: brown;}",
 }
+default_html = '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"\n          "http://www.w3.org/TR/html4/strict.dtd">\n<html>\n<head>\n<meta http-equiv="Content-type" content="text/html;charset=UTF-8">\n<title> {title} </title>\n<style type="text/css">\n{css}\n</style>\n</head>\n<body>\n{body}\n</body>\n</html>\n'
 
-default_html = '''\
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
-          "http://www.w3.org/TR/html4/strict.dtd">
-<html>
-<head>
-<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
-<title> {title} </title>
-<style type="text/css">
-{css}
-</style>
-</head>
-<body>
-{body}
-</body>
-</html>
-'''
 
-def build_html_page(classified_text, title='python',
-                    css=default_css, html=default_html):
-    'Create a complete HTML page with colorized source code'
-    css_str = '\n'.join(['%s %s' % item for item in css.items()])
+def build_html_page(
+    classified_text, title="python", css=default_css, html=default_html
+):
+    "Create a complete HTML page with colorized source code"
+    css_str = "\n".join([("%s %s" % item) for item in css.items()])
     result = html_highlight(classified_text)
     title = html_module.escape(title)
     return html.format(title=title, css=css_str, body=result)
 
-#### LaTeX Output ##########################################
 
 default_latex_commands = {
-    'comment': r'{\color{red}#1}',
-    'string': r'{\color{ForestGreen}#1}',
-    'docstring': r'{\emph{\color{ForestGreen}#1}}',
-    'keyword': r'{\color{orange}#1}',
-    'builtin': r'{\color{purple}#1}',
-    'definition': r'{\color{orange}#1}',
-    'defname': r'{\color{blue}#1}',
-    'operator': r'{\color{brown}#1}',
+    "comment": "{\\color{red}#1}",
+    "string": "{\\color{ForestGreen}#1}",
+    "docstring": "{\\emph{\\color{ForestGreen}#1}}",
+    "keyword": "{\\color{orange}#1}",
+    "builtin": "{\\color{purple}#1}",
+    "definition": "{\\color{orange}#1}",
+    "defname": "{\\color{blue}#1}",
+    "operator": "{\\color{brown}#1}",
 }
+default_latex_document = "\n\\documentclass{article}\n\\usepackage{alltt}\n\\usepackage{upquote}\n\\usepackage{color}\n\\usepackage[usenames,dvipsnames]{xcolor}\n\\usepackage[cm]{fullpage}\n%(macros)s\n\\begin{document}\n\\center{\\LARGE{%(title)s}}\n\\begin{alltt}\n%(body)s\n\\end{alltt}\n\\end{document}\n"
 
-default_latex_document = r'''
-\documentclass{article}
-\usepackage{alltt}
-\usepackage{upquote}
-\usepackage{color}
-\usepackage[usenames,dvipsnames]{xcolor}
-\usepackage[cm]{fullpage}
-%(macros)s
-\begin{document}
-\center{\LARGE{%(title)s}}
-\begin{alltt}
-%(body)s
-\end{alltt}
-\end{document}
-'''
 
 def alltt_escape(s):
-    'Replace backslash and braces with their escaped equivalents'
-    xlat = {'{': r'\{', '}': r'\}', '\\': r'\textbackslash{}'}
-    return re.sub(r'[\\{}]', lambda mo: xlat[mo.group()], s)
+    "Replace backslash and braces with their escaped equivalents"
+    xlat = {"{": "\\{", "}": "\\}", "\\": "\\textbackslash{}"}
+    return re.sub("[\\\\{}]", (lambda mo: xlat[mo.group()]), s)
 
-def latex_highlight(classified_text, title = 'python',
-                    commands = default_latex_commands,
-                    document = default_latex_document):
-    'Create a complete LaTeX document with colorized source code'
-    macros = '\n'.join(r'\newcommand{\py%s}[1]{%s}' % c for c in commands.items())
+
+def latex_highlight(
+    classified_text,
+    title="python",
+    commands=default_latex_commands,
+    document=default_latex_document,
+):
+    "Create a complete LaTeX document with colorized source code"
+    macros = "\n".join((("\\newcommand{\\py%s}[1]{%s}" % c) for c in commands.items()))
     result = []
-    for kind, text in classified_text:
+    for (kind, text) in classified_text:
         if kind:
-            result.append(r'\py%s{' % kind)
+            result.append(("\\py%s{" % kind))
         result.append(alltt_escape(text))
         if kind:
-            result.append('}')
-    return default_latex_document % dict(title=title, macros=macros, body=''.join(result))
+            result.append("}")
+    return default_latex_document % dict(
+        title=title, macros=macros, body="".join(result)
+    )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import argparse
     import os.path
     import sys
@@ -201,50 +174,42 @@ if __name__ == '__main__':
     import webbrowser
 
     parser = argparse.ArgumentParser(
-            description = 'Add syntax highlighting to Python source code',
-            formatter_class=argparse.RawDescriptionHelpFormatter,
-            epilog = textwrap.dedent('''
-                examples:
-
-                  # Show syntax highlighted code in the terminal window
-                  $ ./highlight.py myfile.py
-
-                  # Colorize myfile.py and display in a browser
-                  $ ./highlight.py -b myfile.py
-
-                  # Create an HTML section to embed in an existing webpage
-                  ./highlight.py -s myfile.py
-
-                  # Create a complete HTML file
-                  $ ./highlight.py -c myfile.py > myfile.html
-
-                  # Create a PDF using LaTeX
-                  $ ./highlight.py -l myfile.py | pdflatex
-
-            '''))
-    parser.add_argument('sourcefile', metavar = 'SOURCEFILE',
-            help = 'file containing Python sourcecode')
-    parser.add_argument('-b', '--browser', action = 'store_true',
-            help = 'launch a browser to show results')
-    parser.add_argument('-c', '--complete', action = 'store_true',
-            help = 'build a complete html webpage')
-    parser.add_argument('-l', '--latex', action = 'store_true',
-            help = 'build a LaTeX document')
-    parser.add_argument('-r', '--raw', action = 'store_true',
-            help = 'raw parse of categorized text')
-    parser.add_argument('-s', '--section', action = 'store_true',
-            help = 'show an HTML section rather than a complete webpage')
+        description="Add syntax highlighting to Python source code",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=textwrap.dedent(
+            "\n                examples:\n\n                  # Show syntax highlighted code in the terminal window\n                  $ ./highlight.py myfile.py\n\n                  # Colorize myfile.py and display in a browser\n                  $ ./highlight.py -b myfile.py\n\n                  # Create an HTML section to embed in an existing webpage\n                  ./highlight.py -s myfile.py\n\n                  # Create a complete HTML file\n                  $ ./highlight.py -c myfile.py > myfile.html\n\n                  # Create a PDF using LaTeX\n                  $ ./highlight.py -l myfile.py | pdflatex\n\n            "
+        ),
+    )
+    parser.add_argument(
+        "sourcefile", metavar="SOURCEFILE", help="file containing Python sourcecode"
+    )
+    parser.add_argument(
+        "-b", "--browser", action="store_true", help="launch a browser to show results"
+    )
+    parser.add_argument(
+        "-c", "--complete", action="store_true", help="build a complete html webpage"
+    )
+    parser.add_argument(
+        "-l", "--latex", action="store_true", help="build a LaTeX document"
+    )
+    parser.add_argument(
+        "-r", "--raw", action="store_true", help="raw parse of categorized text"
+    )
+    parser.add_argument(
+        "-s",
+        "--section",
+        action="store_true",
+        help="show an HTML section rather than a complete webpage",
+    )
     args = parser.parse_args()
-
     if args.section and (args.browser or args.complete):
-        parser.error('The -s/--section option is incompatible with '
-                     'the -b/--browser or -c/--complete options')
-
+        parser.error(
+            "The -s/--section option is incompatible with the -b/--browser or -c/--complete options"
+        )
     sourcefile = args.sourcefile
     with open(sourcefile) as f:
         source = f.read()
     classified_text = analyze_python(source)
-
     if args.raw:
         encoded = raw_highlight(classified_text)
     elif args.complete or args.browser:
@@ -255,11 +220,10 @@ if __name__ == '__main__':
         encoded = latex_highlight(classified_text, title=sourcefile)
     else:
         encoded = ansi_highlight(classified_text)
-
     if args.browser:
-        htmlfile = os.path.splitext(os.path.basename(sourcefile))[0] + '.html'
-        with open(htmlfile, 'w') as f:
+        htmlfile = os.path.splitext(os.path.basename(sourcefile))[0] + ".html"
+        with open(htmlfile, "w") as f:
             f.write(encoded)
-        webbrowser.open('file://' + os.path.abspath(htmlfile))
+        webbrowser.open(("file://" + os.path.abspath(htmlfile)))
     else:
         sys.stdout.write(encoded)

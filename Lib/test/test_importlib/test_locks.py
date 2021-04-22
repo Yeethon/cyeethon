@@ -1,49 +1,39 @@
 from . import util as test_util
 
-init = test_util.import_importlib('importlib')
-
+init = test_util.import_importlib("importlib")
 import sys
 import threading
 import weakref
-
 from test import support
 from test.support import threading_helper
 from test import lock_tests
 
 
 class ModuleLockAsRLockTests:
-    locktype = classmethod(lambda cls: cls.LockType("some_lock"))
-
-    # _is_owned() unsupported
+    locktype = classmethod((lambda cls: cls.LockType("some_lock")))
     test__is_owned = None
-    # acquire(blocking=False) unsupported
     test_try_acquire = None
     test_try_acquire_contended = None
-    # `with` unsupported
     test_with = None
-    # acquire(timeout=...) unsupported
     test_timeout = None
-    # _release_save() unsupported
     test_release_save_unacquired = None
-    # lock status in repr unsupported
     test_repr = None
     test_locked_repr = None
 
-LOCK_TYPES = {kind: splitinit._bootstrap._ModuleLock
-              for kind, splitinit in init.items()}
 
-(Frozen_ModuleLockAsRLockTests,
- Source_ModuleLockAsRLockTests
- ) = test_util.test_both(ModuleLockAsRLockTests, lock_tests.RLockTests,
-                         LockType=LOCK_TYPES)
+LOCK_TYPES = {
+    kind: splitinit._bootstrap._ModuleLock for (kind, splitinit) in init.items()
+}
+(Frozen_ModuleLockAsRLockTests, Source_ModuleLockAsRLockTests) = test_util.test_both(
+    ModuleLockAsRLockTests, lock_tests.RLockTests, LockType=LOCK_TYPES
+)
 
 
 class DeadlockAvoidanceTests:
-
     def setUp(self):
         try:
             self.old_switchinterval = sys.getswitchinterval()
-            support.setswitchinterval(0.000001)
+            support.setswitchinterval(1e-06)
         except AttributeError:
             self.old_switchinterval = None
 
@@ -54,7 +44,7 @@ class DeadlockAvoidanceTests:
     def run_deadlock_avoidance_test(self, create_deadlock):
         NLOCKS = 10
         locks = [self.LockType(str(i)) for i in range(NLOCKS)]
-        pairs = [(locks[i], locks[(i+1)%NLOCKS]) for i in range(NLOCKS)]
+        pairs = [(locks[i], locks[((i + 1) % NLOCKS)]) for i in range(NLOCKS)]
         if create_deadlock:
             NTHREADS = NLOCKS
         else:
@@ -63,8 +53,7 @@ class DeadlockAvoidanceTests:
         results = []
 
         def _acquire(lock):
-            """Try to acquire the lock. Return True on success,
-            False on deadlock."""
+            "Try to acquire the lock. Return True on success,\n            False on deadlock."
             try:
                 lock.acquire()
             except self.DeadlockError:
@@ -73,7 +62,7 @@ class DeadlockAvoidanceTests:
                 return True
 
         def f():
-            a, b = pairs.pop()
+            (a, b) = pairs.pop()
             ra = _acquire(a)
             barrier.wait()
             rb = _acquire(b)
@@ -82,18 +71,16 @@ class DeadlockAvoidanceTests:
                 b.release()
             if ra:
                 a.release()
+
         lock_tests.Bunch(f, NTHREADS).wait_for_finished()
         self.assertEqual(len(results), NTHREADS)
         return results
 
     def test_deadlock(self):
         results = self.run_deadlock_avoidance_test(True)
-        # At least one of the threads detected a potential deadlock on its
-        # second acquire() call.  It may be several of them, because the
-        # deadlock avoidance mechanism is conservative.
         nb_deadlocks = results.count((True, False))
         self.assertGreaterEqual(nb_deadlocks, 1)
-        self.assertEqual(results.count((True, True)), len(results) - nb_deadlocks)
+        self.assertEqual(results.count((True, True)), (len(results) - nb_deadlocks))
 
     def test_no_deadlock(self):
         results = self.run_deadlock_avoidance_test(False)
@@ -101,18 +88,15 @@ class DeadlockAvoidanceTests:
         self.assertEqual(results.count((True, True)), len(results))
 
 
-DEADLOCK_ERRORS = {kind: splitinit._bootstrap._DeadlockError
-                   for kind, splitinit in init.items()}
-
-(Frozen_DeadlockAvoidanceTests,
- Source_DeadlockAvoidanceTests
- ) = test_util.test_both(DeadlockAvoidanceTests,
-                         LockType=LOCK_TYPES,
-                         DeadlockError=DEADLOCK_ERRORS)
+DEADLOCK_ERRORS = {
+    kind: splitinit._bootstrap._DeadlockError for (kind, splitinit) in init.items()
+}
+(Frozen_DeadlockAvoidanceTests, Source_DeadlockAvoidanceTests) = test_util.test_both(
+    DeadlockAvoidanceTests, LockType=LOCK_TYPES, DeadlockError=DEADLOCK_ERRORS
+)
 
 
 class LifetimeTests:
-
     @property
     def bootstrap(self):
         return self.init._bootstrap
@@ -130,24 +114,27 @@ class LifetimeTests:
 
     def test_all_locks(self):
         support.gc_collect()
-        self.assertEqual(0, len(self.bootstrap._module_locks),
-                         self.bootstrap._module_locks)
+        self.assertEqual(
+            0, len(self.bootstrap._module_locks), self.bootstrap._module_locks
+        )
 
 
-(Frozen_LifetimeTests,
- Source_LifetimeTests
- ) = test_util.test_both(LifetimeTests, init=init)
+(Frozen_LifetimeTests, Source_LifetimeTests) = test_util.test_both(
+    LifetimeTests, init=init
+)
 
 
 @threading_helper.reap_threads
 def test_main():
-    support.run_unittest(Frozen_ModuleLockAsRLockTests,
-                         Source_ModuleLockAsRLockTests,
-                         Frozen_DeadlockAvoidanceTests,
-                         Source_DeadlockAvoidanceTests,
-                         Frozen_LifetimeTests,
-                         Source_LifetimeTests)
+    support.run_unittest(
+        Frozen_ModuleLockAsRLockTests,
+        Source_ModuleLockAsRLockTests,
+        Frozen_DeadlockAvoidanceTests,
+        Source_DeadlockAvoidanceTests,
+        Frozen_LifetimeTests,
+        Source_LifetimeTests,
+    )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     test_main()

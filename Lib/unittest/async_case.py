@@ -1,37 +1,10 @@
 import asyncio
 import inspect
-
 from .case import TestCase
 
 
-
 class IsolatedAsyncioTestCase(TestCase):
-    # Names intentionally have a long prefix
-    # to reduce a chance of clashing with user-defined attributes
-    # from inherited test case
-    #
-    # The class doesn't call loop.run_until_complete(self.setUp()) and family
-    # but uses a different approach:
-    # 1. create a long-running task that reads self.setUp()
-    #    awaitable from queue along with a future
-    # 2. await the awaitable object passing in and set the result
-    #    into the future object
-    # 3. Outer code puts the awaitable and the future object into a queue
-    #    with waiting for the future
-    # The trick is necessary because every run_until_complete() call
-    # creates a new task with embedded ContextVar context.
-    # To share contextvars between setUp(), test and tearDown() we need to execute
-    # them inside the same task.
-
-    # Note: the test case modifies event loop policy if the policy was not instantiated
-    # yet.
-    # asyncio.get_event_loop_policy() creates a default policy on demand but never
-    # returns None
-    # I believe this is not an issue in user level tests but python itself for testing
-    # should reset a policy in every test module
-    # by calling asyncio.set_event_loop_policy(None) in tearDownModule()
-
-    def __init__(self, methodName='runTest'):
+    def __init__(self, methodName="runTest"):
         super().__init__(methodName)
         self._asyncioTestLoop = None
         self._asyncioCallsQueue = None
@@ -43,18 +16,6 @@ class IsolatedAsyncioTestCase(TestCase):
         pass
 
     def addAsyncCleanup(self, func, /, *args, **kwargs):
-        # A trivial trampoline to addCleanup()
-        # the function exists because it has a different semantics
-        # and signature:
-        # addCleanup() accepts regular functions
-        # but addAsyncCleanup() accepts coroutines
-        #
-        # We intentionally don't add inspect.iscoroutinefunction() check
-        # for func argument because there is no way
-        # to check for async function reliably:
-        # 1. It can be "async def func()" iself
-        # 2. Class can implement "async def __call__()" method
-        # 3. Regular "def func()" that returns awaitable object
         self.addCleanup(*(func, *args), **kwargs)
 
     def _callSetUp(self):
@@ -97,7 +58,7 @@ class IsolatedAsyncioTestCase(TestCase):
             queue.task_done()
             if query is None:
                 return
-            fut, awaitable = query
+            (fut, awaitable) = query
             try:
                 ret = await awaitable
                 if not fut.cancelled():
@@ -124,29 +85,26 @@ class IsolatedAsyncioTestCase(TestCase):
         self._asyncioTestLoop = None
         self._asyncioCallsQueue.put_nowait(None)
         loop.run_until_complete(self._asyncioCallsQueue.join())
-
         try:
-            # cancel all tasks
             to_cancel = asyncio.all_tasks(loop)
             if not to_cancel:
                 return
-
             for task in to_cancel:
                 task.cancel()
-
             loop.run_until_complete(
-                asyncio.gather(*to_cancel, loop=loop, return_exceptions=True))
-
+                asyncio.gather(*to_cancel, loop=loop, return_exceptions=True)
+            )
             for task in to_cancel:
                 if task.cancelled():
                     continue
                 if task.exception() is not None:
-                    loop.call_exception_handler({
-                        'message': 'unhandled exception during test shutdown',
-                        'exception': task.exception(),
-                        'task': task,
-                    })
-            # shutdown asyncgens
+                    loop.call_exception_handler(
+                        {
+                            "message": "unhandled exception during test shutdown",
+                            "exception": task.exception(),
+                            "task": task,
+                        }
+                    )
             loop.run_until_complete(loop.shutdown_asyncgens())
         finally:
             asyncio.set_event_loop(None)

@@ -2,24 +2,24 @@ import token
 import tokenize
 from typing import List, Iterator
 
-Mark = int  # NewType('Mark', int)
-
-exact_token_types = token.EXACT_TOKEN_TYPES  # type: ignore
+Mark = int
+exact_token_types = token.EXACT_TOKEN_TYPES
 
 
 def shorttok(tok: tokenize.TokenInfo) -> str:
-    return "%-25.25s" % f"{tok.start[0]}.{tok.start[1]}: {token.tok_name[tok.type]}:{tok.string!r}"
+    return (
+        "%-25.25s"
+        % f"{tok.start[0]}.{tok.start[1]}: {token.tok_name[tok.type]}:{tok.string!r}"
+    )
 
 
 class Tokenizer:
-    """Caching wrapper for the tokenize module.
-
-    This is pretty tied to Python's syntax.
-    """
-
+    "Caching wrapper for the tokenize module.\n\n    This is pretty tied to Python's syntax.\n    "
     _tokens: List[tokenize.TokenInfo]
 
-    def __init__(self, tokengen: Iterator[tokenize.TokenInfo], *, verbose: bool = False):
+    def __init__(
+        self, tokengen: Iterator[tokenize.TokenInfo], *, verbose: bool = False
+    ):
         self._tokengen = tokengen
         self._tokens = []
         self._index = 0
@@ -28,13 +28,13 @@ class Tokenizer:
             self.report(False, False)
 
     def getnext(self) -> tokenize.TokenInfo:
-        """Return the next token and updates the index."""
+        "Return the next token and updates the index."
         cached = True
         while self._index == len(self._tokens):
             tok = next(self._tokengen)
             if tok.type in (tokenize.NL, tokenize.COMMENT):
                 continue
-            if tok.type == token.ERRORTOKEN and tok.string.isspace():
+            if (tok.type == token.ERRORTOKEN) and tok.string.isspace():
                 continue
             self._tokens.append(tok)
             cached = False
@@ -45,12 +45,12 @@ class Tokenizer:
         return tok
 
     def peek(self) -> tokenize.TokenInfo:
-        """Return the next token *without* updating the index."""
+        "Return the next token *without* updating the index."
         while self._index == len(self._tokens):
             tok = next(self._tokengen)
             if tok.type in (tokenize.NL, tokenize.COMMENT):
                 continue
-            if tok.type == token.ERRORTOKEN and tok.string.isspace():
+            if (tok.type == token.ERRORTOKEN) and tok.string.isspace():
                 continue
             self._tokens.append(tok)
         return self._tokens[self._index]
@@ -58,7 +58,7 @@ class Tokenizer:
     def diagnose(self) -> tokenize.TokenInfo:
         if not self._tokens:
             self.getnext()
-        return self._tokens[-1]
+        return self._tokens[(-1)]
 
     def mark(self) -> Mark:
         return self._index
@@ -70,17 +70,17 @@ class Tokenizer:
         old_index = self._index
         self._index = index
         if self._verbose:
-            self.report(True, index < old_index)
+            self.report(True, (index < old_index))
 
     def report(self, cached: bool, back: bool) -> None:
         if back:
-            fill = "-" * self._index + "-"
+            fill = ("-" * self._index) + "-"
         elif cached:
-            fill = "-" * self._index + ">"
+            fill = ("-" * self._index) + ">"
         else:
-            fill = "-" * self._index + "*"
+            fill = ("-" * self._index) + "*"
         if self._index == 0:
             print(f"{fill} (Bof)")
         else:
-            tok = self._tokens[self._index - 1]
+            tok = self._tokens[(self._index - 1)]
             print(f"{fill} {shorttok(tok)}")

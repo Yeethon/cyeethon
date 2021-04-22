@@ -1,5 +1,4 @@
 from __future__ import annotations
-
 from abc import abstractmethod
 from typing import (
     AbstractSet,
@@ -15,7 +14,6 @@ from typing import (
     Union,
 )
 
-
 if TYPE_CHECKING:
     from pegen.parser_generator import ParserGenerator
 
@@ -26,13 +24,13 @@ class GrammarError(Exception):
 
 class GrammarVisitor:
     def visit(self, node: Any, *args: Any, **kwargs: Any) -> Any:
-        """Visit a node."""
+        "Visit a node."
         method = "visit_" + node.__class__.__name__
         visitor = getattr(self, method, self.generic_visit)
         return visitor(node, *args, **kwargs)
 
     def generic_visit(self, node: Iterable[Any], *args: Any, **kwargs: Any) -> None:
-        """Called if no explicit visitor function exists for a node."""
+        "Called if no explicit visitor function exists for a node."
         for value in node:
             if isinstance(value, list):
                 for item in value:
@@ -42,12 +40,14 @@ class GrammarVisitor:
 
 
 class Grammar:
-    def __init__(self, rules: Iterable[Rule], metas: Iterable[Tuple[str, Optional[str]]]):
+    def __init__(
+        self, rules: Iterable[Rule], metas: Iterable[Tuple[(str, Optional[str])]]
+    ):
         self.rules = {rule.name: rule for rule in rules}
         self.metas = dict(metas)
 
     def __str__(self) -> str:
-        return "\n".join(str(rule) for name, rule in self.rules.items())
+        return "\n".join((str(rule) for (name, rule) in self.rules.items()))
 
     def __repr__(self) -> str:
         lines = ["Grammar("]
@@ -60,15 +60,16 @@ class Grammar:
         return "\n".join(lines)
 
     def __iter__(self) -> Iterator[Rule]:
-        yield from self.rules.values()
+        (yield from self.rules.values())
 
 
-# Global flag whether we want actions in __str__() -- default off.
 SIMPLE_STR = True
 
 
 class Rule:
-    def __init__(self, name: str, type: Optional[str], rhs: Rhs, memo: Optional[object] = None):
+    def __init__(
+        self, name: str, type: Optional[str], rhs: Rhs, memo: Optional[object] = None
+    ):
         self.name = name
         self.type = type
         self.rhs = rhs
@@ -85,13 +86,13 @@ class Rule:
         return self.name.startswith("_gather")
 
     def __str__(self) -> str:
-        if SIMPLE_STR or self.type is None:
+        if SIMPLE_STR or (self.type is None):
             res = f"{self.name}: {self.rhs}"
         else:
             res = f"{self.name}[{self.type}]: {self.rhs}"
         if len(res) < 88:
             return res
-        lines = [res.split(":")[0] + ":"]
+        lines = [(res.split(":")[0] + ":")]
         lines += [f"    | {alt}" for alt in self.rhs.alts]
         return "\n".join(lines)
 
@@ -99,11 +100,10 @@ class Rule:
         return f"Rule({self.name!r}, {self.type!r}, {self.rhs!r})"
 
     def __iter__(self) -> Iterator[Rhs]:
-        yield self.rhs
+        (yield self.rhs)
 
-    def nullable_visit(self, rules: Dict[str, Rule]) -> bool:
+    def nullable_visit(self, rules: Dict[(str, Rule)]) -> bool:
         if self.visited:
-            # A left-recursive rule is considered non-nullable.
             return False
         self.visited = True
         self.nullable = self.rhs.nullable_visit(rules)
@@ -113,12 +113,11 @@ class Rule:
         return self.rhs.initial_names()
 
     def flatten(self) -> Rhs:
-        # If it's a single parenthesized group, flatten it.
         rhs = self.rhs
         if (
-            not self.is_loop()
-            and len(rhs.alts) == 1
-            and len(rhs.alts[0].items) == 1
+            (not self.is_loop())
+            and (len(rhs.alts) == 1)
+            and (len(rhs.alts[0].items) == 1)
             and isinstance(rhs.alts[0].items[0].item, Group)
         ):
             rhs = rhs.alts[0].items[0].item.rhs
@@ -138,10 +137,10 @@ class Leaf:
 
     def __iter__(self) -> Iterable[str]:
         if False:
-            yield
+            (yield)
 
     @abstractmethod
-    def nullable_visit(self, rules: Dict[str, Rule]) -> bool:
+    def nullable_visit(self, rules: Dict[(str, Rule)]) -> bool:
         raise NotImplementedError
 
     @abstractmethod
@@ -150,7 +149,7 @@ class Leaf:
 
 
 class NameLeaf(Leaf):
-    """The value is the name."""
+    "The value is the name."
 
     def __str__(self) -> str:
         if self.value == "ENDMARKER":
@@ -160,10 +159,9 @@ class NameLeaf(Leaf):
     def __repr__(self) -> str:
         return f"NameLeaf({self.value!r})"
 
-    def nullable_visit(self, rules: Dict[str, Rule]) -> bool:
+    def nullable_visit(self, rules: Dict[(str, Rule)]) -> bool:
         if self.value in rules:
             return rules[self.value].nullable_visit(rules)
-        # Token or unknown; never empty.
         return False
 
     def initial_names(self) -> AbstractSet[str]:
@@ -171,13 +169,12 @@ class NameLeaf(Leaf):
 
 
 class StringLeaf(Leaf):
-    """The value is a string literal, including quotes."""
+    "The value is a string literal, including quotes."
 
     def __repr__(self) -> str:
         return f"StringLeaf({self.value!r})"
 
-    def nullable_visit(self, rules: Dict[str, Rule]) -> bool:
-        # The string token '' is considered empty.
+    def nullable_visit(self, rules: Dict[(str, Rule)]) -> bool:
         return not self.value
 
     def initial_names(self) -> AbstractSet[str]:
@@ -187,18 +184,18 @@ class StringLeaf(Leaf):
 class Rhs:
     def __init__(self, alts: List[Alt]):
         self.alts = alts
-        self.memo: Optional[Tuple[Optional[str], str]] = None
+        self.memo: Optional[Tuple[(Optional[str], str)]] = None
 
     def __str__(self) -> str:
-        return " | ".join(str(alt) for alt in self.alts)
+        return " | ".join((str(alt) for alt in self.alts))
 
     def __repr__(self) -> str:
         return f"Rhs({self.alts!r})"
 
     def __iter__(self) -> Iterator[List[Alt]]:
-        yield self.alts
+        (yield self.alts)
 
-    def nullable_visit(self, rules: Dict[str, Rule]) -> bool:
+    def nullable_visit(self, rules: Dict[(str, Rule)]) -> bool:
         for alt in self.alts:
             if alt.nullable_visit(rules):
                 return True
@@ -216,14 +213,16 @@ class Rhs:
 
 
 class Alt:
-    def __init__(self, items: List[NamedItem], *, icut: int = -1, action: Optional[str] = None):
+    def __init__(
+        self, items: List[NamedItem], *, icut: int = (-1), action: Optional[str] = None
+    ):
         self.items = items
         self.icut = icut
         self.action = action
 
     def __str__(self) -> str:
-        core = " ".join(str(item) for item in self.items)
-        if not SIMPLE_STR and self.action:
+        core = " ".join((str(item) for item in self.items))
+        if (not SIMPLE_STR) and self.action:
             return f"{core} {{ {self.action} }}"
         else:
             return core
@@ -237,9 +236,9 @@ class Alt:
         return f"Alt({', '.join(args)})"
 
     def __iter__(self) -> Iterator[List[NamedItem]]:
-        yield self.items
+        (yield self.items)
 
-    def nullable_visit(self, rules: Dict[str, Rule]) -> bool:
+    def nullable_visit(self, rules: Dict[(str, Rule)]) -> bool:
         for item in self.items:
             if not item.nullable_visit(rules):
                 return False
@@ -266,7 +265,7 @@ class NamedItem:
         self.nullable = False
 
     def __str__(self) -> str:
-        if not SIMPLE_STR and self.name:
+        if (not SIMPLE_STR) and self.name:
             return f"{self.name}={self.item}"
         else:
             return str(self.item)
@@ -275,9 +274,9 @@ class NamedItem:
         return f"NamedItem({self.name!r}, {self.item!r})"
 
     def __iter__(self) -> Iterator[Item]:
-        yield self.item
+        (yield self.item)
 
-    def nullable_visit(self, rules: Dict[str, Rule]) -> bool:
+    def nullable_visit(self, rules: Dict[(str, Rule)]) -> bool:
         self.nullable = self.item.nullable_visit(rules)
         return self.nullable
 
@@ -296,9 +295,9 @@ class Forced:
         return f"&&{self.node}"
 
     def __iter__(self) -> Iterator[Plain]:
-        yield self.node
+        (yield self.node)
 
-    def nullable_visit(self, rules: Dict[str, Rule]) -> bool:
+    def nullable_visit(self, rules: Dict[(str, Rule)]) -> bool:
         return True
 
     def initial_names(self) -> AbstractSet[str]:
@@ -314,9 +313,9 @@ class Lookahead:
         return f"{self.sign}{self.node}"
 
     def __iter__(self) -> Iterator[Plain]:
-        yield self.node
+        (yield self.node)
 
-    def nullable_visit(self, rules: Dict[str, Rule]) -> bool:
+    def nullable_visit(self, rules: Dict[(str, Rule)]) -> bool:
         return True
 
     def initial_names(self) -> AbstractSet[str]:
@@ -345,7 +344,6 @@ class Opt:
 
     def __str__(self) -> str:
         s = str(self.node)
-        # TODO: Decide whether to use [X] or X? based on type of X
         if " " in s:
             return f"[{s}]"
         else:
@@ -355,9 +353,9 @@ class Opt:
         return f"Opt({self.node!r})"
 
     def __iter__(self) -> Iterator[Item]:
-        yield self.node
+        (yield self.node)
 
-    def nullable_visit(self, rules: Dict[str, Rule]) -> bool:
+    def nullable_visit(self, rules: Dict[(str, Rule)]) -> bool:
         return True
 
     def initial_names(self) -> AbstractSet[str]:
@@ -365,18 +363,18 @@ class Opt:
 
 
 class Repeat:
-    """Shared base class for x* and x+."""
+    "Shared base class for x* and x+."
 
     def __init__(self, node: Plain):
         self.node = node
-        self.memo: Optional[Tuple[Optional[str], str]] = None
+        self.memo: Optional[Tuple[(Optional[str], str)]] = None
 
     @abstractmethod
-    def nullable_visit(self, rules: Dict[str, Rule]) -> bool:
+    def nullable_visit(self, rules: Dict[(str, Rule)]) -> bool:
         raise NotImplementedError
 
     def __iter__(self) -> Iterator[Plain]:
-        yield self.node
+        (yield self.node)
 
     def initial_names(self) -> AbstractSet[str]:
         return self.node.initial_names()
@@ -385,7 +383,6 @@ class Repeat:
 class Repeat0(Repeat):
     def __str__(self) -> str:
         s = str(self.node)
-        # TODO: Decide whether to use (X)* or X* based on type of X
         if " " in s:
             return f"({s})*"
         else:
@@ -394,14 +391,13 @@ class Repeat0(Repeat):
     def __repr__(self) -> str:
         return f"Repeat0({self.node!r})"
 
-    def nullable_visit(self, rules: Dict[str, Rule]) -> bool:
+    def nullable_visit(self, rules: Dict[(str, Rule)]) -> bool:
         return True
 
 
 class Repeat1(Repeat):
     def __str__(self) -> str:
         s = str(self.node)
-        # TODO: Decide whether to use (X)+ or X+ based on type of X
         if " " in s:
             return f"({s})+"
         else:
@@ -410,7 +406,7 @@ class Repeat1(Repeat):
     def __repr__(self) -> str:
         return f"Repeat1({self.node!r})"
 
-    def nullable_visit(self, rules: Dict[str, Rule]) -> bool:
+    def nullable_visit(self, rules: Dict[(str, Rule)]) -> bool:
         return False
 
 
@@ -425,7 +421,7 @@ class Gather(Repeat):
     def __repr__(self) -> str:
         return f"Gather({self.separator!r}, {self.node!r})"
 
-    def nullable_visit(self, rules: Dict[str, Rule]) -> bool:
+    def nullable_visit(self, rules: Dict[(str, Rule)]) -> bool:
         return False
 
 
@@ -440,9 +436,9 @@ class Group:
         return f"Group({self.rhs!r})"
 
     def __iter__(self) -> Iterator[Rhs]:
-        yield self.rhs
+        (yield self.rhs)
 
-    def nullable_visit(self, rules: Dict[str, Rule]) -> bool:
+    def nullable_visit(self, rules: Dict[(str, Rule)]) -> bool:
         return self.rhs.nullable_visit(rules)
 
     def initial_names(self) -> AbstractSet[str]:
@@ -459,27 +455,27 @@ class Cut:
     def __str__(self) -> str:
         return f"~"
 
-    def __iter__(self) -> Iterator[Tuple[str, str]]:
+    def __iter__(self) -> Iterator[Tuple[(str, str)]]:
         if False:
-            yield
+            (yield)
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Cut):
             return NotImplemented
         return True
 
-    def nullable_visit(self, rules: Dict[str, Rule]) -> bool:
+    def nullable_visit(self, rules: Dict[(str, Rule)]) -> bool:
         return True
 
     def initial_names(self) -> AbstractSet[str]:
         return set()
 
 
-Plain = Union[Leaf, Group]
-Item = Union[Plain, Opt, Repeat, Forced, Lookahead, Rhs, Cut]
-RuleName = Tuple[str, str]
-MetaTuple = Tuple[str, Optional[str]]
+Plain = Union[(Leaf, Group)]
+Item = Union[(Plain, Opt, Repeat, Forced, Lookahead, Rhs, Cut)]
+RuleName = Tuple[(str, str)]
+MetaTuple = Tuple[(str, Optional[str])]
 MetaList = List[MetaTuple]
 RuleList = List[Rule]
 NamedItemList = List[NamedItem]
-LookaheadOrCut = Union[Lookahead, Cut]
+LookaheadOrCut = Union[(Lookahead, Cut)]

@@ -1,5 +1,6 @@
 import sqlite3
 
+
 class MySum:
     def __init__(self):
         self.count = 0
@@ -10,6 +11,7 @@ class MySum:
     def finalize(self):
         return self.count
 
+
 con = sqlite3.connect(":memory:")
 con.create_aggregate("mysum", 1, MySum)
 cur = con.cursor()
@@ -18,5 +20,4 @@ cur.execute("insert into test(i) values (1)")
 cur.execute("insert into test(i) values (2)")
 cur.execute("select mysum(i) from test")
 print(cur.fetchone()[0])
-
 con.close()

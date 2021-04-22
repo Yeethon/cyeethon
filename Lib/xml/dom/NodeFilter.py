@@ -1,27 +1,21 @@
-# This is the Python mapping for interface NodeFilter from
-# DOM2-Traversal-Range. It contains only constants.
-
 class NodeFilter:
-    """
-    This is the DOM2 NodeFilter interface. It contains only constants.
-    """
+    "\n    This is the DOM2 NodeFilter interface. It contains only constants.\n    "
     FILTER_ACCEPT = 1
     FILTER_REJECT = 2
-    FILTER_SKIP   = 3
-
-    SHOW_ALL                    = 0xFFFFFFFF
-    SHOW_ELEMENT                = 0x00000001
-    SHOW_ATTRIBUTE              = 0x00000002
-    SHOW_TEXT                   = 0x00000004
-    SHOW_CDATA_SECTION          = 0x00000008
-    SHOW_ENTITY_REFERENCE       = 0x00000010
-    SHOW_ENTITY                 = 0x00000020
-    SHOW_PROCESSING_INSTRUCTION = 0x00000040
-    SHOW_COMMENT                = 0x00000080
-    SHOW_DOCUMENT               = 0x00000100
-    SHOW_DOCUMENT_TYPE          = 0x00000200
-    SHOW_DOCUMENT_FRAGMENT      = 0x00000400
-    SHOW_NOTATION               = 0x00000800
+    FILTER_SKIP = 3
+    SHOW_ALL = 4294967295
+    SHOW_ELEMENT = 1
+    SHOW_ATTRIBUTE = 2
+    SHOW_TEXT = 4
+    SHOW_CDATA_SECTION = 8
+    SHOW_ENTITY_REFERENCE = 16
+    SHOW_ENTITY = 32
+    SHOW_PROCESSING_INSTRUCTION = 64
+    SHOW_COMMENT = 128
+    SHOW_DOCUMENT = 256
+    SHOW_DOCUMENT_TYPE = 512
+    SHOW_DOCUMENT_FRAGMENT = 1024
+    SHOW_NOTATION = 2048
 
     def acceptNode(self, node):
         raise NotImplementedError

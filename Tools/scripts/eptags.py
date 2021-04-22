@@ -1,32 +1,16 @@
-#! /usr/bin/env python3
-"""Create a TAGS file for Python programs, usable with GNU Emacs.
+"Create a TAGS file for Python programs, usable with GNU Emacs.\n\nusage: eptags pyfiles...\n\nThe output TAGS file is usable with Emacs version 18, 19, 20.\nTagged are:\n - functions (even inside other defs or classes)\n - classes\n\neptags warns about files it cannot open.\neptags will not give warnings about duplicate tags.\n\nBUGS:\n   Because of tag duplication (methods with the same name in different\n   classes), TAGS files are not very useful for most object-oriented\n   python projects.\n"
+import sys, re
 
-usage: eptags pyfiles...
-
-The output TAGS file is usable with Emacs version 18, 19, 20.
-Tagged are:
- - functions (even inside other defs or classes)
- - classes
-
-eptags warns about files it cannot open.
-eptags will not give warnings about duplicate tags.
-
-BUGS:
-   Because of tag duplication (methods with the same name in different
-   classes), TAGS files are not very useful for most object-oriented
-   python projects.
-"""
-import sys,re
-
-expr = r'^[ \t]*(def|class)[ \t]+([a-zA-Z_][a-zA-Z0-9_]*)[ \t]*[:\(]'
+expr = "^[ \\t]*(def|class)[ \\t]+([a-zA-Z_][a-zA-Z0-9_]*)[ \\t]*[:\\(]"
 matcher = re.compile(expr)
 
+
 def treat_file(filename, outfp):
-    """Append tags found in file named 'filename' to the open file 'outfp'"""
+    "Append tags found in file named 'filename' to the open file 'outfp'"
     try:
-        fp = open(filename, 'r')
+        fp = open(filename, "r")
     except OSError:
-        sys.stderr.write('Cannot open %s\n'%filename)
+        sys.stderr.write(("Cannot open %s\n" % filename))
         return
     with fp:
         charno = 0
@@ -40,18 +24,20 @@ def treat_file(filename, outfp):
             lineno = lineno + 1
             m = matcher.search(line)
             if m:
-                tag = m.group(0) + '\177%d,%d\n' % (lineno, charno)
+                tag = m.group(0) + ("\x7f%d,%d\n" % (lineno, charno))
                 tags.append(tag)
                 size = size + len(tag)
             charno = charno + len(line)
-    outfp.write('\f\n%s,%d\n' % (filename,size))
+    outfp.write(("\x0c\n%s,%d\n" % (filename, size)))
     for tag in tags:
         outfp.write(tag)
 
+
 def main():
-    with open('TAGS', 'w') as outfp:
+    with open("TAGS", "w") as outfp:
         for filename in sys.argv[1:]:
             treat_file(filename, outfp)
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
     main()

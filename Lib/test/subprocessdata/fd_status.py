@@ -1,11 +1,4 @@
-"""When called as a script, print a comma-separated list of the open
-file descriptors on stdout.
-
-Usage:
-fd_stats.py: check all file descriptors
-fd_status.py fd1 fd2 ...: check only specified file descriptors
-"""
-
+"When called as a script, print a comma-separated list of the open\nfile descriptors on stdout.\n\nUsage:\nfd_stats.py: check all file descriptors\nfd_status.py fd1 fd2 ...: check only specified file descriptors\n"
 import errno
 import os
 import stat
@@ -28,7 +21,6 @@ if __name__ == "__main__":
             if e.errno == errno.EBADF:
                 continue
             raise
-        # Ignore Solaris door files
         if not stat.S_ISDOOR(st.st_mode):
             fds.append(fd)
-    print(','.join(map(str, fds)))
+    print(",".join(map(str, fds)))

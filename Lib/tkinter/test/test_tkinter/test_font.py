@@ -4,12 +4,11 @@ from tkinter import font
 from test.support import requires, run_unittest, gc_collect, ALWAYS_EQ
 from tkinter.test.support import AbstractTkTest, AbstractDefaultRootTest
 
-requires('gui')
-
+requires("gui")
 fontname = "TkDefaultFont"
 
-class FontTest(AbstractTkTest, unittest.TestCase):
 
+class FontTest(AbstractTkTest, unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         AbstractTkTest.setUpClass.__func__(cls)
@@ -20,42 +19,46 @@ class FontTest(AbstractTkTest, unittest.TestCase):
 
     def test_configure(self):
         options = self.font.configure()
-        self.assertGreaterEqual(set(options),
-            {'family', 'size', 'weight', 'slant', 'underline', 'overstrike'})
+        self.assertGreaterEqual(
+            set(options),
+            {"family", "size", "weight", "slant", "underline", "overstrike"},
+        )
         for key in options:
             self.assertEqual(self.font.cget(key), options[key])
             self.assertEqual(self.font[key], options[key])
-        for key in 'family', 'weight', 'slant':
+        for key in ("family", "weight", "slant"):
             self.assertIsInstance(options[key], str)
             self.assertIsInstance(self.font.cget(key), str)
             self.assertIsInstance(self.font[key], str)
         sizetype = int if self.wantobjects else str
-        for key in 'size', 'underline', 'overstrike':
+        for key in ("size", "underline", "overstrike"):
             self.assertIsInstance(options[key], sizetype)
             self.assertIsInstance(self.font.cget(key), sizetype)
             self.assertIsInstance(self.font[key], sizetype)
 
     def test_unicode_family(self):
-        family = 'MS \u30b4\u30b7\u30c3\u30af'
+        family = "MS ゴシック"
         try:
             f = font.Font(root=self.root, family=family, exists=True)
         except tkinter.TclError:
             f = font.Font(root=self.root, family=family, exists=False)
-        self.assertEqual(f.cget('family'), family)
+        self.assertEqual(f.cget("family"), family)
         del f
         gc_collect()
 
     def test_actual(self):
         options = self.font.actual()
-        self.assertGreaterEqual(set(options),
-            {'family', 'size', 'weight', 'slant', 'underline', 'overstrike'})
+        self.assertGreaterEqual(
+            set(options),
+            {"family", "size", "weight", "slant", "underline", "overstrike"},
+        )
         for key in options:
             self.assertEqual(self.font.actual(key), options[key])
-        for key in 'family', 'weight', 'slant':
+        for key in ("family", "weight", "slant"):
             self.assertIsInstance(options[key], str)
             self.assertIsInstance(self.font.actual(key), str)
         sizetype = int if self.wantobjects else str
-        for key in 'size', 'underline', 'overstrike':
+        for key in ("size", "underline", "overstrike"):
             self.assertIsInstance(options[key], sizetype)
             self.assertIsInstance(self.font.actual(key), sizetype)
 
@@ -69,10 +72,8 @@ class FontTest(AbstractTkTest, unittest.TestCase):
         self.assertIsNot(font1, font2)
         self.assertEqual(font1, font2)
         self.assertNotEqual(font1, font1.copy())
-
         self.assertNotEqual(font1, 0)
         self.assertEqual(font1, ALWAYS_EQ)
-
         root2 = tkinter.Tk()
         self.addCleanup(root2.destroy)
         font3 = font.Font(root=root2, name=fontname, exists=True)
@@ -80,12 +81,13 @@ class FontTest(AbstractTkTest, unittest.TestCase):
         self.assertNotEqual(font1, font3)
 
     def test_measure(self):
-        self.assertIsInstance(self.font.measure('abc'), int)
+        self.assertIsInstance(self.font.measure("abc"), int)
 
     def test_metrics(self):
         metrics = self.font.metrics()
-        self.assertGreaterEqual(set(metrics),
-            {'ascent', 'descent', 'linespace', 'fixed'})
+        self.assertGreaterEqual(
+            set(metrics), {"ascent", "descent", "linespace", "fixed"}
+        )
         for key in metrics:
             self.assertEqual(self.font.metrics(key), metrics[key])
             self.assertIsInstance(metrics[key], int)
@@ -114,13 +116,10 @@ class FontTest(AbstractTkTest, unittest.TestCase):
         self.assertEqual(testfont.name, fontname)
 
     def test_repr(self):
-        self.assertEqual(
-            repr(self.font), f'<tkinter.font.Font object {fontname!r}>'
-        )
+        self.assertEqual(repr(self.font), f"<tkinter.font.Font object {fontname!r}>")
 
 
 class DefaultRootTest(AbstractDefaultRootTest, unittest.TestCase):
-
     def test_families(self):
         self.assertRaises(RuntimeError, font.families)
         root = tkinter.Tk()
@@ -160,6 +159,5 @@ class DefaultRootTest(AbstractDefaultRootTest, unittest.TestCase):
 
 
 tests_gui = (FontTest, DefaultRootTest)
-
 if __name__ == "__main__":
     run_unittest(*tests_gui)

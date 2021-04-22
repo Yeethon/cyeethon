@@ -5,7 +5,6 @@ import pathlib
 import tempfile
 import textwrap
 import contextlib
-
 from test.support.os_helper import FS_NONASCII
 from typing import Dict, Union
 
@@ -14,7 +13,7 @@ from typing import Dict, Union
 def tempdir():
     tmpdir = tempfile.mkdtemp()
     try:
-        yield pathlib.Path(tmpdir)
+        (yield pathlib.Path(tmpdir))
     finally:
         shutil.rmtree(tmpdir)
 
@@ -23,7 +22,7 @@ def tempdir():
 def save_cwd():
     orig = os.getcwd()
     try:
-        yield
+        (yield)
     finally:
         os.chdir(orig)
 
@@ -33,14 +32,14 @@ def tempdir_as_cwd():
     with tempdir() as tmp:
         with save_cwd():
             os.chdir(str(tmp))
-            yield tmp
+            (yield tmp)
 
 
 @contextlib.contextmanager
 def install_finder(finder):
     sys.meta_path.append(finder)
     try:
-        yield
+        (yield)
     finally:
         sys.meta_path.remove(finder)
 
@@ -63,7 +62,7 @@ class OnSysPath(Fixtures):
     def add_sys_path(dir):
         sys.path[:0] = [str(dir)]
         try:
-            yield
+            (yield)
         finally:
             sys.path.remove(str(dir))
 
@@ -72,32 +71,17 @@ class OnSysPath(Fixtures):
         self.fixtures.enter_context(self.add_sys_path(self.site_dir))
 
 
-# Except for python/mypy#731, prefer to define
-# FilesDef = Dict[str, Union['FilesDef', str]]
-FilesDef = Dict[str, Union[Dict[str, Union[Dict[str, str], str]], str]]
+FilesDef = Dict[(str, Union[(Dict[(str, Union[(Dict[(str, str)], str)])], str)])]
 
 
 class DistInfoPkg(OnSysPath, SiteDir):
     files: FilesDef = {
         "distinfo_pkg-1.0.0.dist-info": {
-            "METADATA": """
-                Name: distinfo-pkg
-                Author: Steven Ma
-                Version: 1.0.0
-                Requires-Dist: wheel >= 1.0
-                Requires-Dist: pytest; extra == 'test'
-                """,
+            "METADATA": "\n                Name: distinfo-pkg\n                Author: Steven Ma\n                Version: 1.0.0\n                Requires-Dist: wheel >= 1.0\n                Requires-Dist: pytest; extra == 'test'\n                ",
             "RECORD": "mod.py,sha256=abc,20\n",
-            "entry_points.txt": """
-                [entries]
-                main = mod:main
-                ns:sub = mod:main
-            """,
+            "entry_points.txt": "\n                [entries]\n                main = mod:main\n                ns:sub = mod:main\n            ",
         },
-        "mod.py": """
-            def main():
-                print("hello world")
-            """,
+        "mod.py": '\n            def main():\n                print("hello world")\n            ',
     }
 
     def setUp(self):
@@ -108,11 +92,8 @@ class DistInfoPkg(OnSysPath, SiteDir):
 class DistInfoPkgWithDot(OnSysPath, SiteDir):
     files: FilesDef = {
         "pkg_dot-1.0.0.dist-info": {
-            "METADATA": """
-                Name: pkg.dot
-                Version: 1.0.0
-                """,
-        },
+            "METADATA": "\n                Name: pkg.dot\n                Version: 1.0.0\n                "
+        }
     }
 
     def setUp(self):
@@ -123,16 +104,10 @@ class DistInfoPkgWithDot(OnSysPath, SiteDir):
 class DistInfoPkgWithDotLegacy(OnSysPath, SiteDir):
     files: FilesDef = {
         "pkg.dot-1.0.0.dist-info": {
-            "METADATA": """
-                Name: pkg.dot
-                Version: 1.0.0
-                """,
+            "METADATA": "\n                Name: pkg.dot\n                Version: 1.0.0\n                "
         },
         "pkg.lot.egg-info": {
-            "METADATA": """
-                Name: pkg.lot
-                Version: 1.0.0
-                """,
+            "METADATA": "\n                Name: pkg.lot\n                Version: 1.0.0\n                "
         },
     }
 
@@ -150,33 +125,13 @@ class DistInfoPkgOffPath(SiteDir):
 class EggInfoPkg(OnSysPath, SiteDir):
     files: FilesDef = {
         "egginfo_pkg.egg-info": {
-            "PKG-INFO": """
-                Name: egginfo-pkg
-                Author: Steven Ma
-                License: Unknown
-                Version: 1.0.0
-                Classifier: Intended Audience :: Developers
-                Classifier: Topic :: Software Development :: Libraries
-                """,
-            "SOURCES.txt": """
-                mod.py
-                egginfo_pkg.egg-info/top_level.txt
-            """,
-            "entry_points.txt": """
-                [entries]
-                main = mod:main
-            """,
-            "requires.txt": """
-                wheel >= 1.0; python_version >= "2.7"
-                [test]
-                pytest
-            """,
+            "PKG-INFO": "\n                Name: egginfo-pkg\n                Author: Steven Ma\n                License: Unknown\n                Version: 1.0.0\n                Classifier: Intended Audience :: Developers\n                Classifier: Topic :: Software Development :: Libraries\n                ",
+            "SOURCES.txt": "\n                mod.py\n                egginfo_pkg.egg-info/top_level.txt\n            ",
+            "entry_points.txt": "\n                [entries]\n                main = mod:main\n            ",
+            "requires.txt": '\n                wheel >= 1.0; python_version >= "2.7"\n                [test]\n                pytest\n            ',
             "top_level.txt": "mod\n",
         },
-        "mod.py": """
-            def main():
-                print("hello world")
-            """,
+        "mod.py": '\n            def main():\n                print("hello world")\n            ',
     }
 
     def setUp(self):
@@ -186,18 +141,7 @@ class EggInfoPkg(OnSysPath, SiteDir):
 
 class EggInfoFile(OnSysPath, SiteDir):
     files: FilesDef = {
-        "egginfo_file.egg-info": """
-            Metadata-Version: 1.0
-            Name: egginfo_file
-            Version: 0.1
-            Summary: An example package
-            Home-page: www.example.com
-            Author: Eric Haffa-Vee
-            Author-email: eric@example.coms
-            License: UNKNOWN
-            Description: UNKNOWN
-            Platform: UNKNOWN
-            """,
+        "egginfo_file.egg-info": "\n            Metadata-Version: 1.0\n            Name: egginfo_file\n            Version: 0.1\n            Summary: An example package\n            Home-page: www.example.com\n            Author: Eric Haffa-Vee\n            Author-email: eric@example.coms\n            License: UNKNOWN\n            Description: UNKNOWN\n            Platform: UNKNOWN\n            "
     }
 
     def setUp(self):
@@ -207,10 +151,7 @@ class EggInfoFile(OnSysPath, SiteDir):
 
 class LocalPackage:
     files: FilesDef = {
-        "setup.py": """
-            import setuptools
-            setuptools.setup(name="local-pkg", version="2.0.1")
-            """,
+        "setup.py": '\n            import setuptools\n            setuptools.setup(name="local-pkg", version="2.0.1")\n            '
     }
 
     def setUp(self):
@@ -221,37 +162,18 @@ class LocalPackage:
 
 
 def build_files(file_defs, prefix=pathlib.Path()):
-    """Build a set of files/directories, as described by the
-
-    file_defs dictionary.  Each key/value pair in the dictionary is
-    interpreted as a filename/contents pair.  If the contents value is a
-    dictionary, a directory is created, and the dictionary interpreted
-    as the files within it, recursively.
-
-    For example:
-
-    {"README.txt": "A README file",
-     "foo": {
-        "__init__.py": "",
-        "bar": {
-            "__init__.py": "",
-        },
-        "baz.py": "# Some code",
-     }
-    }
-    """
-    for name, contents in file_defs.items():
+    'Build a set of files/directories, as described by the\n\n    file_defs dictionary.  Each key/value pair in the dictionary is\n    interpreted as a filename/contents pair.  If the contents value is a\n    dictionary, a directory is created, and the dictionary interpreted\n    as the files within it, recursively.\n\n    For example:\n\n    {"README.txt": "A README file",\n     "foo": {\n        "__init__.py": "",\n        "bar": {\n            "__init__.py": "",\n        },\n        "baz.py": "# Some code",\n     }\n    }\n    '
+    for (name, contents) in file_defs.items():
         full_name = prefix / name
         if isinstance(contents, dict):
             full_name.mkdir()
             build_files(contents, prefix=full_name)
+        elif isinstance(contents, bytes):
+            with full_name.open("wb") as f:
+                f.write(contents)
         else:
-            if isinstance(contents, bytes):
-                with full_name.open('wb') as f:
-                    f.write(contents)
-            else:
-                with full_name.open('w', encoding='utf-8') as f:
-                    f.write(DALS(contents))
+            with full_name.open("w", encoding="utf-8") as f:
+                f.write(DALS(contents))
 
 
 class FileBuilder:

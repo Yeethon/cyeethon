@@ -1,76 +1,40 @@
-"""This is a sample module that doesn't really test anything all that
-   interesting.
-
-It simply has a few tests, some of which succeed and some of which fail.
-
-It's important that the numbers remain constant as another test is
-testing the running of these tests.
-
-
->>> 2+2
-4
-"""
+"This is a sample module that doesn't really test anything all that\n   interesting.\n\nIt simply has a few tests, some of which succeed and some of which fail.\n\nIt's important that the numbers remain constant as another test is\ntesting the running of these tests.\n\n\n>>> 2+2\n4\n"
 
 
 def foo():
-    """
+    "\n\n    >>> 2+2\n    5\n\n    >>> 2+2\n    4\n    "
 
-    >>> 2+2
-    5
-
-    >>> 2+2
-    4
-    """
 
 def bar():
-    """
+    "\n\n    >>> 2+2\n    4\n    "
 
-    >>> 2+2
-    4
-    """
 
 def test_silly_setup():
-    """
+    "\n\n    >>> import test.test_doctest\n    >>> test.test_doctest.sillySetup\n    True\n    "
 
-    >>> import test.test_doctest
-    >>> test.test_doctest.sillySetup
-    True
-    """
 
 def w_blank():
-    """
-    >>> if 1:
-    ...    print('a')
-    ...    print()
-    ...    print('b')
-    a
-    <BLANKLINE>
-    b
-    """
+    "\n    >>> if 1:\n    ...    print('a')\n    ...    print()\n    ...    print('b')\n    a\n    <BLANKLINE>\n    b\n    "
+
 
 x = 1
+
+
 def x_is_one():
-    """
-    >>> x
-    1
-    """
+    "\n    >>> x\n    1\n    "
+
 
 def y_is_one():
-    """
-    >>> y
-    1
-    """
+    "\n    >>> y\n    1\n    "
 
-__test__ = {'good': """
-                    >>> 42
-                    42
-                    """,
-            'bad':  """
-                    >>> 42
-                    666
-                    """,
-           }
+
+__test__ = {
+    "good": "\n                    >>> 42\n                    42\n                    ",
+    "bad": "\n                    >>> 42\n                    666\n                    ",
+}
+
 
 def test_suite():
     import doctest
+
     return doctest.DocTestSuite()

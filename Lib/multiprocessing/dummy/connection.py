@@ -1,22 +1,10 @@
-#
-# Analogue of `multiprocessing.connection` which uses queues instead of sockets
-#
-# multiprocessing/dummy/connection.py
-#
-# Copyright (c) 2006-2008, R Oudkerk
-# Licensed to PSF under a Contributor Agreement.
-#
-
-__all__ = [ 'Client', 'Listener', 'Pipe' ]
-
+__all__ = ["Client", "Listener", "Pipe"]
 from queue import Queue
-
 
 families = [None]
 
 
 class Listener(object):
-
     def __init__(self, address=None, family=None, backlog=1):
         self._backlog_queue = Queue(backlog)
 
@@ -38,18 +26,17 @@ class Listener(object):
 
 
 def Client(address):
-    _in, _out = Queue(), Queue()
+    (_in, _out) = (Queue(), Queue())
     address.put((_out, _in))
     return Connection(_in, _out)
 
 
 def Pipe(duplex=True):
-    a, b = Queue(), Queue()
-    return Connection(a, b), Connection(b, a)
+    (a, b) = (Queue(), Queue())
+    return (Connection(a, b), Connection(b, a))
 
 
 class Connection(object):
-
     def __init__(self, _in, _out):
         self._out = _out
         self._in = _in

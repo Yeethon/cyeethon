@@ -1,7 +1,4 @@
-"""Fixer that replaces deprecated unittest method names."""
-
-# Author: Ezio Melotti
-
+"Fixer that replaces deprecated unittest method names."
 from ..fixer_base import BaseFix
 from ..fixer_util import Name
 
@@ -24,10 +21,10 @@ NAMES = dict(
 
 
 class FixAsserts(BaseFix):
-
-    PATTERN = """
-              power< any+ trailer< '.' meth=(%s)> any* >
-              """ % '|'.join(map(repr, NAMES))
+    PATTERN = (
+        "\n              power< any+ trailer< '.' meth=(%s)> any* >\n              "
+        % "|".join(map(repr, NAMES))
+    )
 
     def transform(self, node, results):
         name = results["meth"][0]

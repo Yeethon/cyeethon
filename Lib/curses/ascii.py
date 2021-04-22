@@ -1,49 +1,76 @@
-"""Constants and membership tests for ASCII characters"""
-
-NUL     = 0x00  # ^@
-SOH     = 0x01  # ^A
-STX     = 0x02  # ^B
-ETX     = 0x03  # ^C
-EOT     = 0x04  # ^D
-ENQ     = 0x05  # ^E
-ACK     = 0x06  # ^F
-BEL     = 0x07  # ^G
-BS      = 0x08  # ^H
-TAB     = 0x09  # ^I
-HT      = 0x09  # ^I
-LF      = 0x0a  # ^J
-NL      = 0x0a  # ^J
-VT      = 0x0b  # ^K
-FF      = 0x0c  # ^L
-CR      = 0x0d  # ^M
-SO      = 0x0e  # ^N
-SI      = 0x0f  # ^O
-DLE     = 0x10  # ^P
-DC1     = 0x11  # ^Q
-DC2     = 0x12  # ^R
-DC3     = 0x13  # ^S
-DC4     = 0x14  # ^T
-NAK     = 0x15  # ^U
-SYN     = 0x16  # ^V
-ETB     = 0x17  # ^W
-CAN     = 0x18  # ^X
-EM      = 0x19  # ^Y
-SUB     = 0x1a  # ^Z
-ESC     = 0x1b  # ^[
-FS      = 0x1c  # ^\
-GS      = 0x1d  # ^]
-RS      = 0x1e  # ^^
-US      = 0x1f  # ^_
-SP      = 0x20  # space
-DEL     = 0x7f  # delete
-
+"Constants and membership tests for ASCII characters"
+NUL = 0
+SOH = 1
+STX = 2
+ETX = 3
+EOT = 4
+ENQ = 5
+ACK = 6
+BEL = 7
+BS = 8
+TAB = 9
+HT = 9
+LF = 10
+NL = 10
+VT = 11
+FF = 12
+CR = 13
+SO = 14
+SI = 15
+DLE = 16
+DC1 = 17
+DC2 = 18
+DC3 = 19
+DC4 = 20
+NAK = 21
+SYN = 22
+ETB = 23
+CAN = 24
+EM = 25
+SUB = 26
+ESC = 27
+FS = 28
+GS = 29
+RS = 30
+US = 31
+SP = 32
+DEL = 127
 controlnames = [
-"NUL", "SOH", "STX", "ETX", "EOT", "ENQ", "ACK", "BEL",
-"BS",  "HT",  "LF",  "VT",  "FF",  "CR",  "SO",  "SI",
-"DLE", "DC1", "DC2", "DC3", "DC4", "NAK", "SYN", "ETB",
-"CAN", "EM",  "SUB", "ESC", "FS",  "GS",  "RS",  "US",
-"SP"
+    "NUL",
+    "SOH",
+    "STX",
+    "ETX",
+    "EOT",
+    "ENQ",
+    "ACK",
+    "BEL",
+    "BS",
+    "HT",
+    "LF",
+    "VT",
+    "FF",
+    "CR",
+    "SO",
+    "SI",
+    "DLE",
+    "DC1",
+    "DC2",
+    "DC3",
+    "DC4",
+    "NAK",
+    "SYN",
+    "ETB",
+    "CAN",
+    "EM",
+    "SUB",
+    "ESC",
+    "FS",
+    "GS",
+    "RS",
+    "US",
+    "SP",
 ]
+
 
 def _ctoi(c):
     if type(c) == type(""):
@@ -51,49 +78,96 @@ def _ctoi(c):
     else:
         return c
 
-def isalnum(c): return isalpha(c) or isdigit(c)
-def isalpha(c): return isupper(c) or islower(c)
-def isascii(c): return 0 <= _ctoi(c) <= 127          # ?
-def isblank(c): return _ctoi(c) in (9, 32)
-def iscntrl(c): return 0 <= _ctoi(c) <= 31 or _ctoi(c) == 127
-def isdigit(c): return 48 <= _ctoi(c) <= 57
-def isgraph(c): return 33 <= _ctoi(c) <= 126
-def islower(c): return 97 <= _ctoi(c) <= 122
-def isprint(c): return 32 <= _ctoi(c) <= 126
-def ispunct(c): return isgraph(c) and not isalnum(c)
-def isspace(c): return _ctoi(c) in (9, 10, 11, 12, 13, 32)
-def isupper(c): return 65 <= _ctoi(c) <= 90
-def isxdigit(c): return isdigit(c) or \
-    (65 <= _ctoi(c) <= 70) or (97 <= _ctoi(c) <= 102)
-def isctrl(c): return 0 <= _ctoi(c) < 32
-def ismeta(c): return _ctoi(c) > 127
+
+def isalnum(c):
+    return isalpha(c) or isdigit(c)
+
+
+def isalpha(c):
+    return isupper(c) or islower(c)
+
+
+def isascii(c):
+    return 0 <= _ctoi(c) <= 127
+
+
+def isblank(c):
+    return _ctoi(c) in (9, 32)
+
+
+def iscntrl(c):
+    return (0 <= _ctoi(c) <= 31) or (_ctoi(c) == 127)
+
+
+def isdigit(c):
+    return 48 <= _ctoi(c) <= 57
+
+
+def isgraph(c):
+    return 33 <= _ctoi(c) <= 126
+
+
+def islower(c):
+    return 97 <= _ctoi(c) <= 122
+
+
+def isprint(c):
+    return 32 <= _ctoi(c) <= 126
+
+
+def ispunct(c):
+    return isgraph(c) and (not isalnum(c))
+
+
+def isspace(c):
+    return _ctoi(c) in (9, 10, 11, 12, 13, 32)
+
+
+def isupper(c):
+    return 65 <= _ctoi(c) <= 90
+
+
+def isxdigit(c):
+    return isdigit(c) or (65 <= _ctoi(c) <= 70) or (97 <= _ctoi(c) <= 102)
+
+
+def isctrl(c):
+    return 0 <= _ctoi(c) < 32
+
+
+def ismeta(c):
+    return _ctoi(c) > 127
+
 
 def ascii(c):
     if type(c) == type(""):
-        return chr(_ctoi(c) & 0x7f)
+        return chr((_ctoi(c) & 127))
     else:
-        return _ctoi(c) & 0x7f
+        return _ctoi(c) & 127
+
 
 def ctrl(c):
     if type(c) == type(""):
-        return chr(_ctoi(c) & 0x1f)
+        return chr((_ctoi(c) & 31))
     else:
-        return _ctoi(c) & 0x1f
+        return _ctoi(c) & 31
+
 
 def alt(c):
     if type(c) == type(""):
-        return chr(_ctoi(c) | 0x80)
+        return chr((_ctoi(c) | 128))
     else:
-        return _ctoi(c) | 0x80
+        return _ctoi(c) | 128
+
 
 def unctrl(c):
     bits = _ctoi(c)
-    if bits == 0x7f:
+    if bits == 127:
         rep = "^?"
-    elif isprint(bits & 0x7f):
-        rep = chr(bits & 0x7f)
+    elif isprint((bits & 127)):
+        rep = chr((bits & 127))
     else:
-        rep = "^" + chr(((bits & 0x7f) | 0x20) + 0x20)
-    if bits & 0x80:
+        rep = "^" + chr((((bits & 127) | 32) + 32))
+    if bits & 128:
         return "!" + rep
     return rep

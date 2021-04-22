@@ -1,64 +1,59 @@
-"""Weak reference support for Python.
-
-This module is an implementation of PEP 205:
-
-http://www.python.org/dev/peps/pep-0205/
-"""
-
-# Naming convention: Variables named "wr" are weak reference objects;
-# they are called this instead of "ref" to avoid name collisions with
-# the module-global ref() function imported from _weakref.
-
+"Weak reference support for Python.\n\nThis module is an implementation of PEP 205:\n\nhttp://www.python.org/dev/peps/pep-0205/\n"
 from _weakref import (
-     getweakrefcount,
-     getweakrefs,
-     ref,
-     proxy,
-     CallableProxyType,
-     ProxyType,
-     ReferenceType,
-     _remove_dead_weakref)
-
+    getweakrefcount,
+    getweakrefs,
+    ref,
+    proxy,
+    CallableProxyType,
+    ProxyType,
+    ReferenceType,
+    _remove_dead_weakref,
+)
 from _weakrefset import WeakSet, _IterationGuard
-
-import _collections_abc  # Import after _weakref to avoid circular import.
+import _collections_abc
 import sys
 import itertools
 
 ProxyTypes = (ProxyType, CallableProxyType)
-
-__all__ = ["ref", "proxy", "getweakrefcount", "getweakrefs",
-           "WeakKeyDictionary", "ReferenceType", "ProxyType",
-           "CallableProxyType", "ProxyTypes", "WeakValueDictionary",
-           "WeakSet", "WeakMethod", "finalize"]
-
-
+__all__ = [
+    "ref",
+    "proxy",
+    "getweakrefcount",
+    "getweakrefs",
+    "WeakKeyDictionary",
+    "ReferenceType",
+    "ProxyType",
+    "CallableProxyType",
+    "ProxyTypes",
+    "WeakValueDictionary",
+    "WeakSet",
+    "WeakMethod",
+    "finalize",
+]
 _collections_abc.Set.register(WeakSet)
 _collections_abc.MutableSet.register(WeakSet)
 
-class WeakMethod(ref):
-    """
-    A custom `weakref.ref` subclass which simulates a weak reference to
-    a bound method, working around the lifetime problem of bound methods.
-    """
 
-    __slots__ = "_func_ref", "_meth_type", "_alive", "__weakref__"
+class WeakMethod(ref):
+    "\n    A custom `weakref.ref` subclass which simulates a weak reference to\n    a bound method, working around the lifetime problem of bound methods.\n    "
+    __slots__ = ("_func_ref", "_meth_type", "_alive", "__weakref__")
 
     def __new__(cls, meth, callback=None):
         try:
             obj = meth.__self__
             func = meth.__func__
         except AttributeError:
-            raise TypeError("argument should be a bound method, not {}"
-                            .format(type(meth))) from None
+            raise TypeError(
+                "argument should be a bound method, not {}".format(type(meth))
+            ) from None
+
         def _cb(arg):
-            # The self-weakref trick is needed to avoid creating a reference
-            # cycle.
             self = self_wr()
             if self._alive:
                 self._alive = False
                 if callback is not None:
                     callback(self)
+
         self = ref.__new__(cls, obj, _cb)
         self._func_ref = ref(func, _cb)
         self._meth_type = type(meth)
@@ -69,38 +64,29 @@ class WeakMethod(ref):
     def __call__(self):
         obj = super().__call__()
         func = self._func_ref()
-        if obj is None or func is None:
+        if (obj is None) or (func is None):
             return None
         return self._meth_type(func, obj)
 
     def __eq__(self, other):
         if isinstance(other, WeakMethod):
-            if not self._alive or not other._alive:
+            if (not self._alive) or (not other._alive):
                 return self is other
-            return ref.__eq__(self, other) and self._func_ref == other._func_ref
+            return ref.__eq__(self, other) and (self._func_ref == other._func_ref)
         return NotImplemented
 
     def __ne__(self, other):
         if isinstance(other, WeakMethod):
-            if not self._alive or not other._alive:
+            if (not self._alive) or (not other._alive):
                 return self is not other
-            return ref.__ne__(self, other) or self._func_ref != other._func_ref
+            return ref.__ne__(self, other) or (self._func_ref != other._func_ref)
         return NotImplemented
 
     __hash__ = ref.__hash__
 
 
 class WeakValueDictionary(_collections_abc.MutableMapping):
-    """Mapping class that references values weakly.
-
-    Entries in the dictionary will be discarded when no strong
-    reference to the value exists anymore
-    """
-    # We inherit the constructor without worrying about the input
-    # dictionary; since it uses our .update() method, we get the right
-    # checks (if the other dictionary is a WeakValueDictionary,
-    # objects are unwrapped on the way out, and we always wrap on the
-    # way in).
+    "Mapping class that references values weakly.\n\n    Entries in the dictionary will be discarded when no strong\n    reference to the value exists anymore\n    "
 
     def __init__(self, other=(), /, **kw):
         def remove(wr, selfref=ref(self), _atomic_removal=_remove_dead_weakref):
@@ -109,11 +95,9 @@ class WeakValueDictionary(_collections_abc.MutableMapping):
                 if self._iterating:
                     self._pending_removals.append(wr.key)
                 else:
-                    # Atomic removal is necessary since this function
-                    # can be called asynchronously by the GC
                     _atomic_removal(self.data, wr.key)
+
         self._remove = remove
-        # A list of keys to be removed
         self._pending_removals = []
         self._iterating = set()
         self.data = {}
@@ -122,8 +106,6 @@ class WeakValueDictionary(_collections_abc.MutableMapping):
     def _commit_removals(self):
         l = self._pending_removals
         d = self.data
-        # We shouldn't encounter any KeyError, because this method should
-        # always be called *before* mutating the dict.
         while l:
             key = l.pop()
             _remove_dead_weakref(d, key)
@@ -169,7 +151,7 @@ class WeakValueDictionary(_collections_abc.MutableMapping):
             self._commit_removals()
         new = WeakValueDictionary()
         with _IterationGuard(self):
-            for key, wr in self.data.items():
+            for (key, wr) in self.data.items():
                 o = wr()
                 if o is not None:
                     new[key] = o
@@ -179,11 +161,12 @@ class WeakValueDictionary(_collections_abc.MutableMapping):
 
     def __deepcopy__(self, memo):
         from copy import deepcopy
+
         if self._pending_removals:
             self._commit_removals()
         new = self.__class__()
         with _IterationGuard(self):
-            for key, wr in self.data.items():
+            for (key, wr) in self.data.items():
                 o = wr()
                 if o is not None:
                     new[deepcopy(key, memo)] = o
@@ -199,7 +182,6 @@ class WeakValueDictionary(_collections_abc.MutableMapping):
         else:
             o = wr()
             if o is None:
-                # This should only happen
                 return default
             else:
                 return o
@@ -208,35 +190,27 @@ class WeakValueDictionary(_collections_abc.MutableMapping):
         if self._pending_removals:
             self._commit_removals()
         with _IterationGuard(self):
-            for k, wr in self.data.items():
+            for (k, wr) in self.data.items():
                 v = wr()
                 if v is not None:
-                    yield k, v
+                    (yield (k, v))
 
     def keys(self):
         if self._pending_removals:
             self._commit_removals()
         with _IterationGuard(self):
-            for k, wr in self.data.items():
+            for (k, wr) in self.data.items():
                 if wr() is not None:
-                    yield k
+                    (yield k)
 
     __iter__ = keys
 
     def itervaluerefs(self):
-        """Return an iterator that yields the weak references to the values.
-
-        The references are not guaranteed to be 'live' at the time
-        they are used, so the result of calling the references needs
-        to be checked before being used.  This can be used to avoid
-        creating references that will cause the garbage collector to
-        keep the values around longer than needed.
-
-        """
+        "Return an iterator that yields the weak references to the values.\n\n        The references are not guaranteed to be 'live' at the time\n        they are used, so the result of calling the references needs\n        to be checked before being used.  This can be used to avoid\n        creating references that will cause the garbage collector to\n        keep the values around longer than needed.\n\n        "
         if self._pending_removals:
             self._commit_removals()
         with _IterationGuard(self):
-            yield from self.data.values()
+            (yield from self.data.values())
 
     def values(self):
         if self._pending_removals:
@@ -245,16 +219,16 @@ class WeakValueDictionary(_collections_abc.MutableMapping):
             for wr in self.data.values():
                 obj = wr()
                 if obj is not None:
-                    yield obj
+                    (yield obj)
 
     def popitem(self):
         if self._pending_removals:
             self._commit_removals()
         while True:
-            key, wr = self.data.popitem()
+            (key, wr) = self.data.popitem()
             o = wr()
             if o is not None:
-                return key, o
+                return (key, o)
 
     def pop(self, key, *args):
         if self._pending_removals:
@@ -291,21 +265,13 @@ class WeakValueDictionary(_collections_abc.MutableMapping):
         if other is not None:
             if not hasattr(other, "items"):
                 other = dict(other)
-            for key, o in other.items():
+            for (key, o) in other.items():
                 d[key] = KeyedRef(o, self._remove, key)
-        for key, o in kwargs.items():
+        for (key, o) in kwargs.items():
             d[key] = KeyedRef(o, self._remove, key)
 
     def valuerefs(self):
-        """Return a list of weak references to the values.
-
-        The references are not guaranteed to be 'live' at the time
-        they are used, so the result of calling the references needs
-        to be checked before being used.  This can be used to avoid
-        creating references that will cause the garbage collector to
-        keep the values around longer than needed.
-
-        """
+        "Return a list of weak references to the values.\n\n        The references are not guaranteed to be 'live' at the time\n        they are used, so the result of calling the references needs\n        to be checked before being used.  This can be used to avoid\n        creating references that will cause the garbage collector to\n        keep the values around longer than needed.\n\n        "
         if self._pending_removals:
             self._commit_removals()
         return list(self.data.values())
@@ -331,16 +297,8 @@ class WeakValueDictionary(_collections_abc.MutableMapping):
 
 
 class KeyedRef(ref):
-    """Specialized reference that includes a key corresponding to the value.
-
-    This is used in the WeakValueDictionary to avoid having to create
-    a function object for each key stored in the mapping.  A shared
-    callback object can use the 'key' attribute of a KeyedRef instead
-    of getting a reference to the key from an enclosing scope.
-
-    """
-
-    __slots__ = "key",
+    "Specialized reference that includes a key corresponding to the value.\n\n    This is used in the WeakValueDictionary to avoid having to create\n    a function object for each key stored in the mapping.  A shared\n    callback object can use the 'key' attribute of a KeyedRef instead\n    of getting a reference to the key from an enclosing scope.\n\n    "
+    __slots__ = ("key",)
 
     def __new__(type, ob, callback, key):
         self = ref.__new__(type, ob, callback)
@@ -352,18 +310,11 @@ class KeyedRef(ref):
 
 
 class WeakKeyDictionary(_collections_abc.MutableMapping):
-    """ Mapping class that references keys weakly.
-
-    Entries in the dictionary will be discarded when there is no
-    longer a strong reference to the key. This can be used to
-    associate additional data with an object owned by other parts of
-    an application without adding attributes to those objects. This
-    can be especially useful with objects that override attribute
-    accesses.
-    """
+    " Mapping class that references keys weakly.\n\n    Entries in the dictionary will be discarded when there is no\n    longer a strong reference to the key. This can be used to\n    associate additional data with an object owned by other parts of\n    an application without adding attributes to those objects. This\n    can be especially useful with objects that override attribute\n    accesses.\n    "
 
     def __init__(self, dict=None):
         self.data = {}
+
         def remove(k, selfref=ref(self)):
             self = selfref()
             if self is not None:
@@ -371,8 +322,8 @@ class WeakKeyDictionary(_collections_abc.MutableMapping):
                     self._pending_removals.append(k)
                 else:
                     del self.data[k]
+
         self._remove = remove
-        # A list of dead weakrefs (keys to be removed)
         self._pending_removals = []
         self._iterating = set()
         self._dirty_len = False
@@ -380,10 +331,6 @@ class WeakKeyDictionary(_collections_abc.MutableMapping):
             self.update(dict)
 
     def _commit_removals(self):
-        # NOTE: We don't need to call this method before mutating the dict,
-        # because a dead weakref never compares equal to a live weakref,
-        # even if they happened to refer to equal objects.
-        # However, it means keys may already have been removed.
         l = self._pending_removals
         d = self.data
         while l:
@@ -394,7 +341,7 @@ class WeakKeyDictionary(_collections_abc.MutableMapping):
 
     def _scrub_removals(self):
         d = self.data
-        self._pending_removals = [k for k in self._pending_removals if k in d]
+        self._pending_removals = [k for k in self._pending_removals if (k in d)]
         self._dirty_len = False
 
     def __delitem__(self, key):
@@ -406,8 +353,6 @@ class WeakKeyDictionary(_collections_abc.MutableMapping):
 
     def __len__(self):
         if self._dirty_len and self._pending_removals:
-            # self._pending_removals may still contain keys which were
-            # explicitly removed, we have to scrub them (see issue #21173).
             self._scrub_removals()
         return len(self.data) - len(self._pending_removals)
 
@@ -420,7 +365,7 @@ class WeakKeyDictionary(_collections_abc.MutableMapping):
     def copy(self):
         new = WeakKeyDictionary()
         with _IterationGuard(self):
-            for key, value in self.data.items():
+            for (key, value) in self.data.items():
                 o = key()
                 if o is not None:
                     new[o] = value
@@ -430,16 +375,17 @@ class WeakKeyDictionary(_collections_abc.MutableMapping):
 
     def __deepcopy__(self, memo):
         from copy import deepcopy
+
         new = self.__class__()
         with _IterationGuard(self):
-            for key, value in self.data.items():
+            for (key, value) in self.data.items():
                 o = key()
                 if o is not None:
                     new[o] = deepcopy(value, memo)
         return new
 
     def get(self, key, default=None):
-        return self.data.get(ref(key),default)
+        return self.data.get(ref(key), default)
 
     def __contains__(self, key):
         try:
@@ -450,59 +396,51 @@ class WeakKeyDictionary(_collections_abc.MutableMapping):
 
     def items(self):
         with _IterationGuard(self):
-            for wr, value in self.data.items():
+            for (wr, value) in self.data.items():
                 key = wr()
                 if key is not None:
-                    yield key, value
+                    (yield (key, value))
 
     def keys(self):
         with _IterationGuard(self):
             for wr in self.data:
                 obj = wr()
                 if obj is not None:
-                    yield obj
+                    (yield obj)
 
     __iter__ = keys
 
     def values(self):
         with _IterationGuard(self):
-            for wr, value in self.data.items():
+            for (wr, value) in self.data.items():
                 if wr() is not None:
-                    yield value
+                    (yield value)
 
     def keyrefs(self):
-        """Return a list of weak references to the keys.
-
-        The references are not guaranteed to be 'live' at the time
-        they are used, so the result of calling the references needs
-        to be checked before being used.  This can be used to avoid
-        creating references that will cause the garbage collector to
-        keep the keys around longer than needed.
-
-        """
+        "Return a list of weak references to the keys.\n\n        The references are not guaranteed to be 'live' at the time\n        they are used, so the result of calling the references needs\n        to be checked before being used.  This can be used to avoid\n        creating references that will cause the garbage collector to\n        keep the keys around longer than needed.\n\n        "
         return list(self.data)
 
     def popitem(self):
         self._dirty_len = True
         while True:
-            key, value = self.data.popitem()
+            (key, value) = self.data.popitem()
             o = key()
             if o is not None:
-                return o, value
+                return (o, value)
 
     def pop(self, key, *args):
         self._dirty_len = True
         return self.data.pop(ref(key), *args)
 
     def setdefault(self, key, default=None):
-        return self.data.setdefault(ref(key, self._remove),default)
+        return self.data.setdefault(ref(key, self._remove), default)
 
     def update(self, dict=None, /, **kwargs):
         d = self.data
         if dict is not None:
             if not hasattr(dict, "items"):
                 dict = type({})(dict)
-            for key, value in dict.items():
+            for (key, value) in dict.items():
                 d[ref(key, self._remove)] = value
         if len(kwargs):
             self.update(kwargs)
@@ -528,23 +466,7 @@ class WeakKeyDictionary(_collections_abc.MutableMapping):
 
 
 class finalize:
-    """Class for finalization of weakrefable objects
-
-    finalize(obj, func, *args, **kwargs) returns a callable finalizer
-    object which will be called when obj is garbage collected. The
-    first time the finalizer is called it evaluates func(*arg, **kwargs)
-    and returns the result. After this the finalizer is dead, and
-    calling it just returns None.
-
-    When the program exits any remaining finalizers for which the
-    atexit attribute is true will be run in reverse order of creation.
-    By default atexit is true.
-    """
-
-    # Finalizer objects don't have any state of their own.  They are
-    # just used as keys to lookup _Info objects in the registry.  This
-    # ensures that they cannot be part of a ref-cycle.
-
+    "Class for finalization of weakrefable objects\n\n    finalize(obj, func, *args, **kwargs) returns a callable finalizer\n    object which will be called when obj is garbage collected. The\n    first time the finalizer is called it evaluates func(*arg, **kwargs)\n    and returns the result. After this the finalizer is dead, and\n    calling it just returns None.\n\n    When the program exits any remaining finalizers for which the\n    atexit attribute is true will be run in reverse order of creation.\n    By default atexit is true.\n    "
     __slots__ = ()
     _registry = {}
     _shutdown = False
@@ -557,9 +479,8 @@ class finalize:
 
     def __init__(self, obj, func, /, *args, **kwargs):
         if not self._registered_with_atexit:
-            # We may register the exit function more than once because
-            # of a thread race, but that is harmless
             import atexit
+
             atexit.register(self._exitfunc)
             finalize._registered_with_atexit = True
         info = self._Info()
@@ -573,36 +494,33 @@ class finalize:
         finalize._dirty = True
 
     def __call__(self, _=None):
-        """If alive then mark as dead and return func(*args, **kwargs);
-        otherwise return None"""
+        "If alive then mark as dead and return func(*args, **kwargs);\n        otherwise return None"
         info = self._registry.pop(self, None)
-        if info and not self._shutdown:
+        if info and (not self._shutdown):
             return info.func(*info.args, **(info.kwargs or {}))
 
     def detach(self):
-        """If alive then mark as dead and return (obj, func, args, kwargs);
-        otherwise return None"""
+        "If alive then mark as dead and return (obj, func, args, kwargs);\n        otherwise return None"
         info = self._registry.get(self)
         obj = info and info.weakref()
-        if obj is not None and self._registry.pop(self, None):
-            return (obj, info.func, info.args, info.kwargs or {})
+        if (obj is not None) and self._registry.pop(self, None):
+            return (obj, info.func, info.args, (info.kwargs or {}))
 
     def peek(self):
-        """If alive then return (obj, func, args, kwargs);
-        otherwise return None"""
+        "If alive then return (obj, func, args, kwargs);\n        otherwise return None"
         info = self._registry.get(self)
         obj = info and info.weakref()
         if obj is not None:
-            return (obj, info.func, info.args, info.kwargs or {})
+            return (obj, info.func, info.args, (info.kwargs or {}))
 
     @property
     def alive(self):
-        """Whether finalizer is alive"""
+        "Whether finalizer is alive"
         return self in self._registry
 
     @property
     def atexit(self):
-        """Whether finalizer should be called at exit"""
+        "Whether finalizer should be called at exit"
         info = self._registry.get(self)
         return bool(info) and info.atexit
 
@@ -616,49 +534,45 @@ class finalize:
         info = self._registry.get(self)
         obj = info and info.weakref()
         if obj is None:
-            return '<%s object at %#x; dead>' % (type(self).__name__, id(self))
+            return "<%s object at %#x; dead>" % (type(self).__name__, id(self))
         else:
-            return '<%s object at %#x; for %r at %#x>' % \
-                (type(self).__name__, id(self), type(obj).__name__, id(obj))
+            return "<%s object at %#x; for %r at %#x>" % (
+                type(self).__name__,
+                id(self),
+                type(obj).__name__,
+                id(obj),
+            )
 
     @classmethod
     def _select_for_exit(cls):
-        # Return live finalizers marked for exit, oldest first
-        L = [(f,i) for (f,i) in cls._registry.items() if i.atexit]
-        L.sort(key=lambda item:item[1].index)
-        return [f for (f,i) in L]
+        L = [(f, i) for (f, i) in cls._registry.items() if i.atexit]
+        L.sort(key=(lambda item: item[1].index))
+        return [f for (f, i) in L]
 
     @classmethod
     def _exitfunc(cls):
-        # At shutdown invoke finalizers for which atexit is true.
-        # This is called once all other non-daemonic threads have been
-        # joined.
         reenable_gc = False
         try:
             if cls._registry:
                 import gc
+
                 if gc.isenabled():
                     reenable_gc = True
                     gc.disable()
                 pending = None
                 while True:
-                    if pending is None or finalize._dirty:
+                    if (pending is None) or finalize._dirty:
                         pending = cls._select_for_exit()
                         finalize._dirty = False
                     if not pending:
                         break
                     f = pending.pop()
                     try:
-                        # gc is disabled, so (assuming no daemonic
-                        # threads) the following is the only line in
-                        # this function which might trigger creation
-                        # of a new finalizer
                         f()
                     except Exception:
                         sys.excepthook(*sys.exc_info())
                     assert f not in cls._registry
         finally:
-            # prevent any more finalizers from executing during shutdown
             finalize._shutdown = True
             if reenable_gc:
                 gc.enable()

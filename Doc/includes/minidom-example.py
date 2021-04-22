@@ -1,29 +1,16 @@
 import xml.dom.minidom
 
-document = """\
-<slideshow>
-<title>Demo slideshow</title>
-<slide><title>Slide title</title>
-<point>This is a demo</point>
-<point>Of a program for processing slides</point>
-</slide>
-
-<slide><title>Another demo slide</title>
-<point>It is important</point>
-<point>To have more than</point>
-<point>one slide</point>
-</slide>
-</slideshow>
-"""
-
+document = "<slideshow>\n<title>Demo slideshow</title>\n<slide><title>Slide title</title>\n<point>This is a demo</point>\n<point>Of a program for processing slides</point>\n</slide>\n\n<slide><title>Another demo slide</title>\n<point>It is important</point>\n<point>To have more than</point>\n<point>one slide</point>\n</slide>\n</slideshow>\n"
 dom = xml.dom.minidom.parseString(document)
+
 
 def getText(nodelist):
     rc = []
     for node in nodelist:
         if node.nodeType == node.TEXT_NODE:
             rc.append(node.data)
-    return ''.join(rc)
+    return "".join(rc)
+
 
 def handleSlideshow(slideshow):
     print("<html>")
@@ -33,19 +20,24 @@ def handleSlideshow(slideshow):
     handleSlides(slides)
     print("</html>")
 
+
 def handleSlides(slides):
     for slide in slides:
         handleSlide(slide)
+
 
 def handleSlide(slide):
     handleSlideTitle(slide.getElementsByTagName("title")[0])
     handlePoints(slide.getElementsByTagName("point"))
 
+
 def handleSlideshowTitle(title):
-    print("<title>%s</title>" % getText(title.childNodes))
+    print(("<title>%s</title>" % getText(title.childNodes)))
+
 
 def handleSlideTitle(title):
-    print("<h2>%s</h2>" % getText(title.childNodes))
+    print(("<h2>%s</h2>" % getText(title.childNodes)))
+
 
 def handlePoints(points):
     print("<ul>")
@@ -53,12 +45,15 @@ def handlePoints(points):
         handlePoint(point)
     print("</ul>")
 
+
 def handlePoint(point):
-    print("<li>%s</li>" % getText(point.childNodes))
+    print(("<li>%s</li>" % getText(point.childNodes)))
+
 
 def handleToc(slides):
     for slide in slides:
         title = slide.getElementsByTagName("title")[0]
-        print("<p>%s</p>" % getText(title.childNodes))
+        print(("<p>%s</p>" % getText(title.childNodes)))
+
 
 handleSlideshow(dom)

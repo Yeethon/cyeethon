@@ -1,37 +1,25 @@
-"""      turtle-example-suite:
-
-            tdemo_nim.py
-
-Play nim against the computer. The player
-who takes the last stick is the winner.
-
-Implements the model-view-controller
-design pattern.
-"""
-
-
+"      turtle-example-suite:\n\n            tdemo_nim.py\n\nPlay nim against the computer. The player\nwho takes the last stick is the winner.\n\nImplements the model-view-controller\ndesign pattern.\n"
 import turtle
 import random
 import time
 
 SCREENWIDTH = 640
 SCREENHEIGHT = 480
-
 MINSTICKS = 7
 MAXSTICKS = 31
-
 HUNIT = SCREENHEIGHT // 12
-WUNIT = SCREENWIDTH // ((MAXSTICKS // 5) * 11 + (MAXSTICKS % 5) * 2)
-
+WUNIT = SCREENWIDTH // (((MAXSTICKS // 5) * 11) + ((MAXSTICKS % 5) * 2))
 SCOLOR = (63, 63, 31)
 HCOLOR = (255, 204, 204)
 COLOR = (204, 204, 255)
 
+
 def randomrow():
     return random.randint(MINSTICKS, MAXSTICKS)
 
+
 def computerzug(state):
-    xored = state[0] ^ state[1] ^ state[2]
+    xored = (state[0] ^ state[1]) ^ state[2]
     if xored == 0:
         return randommove(state)
     for z in range(3):
@@ -40,14 +28,15 @@ def computerzug(state):
             move = (z, s)
             return move
 
+
 def randommove(state):
     m = max(state)
     while True:
-        z = random.randint(0,2)
+        z = random.randint(0, 2)
         if state[z] > (m > 1):
             break
-    rand = random.randint(m > 1, state[z]-1)
-    return z, rand
+    rand = random.randint((m > 1), (state[z] - 1))
+    return (z, rand)
 
 
 class NimModel(object):
@@ -73,7 +62,7 @@ class NimModel(object):
             self.game.view.notify_over()
         elif self.player == 0:
             self.player = 1
-            row, col = computerzug(self.sticks)
+            (row, col) = computerzug(self.sticks)
             self.move(row, col)
             self.player = 0
 
@@ -92,20 +81,23 @@ class Stick(turtle.Turtle):
         self.row = row
         self.col = col
         self.game = game
-        x, y = self.coords(row, col)
+        (x, y) = self.coords(row, col)
         self.shape("square")
-        self.shapesize(HUNIT/10.0, WUNIT/20.0)
+        self.shapesize((HUNIT / 10.0), (WUNIT / 20.0))
         self.speed(0)
         self.pu()
-        self.goto(x,y)
+        self.goto(x, y)
         self.color("white")
         self.showturtle()
 
     def coords(self, row, col):
-        packet, remainder = divmod(col, 5)
-        x = (3 + 11 * packet + 2 * remainder) * WUNIT
-        y = (2 + 3 * row) * HUNIT
-        return x - SCREENWIDTH // 2 + WUNIT // 2, SCREENHEIGHT // 2 - y - HUNIT // 2
+        (packet, remainder) = divmod(col, 5)
+        x = ((3 + (11 * packet)) + (2 * remainder)) * WUNIT
+        y = (2 + (3 * row)) * HUNIT
+        return (
+            ((x - (SCREENWIDTH // 2)) + (WUNIT // 2)),
+            (((SCREENHEIGHT // 2) - y) - (HUNIT // 2)),
+        )
 
     def makemove(self, x, y):
         if self.game.state != Nim.RUNNING:
@@ -135,12 +127,12 @@ class NimView(object):
         self.screen.tracer(False)
         self.writer.clear()
         if msg2 is not None:
-            self.writer.goto(0, - SCREENHEIGHT // 2 + 48)
+            self.writer.goto(0, (((-SCREENHEIGHT) // 2) + 48))
             self.writer.pencolor("red")
-            self.writer.write(msg2, align="center", font=("Courier",18,"bold"))
-        self.writer.goto(0, - SCREENHEIGHT // 2 + 20)
+            self.writer.write(msg2, align="center", font=("Courier", 18, "bold"))
+        self.writer.goto(0, (((-SCREENHEIGHT) // 2) + 20))
         self.writer.pencolor("black")
-        self.writer.write(msg1, align="center", font=("Courier",14,"bold"))
+        self.writer.write(msg1, align="center", font=("Courier", 14, "bold"))
         self.screen.tracer(True)
 
     def setup(self):
@@ -164,7 +156,7 @@ class NimView(object):
             time.sleep(0.5)
             self.display(" ... thinking ... aaah ...")
             farbe = COLOR
-            for s in range(maxspalte-1, col-1, -1):
+            for s in range((maxspalte - 1), (col - 1), (-1)):
                 time.sleep(0.2)
                 self.sticks[(row, s)].color(farbe)
             self.display("Your turn! Click leftmost stick to remove.")
@@ -182,7 +174,6 @@ class NimView(object):
 
 
 class NimController(object):
-
     def __init__(self, game):
         self.game = game
         self.sticks = game.view.sticks
@@ -206,6 +197,7 @@ class Nim(object):
     CREATED = 0
     RUNNING = 1
     OVER = 2
+
     def __init__(self, screen):
         self.state = Nim.CREATED
         self.screen = screen
@@ -220,6 +212,7 @@ def main():
     mainscreen.setup(SCREENWIDTH, SCREENHEIGHT)
     nim = Nim(mainscreen)
     return "EVENTLOOP"
+
 
 if __name__ == "__main__":
     main()

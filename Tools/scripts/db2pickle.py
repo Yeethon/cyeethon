@@ -1,25 +1,6 @@
-#!/usr/bin/env python3
-
-"""
-Synopsis: %(prog)s [-h|-g|-b|-r|-a] dbfile [ picklefile ]
-
-Convert the database file given on the command line to a pickle
-representation.  The optional flags indicate the type of the database:
-
-    -a - open using dbm (any supported format)
-    -b - open as bsddb btree file
-    -d - open as dbm file
-    -g - open as gdbm file
-    -h - open as bsddb hash file
-    -r - open as bsddb recno file
-
-The default is hash.  If a pickle file is named it is opened for write
-access (deleting any existing data).  If no pickle file is named, the pickle
-output is written to standard output.
-
-"""
-
+"\nSynopsis: %(prog)s [-h|-g|-b|-r|-a] dbfile [ picklefile ]\n\nConvert the database file given on the command line to a pickle\nrepresentation.  The optional flags indicate the type of the database:\n\n    -a - open using dbm (any supported format)\n    -b - open as bsddb btree file\n    -d - open as dbm file\n    -g - open as gdbm file\n    -h - open as bsddb hash file\n    -r - open as bsddb recno file\n\nThe default is hash.  If a pickle file is named it is opened for write\naccess (deleting any existing data).  If no pickle file is named, the pickle\noutput is written to standard output.\n\n"
 import getopt
+
 try:
     import bsddb
 except ImportError:
@@ -37,26 +18,27 @@ try:
 except ImportError:
     anydbm = None
 import sys
+
 try:
     import pickle as pickle
 except ImportError:
     import pickle
-
 prog = sys.argv[0]
 
+
 def usage():
-    sys.stderr.write(__doc__ % globals())
+    sys.stderr.write((__doc__ % globals()))
+
 
 def main(args):
     try:
-        opts, args = getopt.getopt(args, "hbrdag",
-                                   ["hash", "btree", "recno", "dbm",
-                                    "gdbm", "anydbm"])
+        (opts, args) = getopt.getopt(
+            args, "hbrdag", ["hash", "btree", "recno", "dbm", "gdbm", "anydbm"]
+        )
     except getopt.error:
         usage()
         return 1
-
-    if len(args) == 0 or len(args) > 2:
+    if (len(args) == 0) or (len(args) > 2):
         usage()
         return 1
     elif len(args) == 1:
@@ -65,13 +47,12 @@ def main(args):
     else:
         dbfile = args[0]
         try:
-            pfile = open(args[1], 'wb')
+            pfile = open(args[1], "wb")
         except IOError:
-            sys.stderr.write("Unable to open %s\n" % args[1])
+            sys.stderr.write(("Unable to open %s\n" % args[1]))
             return 1
-
     dbopen = None
-    for opt, arg in opts:
+    for (opt, arg) in opts:
         if opt in ("-h", "--hash"):
             try:
                 dbopen = bsddb.hashopen
@@ -115,21 +96,18 @@ def main(args):
             return 1
         else:
             dbopen = bsddb.hashopen
-
     try:
-        db = dbopen(dbfile, 'r')
+        db = dbopen(dbfile, "r")
     except bsddb.error:
-        sys.stderr.write("Unable to open %s.  " % dbfile)
+        sys.stderr.write(("Unable to open %s.  " % dbfile))
         sys.stderr.write("Check for format or version mismatch.\n")
         return 1
-
     for k in db.keys():
-        pickle.dump((k, db[k]), pfile, 1==1)
-
+        pickle.dump((k, db[k]), pfile, (1 == 1))
     db.close()
     pfile.close()
-
     return 0
+
 
 if __name__ == "__main__":
     sys.exit(main(sys.argv[1:]))

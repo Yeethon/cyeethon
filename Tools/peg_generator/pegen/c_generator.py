@@ -3,7 +3,6 @@ from dataclasses import field, dataclass
 import re
 from typing import Any, Dict, IO, Optional, List, Text, Tuple, Set
 from enum import Enum
-
 from pegen import grammar
 from pegen.grammar import (
     Alt,
@@ -26,31 +25,8 @@ from pegen.grammar import (
 )
 from pegen.parser_generator import ParserGenerator
 
-
-EXTENSION_PREFIX = """\
-#include "pegen.h"
-
-#if defined(Py_DEBUG) && defined(Py_BUILD_CORE)
-#  define D(x) if (Py_DebugFlag) x;
-#else
-#  define D(x)
-#endif
-
-"""
-
-
-EXTENSION_SUFFIX = """
-void *
-_PyPegen_parse(Parser *p)
-{
-    // Initialize keywords
-    p->keywords = reserved_keywords;
-    p->n_keyword_lists = n_keyword_lists;
-    p->soft_keywords = soft_keywords;
-
-    return start_rule(p);
-}
-"""
+EXTENSION_PREFIX = '#include "pegen.h"\n\n#if defined(Py_DEBUG) && defined(Py_BUILD_CORE)\n#  define D(x) if (Py_DebugFlag) x;\n#else\n#  define D(x)\n#endif\n\n'
+EXTENSION_SUFFIX = "\nvoid *\n_PyPegen_parse(Parser *p)\n{\n    // Initialize keywords\n    p->keywords = reserved_keywords;\n    p->n_keyword_lists = n_keyword_lists;\n    p->soft_keywords = soft_keywords;\n\n    return start_rule(p);\n}\n"
 
 
 class NodeTypes(Enum):
@@ -91,7 +67,16 @@ class FunctionCall:
             parts.append(", 1")
         if self.assigned_variable:
             if self.assigned_variable_type:
-                parts = ["(", self.assigned_variable, " = ", '(', self.assigned_variable_type, ')', *parts, ")"]
+                parts = [
+                    "(",
+                    self.assigned_variable,
+                    " = ",
+                    "(",
+                    self.assigned_variable_type,
+                    ")",
+                    *parts,
+                    ")",
+                ]
             else:
                 parts = ["(", self.assigned_variable, " = ", *parts, ")"]
         if self.comment:
@@ -103,14 +88,14 @@ class CCallMakerVisitor(GrammarVisitor):
     def __init__(
         self,
         parser_generator: ParserGenerator,
-        exact_tokens: Dict[str, int],
+        exact_tokens: Dict[(str, int)],
         non_exact_tokens: Set[str],
     ):
         self.gen = parser_generator
         self.exact_tokens = exact_tokens
         self.non_exact_tokens = non_exact_tokens
-        self.cache: Dict[Any, FunctionCall] = {}
-        self.keyword_cache: Dict[str, int] = {}
+        self.cache: Dict[(Any, FunctionCall)] = {}
+        self.keyword_cache: Dict[(str, int)] = {}
         self.soft_keywords: Set[str] = set()
 
     def keyword_helper(self, keyword: str) -> FunctionCall:
@@ -156,12 +141,10 @@ class CCallMakerVisitor(GrammarVisitor):
                 return_type="Token *",
                 comment=f"token='{name}'",
             )
-
         type = None
         rule = self.gen.all_rules.get(name.lower())
         if rule is not None:
-            type = "asdl_seq *" if rule.is_loop() or rule.is_gather() else rule.type
-
+            type = "asdl_seq *" if (rule.is_loop() or rule.is_gather()) else rule.type
         return FunctionCall(
             assigned_variable=f"{name}_var",
             function=f"{name}_rule",
@@ -172,7 +155,7 @@ class CCallMakerVisitor(GrammarVisitor):
 
     def visit_StringLeaf(self, node: StringLeaf) -> FunctionCall:
         val = ast.literal_eval(node.value)
-        if re.match(r"[a-zA-Z_]\w*\Z", val):  # This is a keyword
+        if re.match("[a-zA-Z_]\\w*\\Z", val):
             if node.value.endswith("'"):
                 return self.keyword_helper(val)
             else:
@@ -191,9 +174,8 @@ class CCallMakerVisitor(GrammarVisitor):
 
     def visit_Rhs(self, node: Rhs) -> FunctionCall:
         def can_we_inline(node: Rhs) -> int:
-            if len(node.alts) != 1 or len(node.alts[0].items) != 1:
+            if (len(node.alts) != 1) or (len(node.alts[0].items) != 1):
                 return False
-            # If the alternative has an action we cannot inline
             if getattr(node.alts[0], "action", None) is not None:
                 return False
             return True
@@ -270,7 +252,8 @@ class CCallMakerVisitor(GrammarVisitor):
             )
         else:
             raise NotImplementedError(
-                    f"Forced tokens don't work with {call.nodetype} tokens")
+                f"Forced tokens don't work with {call.nodetype} tokens"
+            )
 
     def visit_Opt(self, node: Opt) -> FunctionCall:
         call = self.generate_call(node.node)
@@ -340,8 +323,8 @@ class CParserGenerator(ParserGenerator, GrammarVisitor):
     def __init__(
         self,
         grammar: grammar.Grammar,
-        tokens: Dict[int, str],
-        exact_tokens: Dict[str, int],
+        tokens: Dict[(int, str)],
+        exact_tokens: Dict[(str, int)],
         non_exact_tokens: Set[str],
         file: Optional[IO[Text]],
         debug: bool = False,
@@ -366,7 +349,7 @@ class CParserGenerator(ParserGenerator, GrammarVisitor):
         self.print(f"return {ret_val};")
 
     def unique_varname(self, name: str = "tmpvar") -> str:
-        new_var = name + "_" + str(self._varname_counter)
+        new_var = (name + "_") + str(self._varname_counter)
         self._varname_counter += 1
         return new_var
 
@@ -386,7 +369,9 @@ class CParserGenerator(ParserGenerator, GrammarVisitor):
             self.print(f"goto {goto_target};")
         self.print(f"}}")
 
-    def out_of_memory_return(self, expr: str, cleanup_code: Optional[str] = None,) -> None:
+    def out_of_memory_return(
+        self, expr: str, cleanup_code: Optional[str] = None
+    ) -> None:
         self.print(f"if ({expr}) {{")
         with self.indent():
             if cleanup_code is not None:
@@ -414,11 +399,11 @@ class CParserGenerator(ParserGenerator, GrammarVisitor):
             self.print(subheader)
         self._setup_keywords()
         self._setup_soft_keywords()
-        for i, (rulename, rule) in enumerate(self.todo.items(), 1000):
+        for (i, (rulename, rule)) in enumerate(self.todo.items(), 1000):
             comment = "  // Left-recursive" if rule.left_recursive else ""
             self.print(f"#define {rulename}_type {i}{comment}")
         self.print()
-        for rulename, rule in self.todo.items():
+        for (rulename, rule) in self.todo.items():
             if rule.is_loop() or rule.is_gather():
                 type = "asdl_seq *"
             elif rule.type:
@@ -428,7 +413,7 @@ class CParserGenerator(ParserGenerator, GrammarVisitor):
             self.print(f"static {type}{rulename}_rule(Parser *p);")
         self.print()
         while self.todo:
-            for rulename, rule in list(self.todo.items()):
+            for (rulename, rule) in list(self.todo.items()):
                 del self.todo[rulename]
                 self.print()
                 if rule.left_recursive:
@@ -437,17 +422,21 @@ class CParserGenerator(ParserGenerator, GrammarVisitor):
         if self.skip_actions:
             mode = 0
         else:
-            mode = int(self.rules["start"].type == "mod_ty") if "start" in self.rules else 1
-            if mode == 1 and self.grammar.metas.get("bytecode"):
+            mode = (
+                int((self.rules["start"].type == "mod_ty"))
+                if ("start" in self.rules)
+                else 1
+            )
+            if (mode == 1) and self.grammar.metas.get("bytecode"):
                 mode += 1
         modulename = self.grammar.metas.get("modulename", "parse")
         trailer = self.grammar.metas.get("trailer", EXTENSION_SUFFIX)
         if trailer:
-            self.print(trailer.rstrip("\n") % dict(mode=mode, modulename=modulename))
+            self.print((trailer.rstrip("\n") % dict(mode=mode, modulename=modulename)))
 
-    def _group_keywords_by_length(self) -> Dict[int, List[Tuple[str, int]]]:
-        groups: Dict[int, List[Tuple[str, int]]] = {}
-        for keyword_str, keyword_type in self.callmakervisitor.keyword_cache.items():
+    def _group_keywords_by_length(self) -> Dict[(int, List[Tuple[(str, int)]])]:
+        groups: Dict[(int, List[Tuple[(str, int)]])] = {}
+        for (keyword_str, keyword_type) in self.callmakervisitor.keyword_cache.items():
             length = len(keyword_str)
             if length in groups:
                 groups[length].append((keyword_str, keyword_type))
@@ -458,20 +447,22 @@ class CParserGenerator(ParserGenerator, GrammarVisitor):
     def _setup_keywords(self) -> None:
         keyword_cache = self.callmakervisitor.keyword_cache
         n_keyword_lists = (
-            len(max(keyword_cache.keys(), key=len)) + 1 if len(keyword_cache) > 0 else 0
+            (len(max(keyword_cache.keys(), key=len)) + 1)
+            if (len(keyword_cache) > 0)
+            else 0
         )
         self.print(f"static const int n_keyword_lists = {n_keyword_lists};")
         groups = self._group_keywords_by_length()
         self.print("static KeywordToken *reserved_keywords[] = {")
         with self.indent():
-            num_groups = max(groups) + 1 if groups else 1
+            num_groups = (max(groups) + 1) if groups else 1
             for keywords_length in range(num_groups):
                 if keywords_length not in groups.keys():
                     self.print("(KeywordToken[]) {{NULL, -1}},")
                 else:
                     self.print("(KeywordToken[]) {")
                     with self.indent():
-                        for keyword_str, keyword_type in groups[keywords_length]:
+                        for (keyword_str, keyword_type) in groups[keywords_length]:
                             self.print(f'{{"{keyword_str}", {keyword_type}}},')
                         self.print("{NULL, -1},")
                     self.print("},")
@@ -548,11 +539,10 @@ class CParserGenerator(ParserGenerator, GrammarVisitor):
         self.print(f"{node.name}_raw(Parser *p)")
 
     def _should_memoize(self, node: Rule) -> bool:
-        return node.memo and not node.left_recursive
+        return node.memo and (not node.left_recursive)
 
     def _handle_default_rule_body(self, node: Rule, rhs: Rhs, result_type: str) -> None:
         memoize = self._should_memoize(node)
-
         with self.indent():
             self.add_level()
             self._check_for_errors()
@@ -563,13 +553,13 @@ class CParserGenerator(ParserGenerator, GrammarVisitor):
                     self.add_return("_res")
                 self.print("}")
             self.print("int _mark = p->mark;")
-            if any(alt.action and "EXTRA" in alt.action for alt in rhs.alts):
+            if any(((alt.action and ("EXTRA" in alt.action)) for alt in rhs.alts)):
                 self._set_up_token_start_metadata_extraction()
             self.visit(
-                rhs, is_loop=False, is_gather=node.is_gather(), rulename=node.name,
+                rhs, is_loop=False, is_gather=node.is_gather(), rulename=node.name
             )
             if self.debug:
-                self.print(f'D(fprintf(stderr, "Fail at %d: {node.name}\\n", p->mark));')
+                self.print(f'D(fprintf(stderr, "Fail at %d: {node.name}\n", p->mark));')
             self.print("_res = NULL;")
         self.print("  done:")
         with self.indent():
@@ -580,7 +570,6 @@ class CParserGenerator(ParserGenerator, GrammarVisitor):
     def _handle_loop_rule_body(self, node: Rule, rhs: Rhs) -> None:
         memoize = self._should_memoize(node)
         is_repeat1 = node.name.startswith("_loop1")
-
         with self.indent():
             self.add_level()
             self._check_for_errors()
@@ -596,10 +585,10 @@ class CParserGenerator(ParserGenerator, GrammarVisitor):
             self.out_of_memory_return(f"!_children")
             self.print("Py_ssize_t _children_capacity = 1;")
             self.print("Py_ssize_t _n = 0;")
-            if any(alt.action and "EXTRA" in alt.action for alt in rhs.alts):
+            if any(((alt.action and ("EXTRA" in alt.action)) for alt in rhs.alts)):
                 self._set_up_token_start_metadata_extraction()
             self.visit(
-                rhs, is_loop=True, is_gather=node.is_gather(), rulename=node.name,
+                rhs, is_loop=True, is_gather=node.is_gather(), rulename=node.name
             )
             if is_repeat1:
                 self.print("if (_n == 0 || p->error_indicator) {")
@@ -607,12 +596,18 @@ class CParserGenerator(ParserGenerator, GrammarVisitor):
                     self.print("PyMem_Free(_children);")
                     self.add_return("NULL")
                 self.print("}")
-            self.print("asdl_seq *_seq = (asdl_seq*)_Py_asdl_generic_seq_new(_n, p->arena);")
+            self.print(
+                "asdl_seq *_seq = (asdl_seq*)_Py_asdl_generic_seq_new(_n, p->arena);"
+            )
             self.out_of_memory_return(f"!_seq", cleanup_code="PyMem_Free(_children);")
-            self.print("for (int i = 0; i < _n; i++) asdl_seq_SET_UNTYPED(_seq, i, _children[i]);")
+            self.print(
+                "for (int i = 0; i < _n; i++) asdl_seq_SET_UNTYPED(_seq, i, _children[i]);"
+            )
             self.print("PyMem_Free(_children);")
             if node.name:
-                self.print(f"_PyPegen_insert_memo(p, _start_mark, {node.name}_type, _seq);")
+                self.print(
+                    f"_PyPegen_insert_memo(p, _start_mark, {node.name}_type, _seq);"
+                )
             self.add_return("_seq")
 
     def visit_Rule(self, node: Rule) -> None:
@@ -625,18 +620,14 @@ class CParserGenerator(ParserGenerator, GrammarVisitor):
             result_type = node.type
         else:
             result_type = "void *"
-
         for line in str(node).splitlines():
             self.print(f"// {line}")
         if node.left_recursive and node.leader:
             self.print(f"static {result_type} {node.name}_raw(Parser *);")
-
         self.print(f"static {result_type}")
         self.print(f"{node.name}_rule(Parser *p)")
-
         if node.left_recursive and node.leader:
             self._set_up_rule_memoization(node, result_type)
-
         self.print("{")
         if is_loop:
             self._handle_loop_rule_body(node, rhs)
@@ -672,7 +663,6 @@ class CParserGenerator(ParserGenerator, GrammarVisitor):
 
     def emit_action(self, node: Alt, cleanup_code: Optional[str] = None) -> None:
         self.print(f"_res = {node.action};")
-
         self.print("if (_res == NULL && PyErr_Occurred()) {")
         with self.indent():
             self.print("p->error_indicator = 1;")
@@ -680,10 +670,9 @@ class CParserGenerator(ParserGenerator, GrammarVisitor):
                 self.print(cleanup_code)
             self.add_return("NULL")
         self.print("}")
-
         if self.debug:
             self.print(
-                f'D(fprintf(stderr, "Hit with action [%d-%d]: %s\\n", _mark, p->mark, "{node}"));'
+                f'D(fprintf(stderr, "Hit with action [%d-%d]: %s\n", _mark, p->mark, "{node}"));'
             )
 
     def emit_default_action(self, is_gather: bool, node: Alt) -> None:
@@ -691,13 +680,12 @@ class CParserGenerator(ParserGenerator, GrammarVisitor):
             if is_gather:
                 assert len(self.local_variable_names) == 2
                 self.print(
-                    f"_res = _PyPegen_seq_insert_in_front(p, "
-                    f"{self.local_variable_names[0]}, {self.local_variable_names[1]});"
+                    f"_res = _PyPegen_seq_insert_in_front(p, {self.local_variable_names[0]}, {self.local_variable_names[1]});"
                 )
             else:
                 if self.debug:
                     self.print(
-                        f'D(fprintf(stderr, "Hit without action [%d:%d]: %s\\n", _mark, p->mark, "{node}"));'
+                        f'D(fprintf(stderr, "Hit without action [%d:%d]: %s\n", _mark, p->mark, "{node}"));'
                     )
                 self.print(
                     f"_res = _PyPegen_dummy_name(p, {', '.join(self.local_variable_names)});"
@@ -705,24 +693,24 @@ class CParserGenerator(ParserGenerator, GrammarVisitor):
         else:
             if self.debug:
                 self.print(
-                    f'D(fprintf(stderr, "Hit with default action [%d:%d]: %s\\n", _mark, p->mark, "{node}"));'
+                    f'D(fprintf(stderr, "Hit with default action [%d:%d]: %s\n", _mark, p->mark, "{node}"));'
                 )
             self.print(f"_res = {self.local_variable_names[0]};")
 
     def emit_dummy_action(self) -> None:
         self.print("_res = _PyPegen_dummy_name(p);")
 
-    def handle_alt_normal(self, node: Alt, is_gather: bool, rulename: Optional[str]) -> None:
+    def handle_alt_normal(
+        self, node: Alt, is_gather: bool, rulename: Optional[str]
+    ) -> None:
         self.join_conditions(keyword="if", node=node)
         self.print("{")
-        # We have parsed successfully all the conditions for the option.
         with self.indent():
             node_str = str(node).replace('"', '\\"')
             self.print(
-                f'D(fprintf(stderr, "%*c+ {rulename}[%d-%d]: %s succeeded!\\n", p->level, \' \', _mark, p->mark, "{node_str}"));'
+                f"""D(fprintf(stderr, "%*c+ {rulename}[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "{node_str}"));"""
             )
-            # Prepare to emmit the rule action and do so
-            if node.action and "EXTRA" in node.action:
+            if node.action and ("EXTRA" in node.action):
                 self._set_up_token_end_metadata_extraction()
             if self.skip_actions:
                 self.emit_dummy_action()
@@ -730,19 +718,16 @@ class CParserGenerator(ParserGenerator, GrammarVisitor):
                 self.emit_action(node)
             else:
                 self.emit_default_action(is_gather, node)
-
-            # As the current option has parsed correctly, do not continue with the rest.
             self.print(f"goto done;")
         self.print("}")
 
-    def handle_alt_loop(self, node: Alt, is_gather: bool, rulename: Optional[str]) -> None:
-        # Condition of the main body of the alternative
+    def handle_alt_loop(
+        self, node: Alt, is_gather: bool, rulename: Optional[str]
+    ) -> None:
         self.join_conditions(keyword="while", node=node)
         self.print("{")
-        # We have parsed successfully one item!
         with self.indent():
-            # Prepare to emit the rule action and do so
-            if node.action and "EXTRA" in node.action:
+            if node.action and ("EXTRA" in node.action):
                 self._set_up_token_end_metadata_extraction()
             if self.skip_actions:
                 self.emit_dummy_action()
@@ -750,9 +735,6 @@ class CParserGenerator(ParserGenerator, GrammarVisitor):
                 self.emit_action(node, cleanup_code="PyMem_Free(_children);")
             else:
                 self.emit_default_action(is_gather, node)
-
-            # Add the result of rule to the temporary buffer of children. This buffer
-            # will populate later an asdl_seq with all elements to return.
             self.print("if (_n == _children_capacity) {")
             with self.indent():
                 self.print("_children_capacity *= 2;")
@@ -769,7 +751,7 @@ class CParserGenerator(ParserGenerator, GrammarVisitor):
     def visit_Alt(
         self, node: Alt, is_loop: bool, is_gather: bool, rulename: Optional[str]
     ) -> None:
-        if len(node.items) == 1 and str(node.items[0]).startswith('invalid_'):
+        if (len(node.items) == 1) and str(node.items[0]).startswith("invalid_"):
             self.print(f"if (p->call_invalid_rules) {{ // {node}")
         else:
             self.print(f"{{ // {node}")
@@ -777,32 +759,31 @@ class CParserGenerator(ParserGenerator, GrammarVisitor):
             self._check_for_errors()
             node_str = str(node).replace('"', '\\"')
             self.print(
-                f'D(fprintf(stderr, "%*c> {rulename}[%d-%d]: %s\\n", p->level, \' \', _mark, p->mark, "{node_str}"));'
+                f"""D(fprintf(stderr, "%*c> {rulename}[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "{node_str}"));"""
             )
-            # Prepare variable declarations for the alternative
             vars = self.collect_vars(node)
-            for v, var_type in sorted(item for item in vars.items() if item[0] is not None):
+            for (v, var_type) in sorted(
+                (item for item in vars.items() if (item[0] is not None))
+            ):
                 if not var_type:
                     var_type = "void *"
                 else:
                     var_type += " "
                 if v == "_cut_var":
-                    v += " = 0"  # cut_var must be initialized
+                    v += " = 0"
                 self.print(f"{var_type}{v};")
                 if v.startswith("_opt_var"):
                     self.print(f"UNUSED({v}); // Silence compiler warnings")
-
             with self.local_variable_context():
                 if is_loop:
                     self.handle_alt_loop(node, is_gather, rulename)
                 else:
                     self.handle_alt_normal(node, is_gather, rulename)
-
             self.print("p->mark = _mark;")
             node_str = str(node).replace('"', '\\"')
             self.print(
-                f"D(fprintf(stderr, \"%*c%s {rulename}[%d-%d]: %s failed!\\n\", p->level, ' ',\n"
-                f'                  p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "{node_str}"));'
+                f"""D(fprintf(stderr, "%*c%s {rulename}[%d-%d]: %s failed!\n", p->level, ' ',
+                  p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "{node_str}"));"""
             )
             if "_cut_var" in vars:
                 self.print("if (_cut_var) {")
@@ -811,18 +792,18 @@ class CParserGenerator(ParserGenerator, GrammarVisitor):
                 self.print("}")
         self.print("}")
 
-    def collect_vars(self, node: Alt) -> Dict[Optional[str], Optional[str]]:
+    def collect_vars(self, node: Alt) -> Dict[(Optional[str], Optional[str])]:
         types = {}
         with self.local_variable_context():
             for item in node.items:
-                name, type = self.add_var(item)
+                (name, type) = self.add_var(item)
                 types[name] = type
         return types
 
-    def add_var(self, node: NamedItem) -> Tuple[Optional[str], Optional[str]]:
+    def add_var(self, node: NamedItem) -> Tuple[(Optional[str], Optional[str])]:
         call = self.callmakervisitor.generate_call(node.item)
         name = node.name if node.name else call.assigned_variable
         if name is not None:
             name = self.dedupe(name)
-        return_type = call.return_type if node.type is None else node.type
-        return name, return_type
+        return_type = call.return_type if (node.type is None) else node.type
+        return (name, return_type)

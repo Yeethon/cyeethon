@@ -1,93 +1,81 @@
-#!/usr/bin/env python3
-
-"""Basic regular expression demonstration facility (Perl style syntax)."""
-
+"Basic regular expression demonstration facility (Perl style syntax)."
 from tkinter import *
 import re
 
-class ReDemo:
 
+class ReDemo:
     def __init__(self, master):
         self.master = master
-
-        self.promptdisplay = Label(self.master, anchor=W,
-                text="Enter a Perl-style regular expression:")
+        self.promptdisplay = Label(
+            self.master, anchor=W, text="Enter a Perl-style regular expression:"
+        )
         self.promptdisplay.pack(side=TOP, fill=X)
-
         self.regexdisplay = Entry(self.master)
         self.regexdisplay.pack(fill=X)
         self.regexdisplay.focus_set()
-
         self.addoptions()
-
         self.statusdisplay = Label(self.master, text="", anchor=W)
         self.statusdisplay.pack(side=TOP, fill=X)
-
-        self.labeldisplay = Label(self.master, anchor=W,
-                text="Enter a string to search:")
+        self.labeldisplay = Label(
+            self.master, anchor=W, text="Enter a string to search:"
+        )
         self.labeldisplay.pack(fill=X)
         self.labeldisplay.pack(fill=X)
-
         self.showframe = Frame(master)
         self.showframe.pack(fill=X, anchor=W)
-
         self.showvar = StringVar(master)
         self.showvar.set("first")
-
-        self.showfirstradio = Radiobutton(self.showframe,
-                                         text="Highlight first match",
-                                          variable=self.showvar,
-                                          value="first",
-                                          command=self.recompile)
+        self.showfirstradio = Radiobutton(
+            self.showframe,
+            text="Highlight first match",
+            variable=self.showvar,
+            value="first",
+            command=self.recompile,
+        )
         self.showfirstradio.pack(side=LEFT)
-
-        self.showallradio = Radiobutton(self.showframe,
-                                        text="Highlight all matches",
-                                        variable=self.showvar,
-                                        value="all",
-                                        command=self.recompile)
+        self.showallradio = Radiobutton(
+            self.showframe,
+            text="Highlight all matches",
+            variable=self.showvar,
+            value="all",
+            command=self.recompile,
+        )
         self.showallradio.pack(side=LEFT)
-
         self.stringdisplay = Text(self.master, width=60, height=4)
         self.stringdisplay.pack(fill=BOTH, expand=1)
         self.stringdisplay.tag_configure("hit", background="yellow")
-
         self.grouplabel = Label(self.master, text="Groups:", anchor=W)
         self.grouplabel.pack(fill=X)
-
         self.grouplist = Listbox(self.master)
         self.grouplist.pack(expand=1, fill=BOTH)
-
-        self.regexdisplay.bind('<Key>', self.recompile)
-        self.stringdisplay.bind('<Key>', self.reevaluate)
-
+        self.regexdisplay.bind("<Key>", self.recompile)
+        self.stringdisplay.bind("<Key>", self.reevaluate)
         self.compiled = None
         self.recompile()
-
         btags = self.regexdisplay.bindtags()
-        self.regexdisplay.bindtags(btags[1:] + btags[:1])
-
+        self.regexdisplay.bindtags((btags[1:] + btags[:1]))
         btags = self.stringdisplay.bindtags()
-        self.stringdisplay.bindtags(btags[1:] + btags[:1])
+        self.stringdisplay.bindtags((btags[1:] + btags[:1]))
 
     def addoptions(self):
         self.frames = []
         self.boxes = []
         self.vars = []
-        for name in ('IGNORECASE',
-                     'MULTILINE',
-                     'DOTALL',
-                     'VERBOSE'):
-            if len(self.boxes) % 3 == 0:
+        for name in ("IGNORECASE", "MULTILINE", "DOTALL", "VERBOSE"):
+            if (len(self.boxes) % 3) == 0:
                 frame = Frame(self.master)
                 frame.pack(fill=X)
                 self.frames.append(frame)
             val = getattr(re, name).value
             var = IntVar()
-            box = Checkbutton(frame,
-                    variable=var, text=name,
-                    offvalue=0, onvalue=val,
-                    command=self.recompile)
+            box = Checkbutton(
+                frame,
+                variable=var,
+                text=name,
+                offvalue=0,
+                onvalue=val,
+                command=self.recompile,
+            )
             box.pack(side=LEFT)
             self.boxes.append(box)
             self.vars.append(var)
@@ -100,15 +88,14 @@ class ReDemo:
 
     def recompile(self, event=None):
         try:
-            self.compiled = re.compile(self.regexdisplay.get(),
-                                       self.getflags())
-            bg = self.promptdisplay['background']
+            self.compiled = re.compile(self.regexdisplay.get(), self.getflags())
+            bg = self.promptdisplay["background"]
             self.statusdisplay.config(text="", background=bg)
         except re.error as msg:
             self.compiled = None
             self.statusdisplay.config(
-                    text="re.error: %s" % str(msg),
-                    background="red")
+                text=("re.error: %s" % str(msg)), background="red"
+            )
         self.reevaluate()
 
     def reevaluate(self, event=None):
@@ -132,9 +119,9 @@ class ReDemo:
             m = self.compiled.search(text, last)
             if m is None:
                 break
-            first, last = m.span()
+            (first, last) = m.span()
             if last == first:
-                last = first+1
+                last = first + 1
                 tag = "hit0"
             else:
                 tag = "hit"
@@ -151,21 +138,18 @@ class ReDemo:
             nmatches = nmatches + 1
             if self.showvar.get() == "first":
                 break
-
         if nmatches == 0:
-            self.statusdisplay.config(text="(no match)",
-                                      background="yellow")
+            self.statusdisplay.config(text="(no match)", background="yellow")
         else:
             self.statusdisplay.config(text="")
 
 
-# Main function, run when invoked as a stand-alone Python program.
-
 def main():
     root = Tk()
     demo = ReDemo(root)
-    root.protocol('WM_DELETE_WINDOW', root.quit)
+    root.protocol("WM_DELETE_WINDOW", root.quit)
     root.mainloop()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

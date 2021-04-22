@@ -1,5 +1,4 @@
-"""Tests for the unparse.py script in the Tools/parser directory."""
-
+"Tests for the unparse.py script in the Tools/parser directory."
 import unittest
 import test.support
 import pathlib
@@ -9,111 +8,32 @@ import ast
 
 
 def read_pyfile(filename):
-    """Read and return the contents of a Python source file (as a
-    string), taking into account the file encoding."""
+    "Read and return the contents of a Python source file (as a\n    string), taking into account the file encoding."
     with tokenize.open(filename) as stream:
         return stream.read()
 
 
-for_else = """\
-def f():
-    for x in range(10):
-        break
-    else:
-        y = 2
-    z = 3
-"""
-
-while_else = """\
-def g():
-    while True:
-        break
-    else:
-        y = 2
-    z = 3
-"""
-
-relative_import = """\
-from . import fred
-from .. import barney
-from .australia import shrimp as prawns
-"""
-
-nonlocal_ex = """\
-def f():
-    x = 1
-    def g():
-        nonlocal x
-        x = 2
-        y = 7
-        def h():
-            nonlocal x, y
-"""
-
-# also acts as test for 'except ... as ...'
-raise_from = """\
-try:
-    1 / 0
-except ZeroDivisionError as e:
-    raise ArithmeticError from e
-"""
-
-class_decorator = """\
-@f1(arg)
-@f2
-class Foo: pass
-"""
-
-elif1 = """\
-if cond1:
-    suite1
-elif cond2:
-    suite2
-else:
-    suite3
-"""
-
-elif2 = """\
-if cond1:
-    suite1
-elif cond2:
-    suite2
-"""
-
-try_except_finally = """\
-try:
-    suite1
-except ex1:
-    suite2
-except ex2:
-    suite3
-else:
-    suite4
-finally:
-    suite5
-"""
-
-with_simple = """\
-with f():
-    suite1
-"""
-
-with_as = """\
-with f() as x:
-    suite1
-"""
-
-with_two_items = """\
-with f() as x, g() as y:
-    suite1
-"""
-
+for_else = "def f():\n    for x in range(10):\n        break\n    else:\n        y = 2\n    z = 3\n"
+while_else = (
+    "def g():\n    while True:\n        break\n    else:\n        y = 2\n    z = 3\n"
+)
+relative_import = "from . import fred\nfrom .. import barney\nfrom .australia import shrimp as prawns\n"
+nonlocal_ex = "def f():\n    x = 1\n    def g():\n        nonlocal x\n        x = 2\n        y = 7\n        def h():\n            nonlocal x, y\n"
+raise_from = "try:\n    1 / 0\nexcept ZeroDivisionError as e:\n    raise ArithmeticError from e\n"
+class_decorator = "@f1(arg)\n@f2\nclass Foo: pass\n"
+elif1 = "if cond1:\n    suite1\nelif cond2:\n    suite2\nelse:\n    suite3\n"
+elif2 = "if cond1:\n    suite1\nelif cond2:\n    suite2\n"
+try_except_finally = "try:\n    suite1\nexcept ex1:\n    suite2\nexcept ex2:\n    suite3\nelse:\n    suite4\nfinally:\n    suite5\n"
+with_simple = "with f():\n    suite1\n"
+with_as = "with f() as x:\n    suite1\n"
+with_two_items = "with f() as x, g() as y:\n    suite1\n"
 docstring_prefixes = (
     "",
     "class foo:\n    ",
     "def foo():\n    ",
     "async def foo():\n    ",
 )
+
 
 class ASTTestCase(unittest.TestCase):
     def assertASTEqual(self, ast1, ast2):
@@ -133,37 +53,36 @@ class ASTTestCase(unittest.TestCase):
     def get_source(self, code1, code2=None):
         code2 = code2 or code1
         code1 = ast.unparse(ast.parse(code1))
-        return code1, code2
+        return (code1, code2)
 
     def check_src_roundtrip(self, code1, code2=None):
-        code1, code2 = self.get_source(code1, code2)
+        (code1, code2) = self.get_source(code1, code2)
         with self.subTest(code1=code1, code2=code2):
             self.assertEqual(code2, code1)
 
     def check_src_dont_roundtrip(self, code1, code2=None):
-        code1, code2 = self.get_source(code1, code2)
+        (code1, code2) = self.get_source(code1, code2)
         with self.subTest(code1=code1, code2=code2):
             self.assertNotEqual(code2, code1)
 
-class UnparseTestCase(ASTTestCase):
-    # Tests for specific bugs found in earlier versions of unparse
 
+class UnparseTestCase(ASTTestCase):
     def test_fstrings(self):
-        # See issue 25180
-        self.check_ast_roundtrip(r"""f'{f"{0}"*3}'""")
-        self.check_ast_roundtrip(r"""f'{f"{y}"*3}'""")
-        self.check_ast_roundtrip("""f''""")
-        self.check_ast_roundtrip('''f"""'end' "quote\\""""''')
+        self.check_ast_roundtrip("f'{f\"{0}\"*3}'")
+        self.check_ast_roundtrip("f'{f\"{y}\"*3}'")
+        self.check_ast_roundtrip("f''")
+        self.check_ast_roundtrip('f"""\'end\' "quote\\""""')
 
     def test_fstrings_complicated(self):
-        # See issue 28002
-        self.check_ast_roundtrip("""f'''{"'"}'''""")
-        self.check_ast_roundtrip('''f\'\'\'-{f"""*{f"+{f'.{x}.'}+"}*"""}-\'\'\'''')
-        self.check_ast_roundtrip('''f\'\'\'-{f"""*{f"+{f'.{x}.'}+"}*"""}-'single quote\\'\'\'\'''')
-        self.check_ast_roundtrip('f"""{\'\'\'\n\'\'\'}"""')
-        self.check_ast_roundtrip('f"""{g(\'\'\'\n\'\'\')}"""')
-        self.check_ast_roundtrip('''f"a\\r\\nb"''')
-        self.check_ast_roundtrip('''f"\\u2028{'x'}"''')
+        self.check_ast_roundtrip("f'''{\"'\"}'''")
+        self.check_ast_roundtrip("f'''-{f\"\"\"*{f\"+{f'.{x}.'}+\"}*\"\"\"}-'''")
+        self.check_ast_roundtrip(
+            "f'''-{f\"\"\"*{f\"+{f'.{x}.'}+\"}*\"\"\"}-'single quote\\''''"
+        )
+        self.check_ast_roundtrip("f\"\"\"{'''\n'''}\"\"\"")
+        self.check_ast_roundtrip("f\"\"\"{g('''\n''')}\"\"\"")
+        self.check_ast_roundtrip('f"a\\r\\nb"')
+        self.check_ast_roundtrip("f\"\\u2028{'x'}\"")
 
     def test_strings(self):
         self.check_ast_roundtrip("u'foo'")
@@ -201,13 +120,13 @@ class UnparseTestCase(ASTTestCase):
 
     def test_nan(self):
         self.assertASTEqual(
-            ast.parse(ast.unparse(ast.Constant(value=float('nan')))),
-            ast.parse('1e1000 - 1e1000')
+            ast.parse(ast.unparse(ast.Constant(value=float("nan")))),
+            ast.parse("1e1000 - 1e1000"),
         )
 
     def test_min_int(self):
-        self.check_ast_roundtrip(str(-(2 ** 31)))
-        self.check_ast_roundtrip(str(-(2 ** 63)))
+        self.check_ast_roundtrip(str((-(2 ** 31))))
+        self.check_ast_roundtrip(str((-(2 ** 63))))
 
     def test_imaginary_literals(self):
         self.check_ast_roundtrip("7j")
@@ -260,8 +179,7 @@ class UnparseTestCase(ASTTestCase):
 
     def test_empty_set(self):
         self.assertASTEqual(
-            ast.parse(ast.unparse(ast.Set(elts=[]))),
-            ast.parse('{*()}')
+            ast.parse(ast.unparse(ast.Set(elts=[]))), ast.parse("{*()}")
         )
 
     def test_set_comprehension(self):
@@ -299,9 +217,8 @@ class UnparseTestCase(ASTTestCase):
         self.check_ast_roundtrip(with_two_items)
 
     def test_dict_unpacking_in_dict(self):
-        # See issue 26489
-        self.check_ast_roundtrip(r"""{**{'y': 2}, 'x': 1}""")
-        self.check_ast_roundtrip(r"""{**{'y': 2}, **{'x': 1}}""")
+        self.check_ast_roundtrip("{**{'y': 2}, 'x': 1}")
+        self.check_ast_roundtrip("{**{'y': 2}, **{'x': 1}}")
 
     def test_slices(self):
         self.check_ast_roundtrip("a[i]")
@@ -330,7 +247,7 @@ class UnparseTestCase(ASTTestCase):
         self.check_invalid(
             ast.FormattedValue(
                 value=ast.Constant(value="a", kind=None),
-                conversion=ord("Y"),  # random character
+                conversion=ord("Y"),
                 format_spec=None,
             )
         )
@@ -345,33 +262,30 @@ class UnparseTestCase(ASTTestCase):
         docstrings = (
             'this ends with double quote"',
             'this includes a """triple quote"""',
-            '\r',
-            '\\r',
-            '\t',
-            '\\t',
-            '\n',
-            '\\n',
-            '\r\\r\t\\t\n\\n',
-            '""">>> content = \"\"\"blabla\"\"\" <<<"""',
-            r'foo\n\x00',
+            "\r",
+            "\\r",
+            "\t",
+            "\\t",
+            "\n",
+            "\\n",
+            "\r\\r\t\\t\n\\n",
+            '""">>> content = """blabla""" <<<"""',
+            "foo\\n\\x00",
             "' \\'\\'\\'\"\"\" \"\"\\'\\' \\'",
-            '🐍⛎𩸽üéş^\\\\X\\\\BB\N{LONG RIGHTWARDS SQUIGGLE ARROW}'
+            "🐍⛎𩸽üéş^\\\\X\\\\BB⟿",
         )
         for docstring in docstrings:
-            # check as Module docstrings for easy testing
             self.check_ast_roundtrip(f"'''{docstring}'''")
 
     def test_constant_tuples(self):
         self.check_src_roundtrip(ast.Constant(value=(1,), kind=None), "(1,)")
-        self.check_src_roundtrip(
-            ast.Constant(value=(1, 2, 3), kind=None), "(1, 2, 3)"
-        )
+        self.check_src_roundtrip(ast.Constant(value=(1, 2, 3), kind=None), "(1, 2, 3)")
 
     def test_function_type(self):
         for function_type in (
             "() -> int",
             "(int, int) -> int",
-            "(Callable[complex], More[Complex(call.to_typevar())]) -> None"
+            "(Callable[complex], More[Complex(call.to_typevar())]) -> None",
         ):
             self.check_ast_roundtrip(function_type, mode="func_type")
 
@@ -387,7 +301,7 @@ class UnparseTestCase(ASTTestCase):
             "for x in y: # type: int\n\tpass",
             "async for x in y: # type: int\n\tpass",
             "with x(): # type: int\n\tpass",
-            "async with x(): # type: int\n\tpass"
+            "async with x(): # type: int\n\tpass",
         ):
             self.check_ast_roundtrip(statement, type_comments=True)
 
@@ -402,13 +316,13 @@ class UnparseTestCase(ASTTestCase):
             "for x in y: # type: ignore\n\tpass",
             "async for x in y: # type: ignore\n\tpass",
             "with x(): # type: ignore\n\tpass",
-            "async with x(): # type: ignore\n\tpass"
+            "async with x(): # type: ignore\n\tpass",
         ):
             self.check_ast_roundtrip(statement, type_comments=True)
 
 
 class CosmeticTestCase(ASTTestCase):
-    """Test if there are cosmetic issues caused by unnecesary additions"""
+    "Test if there are cosmetic issues caused by unnecesary additions"
 
     def test_simple_expressions_parens(self):
         self.check_src_roundtrip("(a := b)")
@@ -453,50 +367,41 @@ class CosmeticTestCase(ASTTestCase):
         self.check_src_roundtrip("class X(*args, **kwargs):\n    pass")
 
     def test_fstrings(self):
-        self.check_src_roundtrip('''f\'\'\'-{f"""*{f"+{f'.{x}.'}+"}*"""}-\'\'\'''')
-        self.check_src_roundtrip('''f"\\u2028{'x'}"''')
-        self.check_src_roundtrip(r"f'{x}\n'")
-        self.check_src_roundtrip('''f''\'{"""\n"""}\\n''\'''')
-        self.check_src_roundtrip('''f''\'{f"""{x}\n"""}\\n''\'''')
+        self.check_src_roundtrip("f'''-{f\"\"\"*{f\"+{f'.{x}.'}+\"}*\"\"\"}-'''")
+        self.check_src_roundtrip("f\"\\u2028{'x'}\"")
+        self.check_src_roundtrip("f'{x}\\n'")
+        self.check_src_roundtrip("f'''{\"\"\"\n\"\"\"}\\n'''")
+        self.check_src_roundtrip("f'''{f\"\"\"{x}\n\"\"\"}\\n'''")
 
     def test_docstrings(self):
         docstrings = (
             '"""simple doc string"""',
-            '''"""A more complex one
-            with some newlines"""''',
-            '''"""Foo bar baz
-
-            empty newline"""''',
+            '"""A more complex one\n            with some newlines"""',
+            '"""Foo bar baz\n\n            empty newline"""',
             '"""With some \t"""',
             '"""Foo "bar" baz """',
             '"""\\r"""',
             '""""""',
             '"""\'\'\'"""',
-            '"""\'\'\'\'\'\'"""',
+            "\"\"\"''''''\"\"\"",
             '"""🐍⛎𩸽üéş^\\\\X\\\\BB⟿"""',
             '"""end in single \'quote\'"""',
             "'''end in double \"quote\"'''",
             '"""almost end in double "quote"."""',
         )
-
         for prefix in docstring_prefixes:
             for docstring in docstrings:
                 self.check_src_roundtrip(f"{prefix}{docstring}")
 
     def test_docstrings_negative_cases(self):
-        # Test some cases that involve strings in the children of the
-        # first node but aren't docstrings to make sure we don't have
-        # False positives.
         docstrings_negative = (
             'a = """false"""',
             '"""false""" + """unless its optimized"""',
             '1 + 1\n"""false"""',
-            'f"""no, top level but f-fstring"""'
+            'f"""no, top level but f-fstring"""',
         )
         for prefix in docstring_prefixes:
             for negative in docstrings_negative:
-                # this cases should be result with single quote
-                # rather then triple quoted docstring
                 src = f"{prefix}{negative}"
                 self.check_ast_roundtrip(src)
                 self.check_src_dont_roundtrip(src)
@@ -512,52 +417,44 @@ class CosmeticTestCase(ASTTestCase):
         self.check_src_roundtrip("a[1, 2]")
         self.check_src_roundtrip("a[(1, *a)]")
 
+
 class DirectoryTestCase(ASTTestCase):
-    """Test roundtrip behaviour on all files in Lib and Lib/test."""
-
+    "Test roundtrip behaviour on all files in Lib and Lib/test."
     lib_dir = pathlib.Path(__file__).parent / ".."
-    test_directories = (lib_dir, lib_dir / "test")
-    run_always_files = {"test_grammar.py", "test_syntax.py", "test_compile.py",
-                        "test_ast.py", "test_asdl_parser.py", "test_fstring.py"}
-
+    test_directories = (lib_dir, (lib_dir / "test"))
+    run_always_files = {
+        "test_grammar.py",
+        "test_syntax.py",
+        "test_compile.py",
+        "test_ast.py",
+        "test_asdl_parser.py",
+        "test_fstring.py",
+    }
     _files_to_test = None
 
     @classmethod
     def files_to_test(cls):
-
         if cls._files_to_test is not None:
             return cls._files_to_test
-
         items = [
             item.resolve()
             for directory in cls.test_directories
             for item in directory.glob("*.py")
-            if not item.name.startswith("bad")
+            if (not item.name.startswith("bad"))
         ]
-
-        # Test limited subset of files unless the 'cpu' resource is specified.
         if not test.support.is_resource_enabled("cpu"):
-
-            tests_to_run_always = {item for item in items if
-                                   item.name in cls.run_always_files}
-
+            tests_to_run_always = {
+                item for item in items if (item.name in cls.run_always_files)
+            }
             items = set(random.sample(items, 10))
-
-            # Make sure that at least tests that heavily use grammar features are
-            # always considered in order to reduce the chance of missing something.
-            items = list(items | tests_to_run_always)
-
-        # bpo-31174: Store the names sample to always test the same files.
-        # It prevents false alarms when hunting reference leaks.
+            items = list((items | tests_to_run_always))
         cls._files_to_test = items
-
         return items
 
     def test_files(self):
         for item in self.files_to_test():
             if test.support.verbose:
                 print(f"Testing {item.absolute()}")
-
             with self.subTest(filename=item):
                 source = read_pyfile(item)
                 self.check_ast_roundtrip(source)

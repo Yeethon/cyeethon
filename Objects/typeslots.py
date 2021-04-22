@@ -1,6 +1,3 @@
-#!/usr/bin/python
-# Usage: typeslots.py < Include/typeslots.h typeslots.inc
-
 import sys, re
 
 
@@ -11,31 +8,39 @@ def generate_typeslots(out=sys.stdout):
         m = re.match("#define Py_([a-z_]+) ([0-9]+)", line)
         if not m:
             continue
-
         member = m.group(1)
         if member.startswith("tp_"):
-            member = f'{{-1, offsetof(PyTypeObject, {member})}}'
+            member = f"{{-1, offsetof(PyTypeObject, {member})}}"
         elif member.startswith("am_"):
-            member = (f'{{offsetof(PyAsyncMethods, {member}),'+
-                      ' offsetof(PyTypeObject, tp_as_async)}')
+            member = (
+                f"{{offsetof(PyAsyncMethods, {member}),"
+                + " offsetof(PyTypeObject, tp_as_async)}"
+            )
         elif member.startswith("nb_"):
-            member = (f'{{offsetof(PyNumberMethods, {member}),'+
-                      ' offsetof(PyTypeObject, tp_as_number)}')
+            member = (
+                f"{{offsetof(PyNumberMethods, {member}),"
+                + " offsetof(PyTypeObject, tp_as_number)}"
+            )
         elif member.startswith("mp_"):
-            member = (f'{{offsetof(PyMappingMethods, {member}),'+
-                      ' offsetof(PyTypeObject, tp_as_mapping)}')
+            member = (
+                f"{{offsetof(PyMappingMethods, {member}),"
+                + " offsetof(PyTypeObject, tp_as_mapping)}"
+            )
         elif member.startswith("sq_"):
-            member = (f'{{offsetof(PySequenceMethods, {member}),'+
-                      ' offsetof(PyTypeObject, tp_as_sequence)}')
+            member = (
+                f"{{offsetof(PySequenceMethods, {member}),"
+                + " offsetof(PyTypeObject, tp_as_sequence)}"
+            )
         elif member.startswith("bf_"):
-            member = (f'{{offsetof(PyBufferProcs, {member}),'+
-                      ' offsetof(PyTypeObject, tp_as_buffer)}')
+            member = (
+                f"{{offsetof(PyBufferProcs, {member}),"
+                + " offsetof(PyTypeObject, tp_as_buffer)}"
+            )
         res[int(m.group(2))] = member
-
-    M = max(res.keys())+1
-    for i in range(1,M):
+    M = max(res.keys()) + 1
+    for i in range(1, M):
         if i in res:
-            out.write("%s,\n" % res[i])
+            out.write(("%s,\n" % res[i]))
         else:
             out.write("{0, 0},\n")
 
@@ -46,6 +51,7 @@ def main():
             generate_typeslots(f)
     else:
         generate_typeslots()
+
 
 if __name__ == "__main__":
     main()

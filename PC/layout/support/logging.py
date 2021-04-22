@@ -1,15 +1,10 @@
-"""
-Logging support for make_layout.
-"""
-
+"\nLogging support for make_layout.\n"
 __author__ = "Steve Dower <steve.dower@python.org>"
 __version__ = "3.8"
-
 import logging
 import sys
 
 __all__ = []
-
 LOG = None
 HAS_ERROR = False
 
@@ -24,22 +19,18 @@ def configure_logger(ns):
     global LOG
     if LOG:
         return
-
     LOG = logging.getLogger("make_layout")
     LOG.level = logging.DEBUG
-
     if ns.v:
-        s_level = max(logging.ERROR - ns.v * 10, logging.DEBUG)
-        f_level = max(logging.WARNING - ns.v * 10, logging.DEBUG)
+        s_level = max((logging.ERROR - (ns.v * 10)), logging.DEBUG)
+        f_level = max((logging.WARNING - (ns.v * 10)), logging.DEBUG)
     else:
         s_level = logging.ERROR
         f_level = logging.INFO
-
     handler = logging.StreamHandler(sys.stdout)
     handler.setFormatter(logging.Formatter("{levelname:8s} {message}", style="{"))
     handler.setLevel(s_level)
     LOG.addHandler(handler)
-
     if ns.log:
         handler = logging.FileHandler(ns.log, encoding="utf-8", delay=True)
         handler.setFormatter(

@@ -1,38 +1,36 @@
-""" Python Character Mapping Codec generated from 'VENDORS/MICSFT/PC/CP864.TXT' with gencodec.py.
-
-"""#"
-
+" Python Character Mapping Codec generated from 'VENDORS/MICSFT/PC/CP864.TXT' with gencodec.py.\n\n"
 import codecs
 
-### Codec APIs
 
 class Codec(codecs.Codec):
+    def encode(self, input, errors="strict"):
+        return codecs.charmap_encode(input, errors, encoding_map)
 
-    def encode(self,input,errors='strict'):
-        return codecs.charmap_encode(input,errors,encoding_map)
+    def decode(self, input, errors="strict"):
+        return codecs.charmap_decode(input, errors, decoding_table)
 
-    def decode(self,input,errors='strict'):
-        return codecs.charmap_decode(input,errors,decoding_table)
 
 class IncrementalEncoder(codecs.IncrementalEncoder):
     def encode(self, input, final=False):
-        return codecs.charmap_encode(input,self.errors,encoding_map)[0]
+        return codecs.charmap_encode(input, self.errors, encoding_map)[0]
+
 
 class IncrementalDecoder(codecs.IncrementalDecoder):
     def decode(self, input, final=False):
-        return codecs.charmap_decode(input,self.errors,decoding_table)[0]
+        return codecs.charmap_decode(input, self.errors, decoding_table)[0]
 
-class StreamWriter(Codec,codecs.StreamWriter):
+
+class StreamWriter(Codec, codecs.StreamWriter):
     pass
 
-class StreamReader(Codec,codecs.StreamReader):
+
+class StreamReader(Codec, codecs.StreamReader):
     pass
 
-### encodings module API
 
 def getregentry():
     return codecs.CodecInfo(
-        name='cp864',
+        name="cp864",
         encode=Codec().encode,
         decode=Codec().decode,
         incrementalencoder=IncrementalEncoder,
@@ -41,650 +39,388 @@ def getregentry():
         streamwriter=StreamWriter,
     )
 
-### Decoding Map
 
 decoding_map = codecs.make_identity_dict(range(256))
-decoding_map.update({
-    0x0025: 0x066a,     #  ARABIC PERCENT SIGN
-    0x0080: 0x00b0,     #  DEGREE SIGN
-    0x0081: 0x00b7,     #  MIDDLE DOT
-    0x0082: 0x2219,     #  BULLET OPERATOR
-    0x0083: 0x221a,     #  SQUARE ROOT
-    0x0084: 0x2592,     #  MEDIUM SHADE
-    0x0085: 0x2500,     #  FORMS LIGHT HORIZONTAL
-    0x0086: 0x2502,     #  FORMS LIGHT VERTICAL
-    0x0087: 0x253c,     #  FORMS LIGHT VERTICAL AND HORIZONTAL
-    0x0088: 0x2524,     #  FORMS LIGHT VERTICAL AND LEFT
-    0x0089: 0x252c,     #  FORMS LIGHT DOWN AND HORIZONTAL
-    0x008a: 0x251c,     #  FORMS LIGHT VERTICAL AND RIGHT
-    0x008b: 0x2534,     #  FORMS LIGHT UP AND HORIZONTAL
-    0x008c: 0x2510,     #  FORMS LIGHT DOWN AND LEFT
-    0x008d: 0x250c,     #  FORMS LIGHT DOWN AND RIGHT
-    0x008e: 0x2514,     #  FORMS LIGHT UP AND RIGHT
-    0x008f: 0x2518,     #  FORMS LIGHT UP AND LEFT
-    0x0090: 0x03b2,     #  GREEK SMALL BETA
-    0x0091: 0x221e,     #  INFINITY
-    0x0092: 0x03c6,     #  GREEK SMALL PHI
-    0x0093: 0x00b1,     #  PLUS-OR-MINUS SIGN
-    0x0094: 0x00bd,     #  FRACTION 1/2
-    0x0095: 0x00bc,     #  FRACTION 1/4
-    0x0096: 0x2248,     #  ALMOST EQUAL TO
-    0x0097: 0x00ab,     #  LEFT POINTING GUILLEMET
-    0x0098: 0x00bb,     #  RIGHT POINTING GUILLEMET
-    0x0099: 0xfef7,     #  ARABIC LIGATURE LAM WITH ALEF WITH HAMZA ABOVE ISOLATED FORM
-    0x009a: 0xfef8,     #  ARABIC LIGATURE LAM WITH ALEF WITH HAMZA ABOVE FINAL FORM
-    0x009b: None,       #  UNDEFINED
-    0x009c: None,       #  UNDEFINED
-    0x009d: 0xfefb,     #  ARABIC LIGATURE LAM WITH ALEF ISOLATED FORM
-    0x009e: 0xfefc,     #  ARABIC LIGATURE LAM WITH ALEF FINAL FORM
-    0x009f: None,       #  UNDEFINED
-    0x00a1: 0x00ad,     #  SOFT HYPHEN
-    0x00a2: 0xfe82,     #  ARABIC LETTER ALEF WITH MADDA ABOVE FINAL FORM
-    0x00a5: 0xfe84,     #  ARABIC LETTER ALEF WITH HAMZA ABOVE FINAL FORM
-    0x00a6: None,       #  UNDEFINED
-    0x00a7: None,       #  UNDEFINED
-    0x00a8: 0xfe8e,     #  ARABIC LETTER ALEF FINAL FORM
-    0x00a9: 0xfe8f,     #  ARABIC LETTER BEH ISOLATED FORM
-    0x00aa: 0xfe95,     #  ARABIC LETTER TEH ISOLATED FORM
-    0x00ab: 0xfe99,     #  ARABIC LETTER THEH ISOLATED FORM
-    0x00ac: 0x060c,     #  ARABIC COMMA
-    0x00ad: 0xfe9d,     #  ARABIC LETTER JEEM ISOLATED FORM
-    0x00ae: 0xfea1,     #  ARABIC LETTER HAH ISOLATED FORM
-    0x00af: 0xfea5,     #  ARABIC LETTER KHAH ISOLATED FORM
-    0x00b0: 0x0660,     #  ARABIC-INDIC DIGIT ZERO
-    0x00b1: 0x0661,     #  ARABIC-INDIC DIGIT ONE
-    0x00b2: 0x0662,     #  ARABIC-INDIC DIGIT TWO
-    0x00b3: 0x0663,     #  ARABIC-INDIC DIGIT THREE
-    0x00b4: 0x0664,     #  ARABIC-INDIC DIGIT FOUR
-    0x00b5: 0x0665,     #  ARABIC-INDIC DIGIT FIVE
-    0x00b6: 0x0666,     #  ARABIC-INDIC DIGIT SIX
-    0x00b7: 0x0667,     #  ARABIC-INDIC DIGIT SEVEN
-    0x00b8: 0x0668,     #  ARABIC-INDIC DIGIT EIGHT
-    0x00b9: 0x0669,     #  ARABIC-INDIC DIGIT NINE
-    0x00ba: 0xfed1,     #  ARABIC LETTER FEH ISOLATED FORM
-    0x00bb: 0x061b,     #  ARABIC SEMICOLON
-    0x00bc: 0xfeb1,     #  ARABIC LETTER SEEN ISOLATED FORM
-    0x00bd: 0xfeb5,     #  ARABIC LETTER SHEEN ISOLATED FORM
-    0x00be: 0xfeb9,     #  ARABIC LETTER SAD ISOLATED FORM
-    0x00bf: 0x061f,     #  ARABIC QUESTION MARK
-    0x00c0: 0x00a2,     #  CENT SIGN
-    0x00c1: 0xfe80,     #  ARABIC LETTER HAMZA ISOLATED FORM
-    0x00c2: 0xfe81,     #  ARABIC LETTER ALEF WITH MADDA ABOVE ISOLATED FORM
-    0x00c3: 0xfe83,     #  ARABIC LETTER ALEF WITH HAMZA ABOVE ISOLATED FORM
-    0x00c4: 0xfe85,     #  ARABIC LETTER WAW WITH HAMZA ABOVE ISOLATED FORM
-    0x00c5: 0xfeca,     #  ARABIC LETTER AIN FINAL FORM
-    0x00c6: 0xfe8b,     #  ARABIC LETTER YEH WITH HAMZA ABOVE INITIAL FORM
-    0x00c7: 0xfe8d,     #  ARABIC LETTER ALEF ISOLATED FORM
-    0x00c8: 0xfe91,     #  ARABIC LETTER BEH INITIAL FORM
-    0x00c9: 0xfe93,     #  ARABIC LETTER TEH MARBUTA ISOLATED FORM
-    0x00ca: 0xfe97,     #  ARABIC LETTER TEH INITIAL FORM
-    0x00cb: 0xfe9b,     #  ARABIC LETTER THEH INITIAL FORM
-    0x00cc: 0xfe9f,     #  ARABIC LETTER JEEM INITIAL FORM
-    0x00cd: 0xfea3,     #  ARABIC LETTER HAH INITIAL FORM
-    0x00ce: 0xfea7,     #  ARABIC LETTER KHAH INITIAL FORM
-    0x00cf: 0xfea9,     #  ARABIC LETTER DAL ISOLATED FORM
-    0x00d0: 0xfeab,     #  ARABIC LETTER THAL ISOLATED FORM
-    0x00d1: 0xfead,     #  ARABIC LETTER REH ISOLATED FORM
-    0x00d2: 0xfeaf,     #  ARABIC LETTER ZAIN ISOLATED FORM
-    0x00d3: 0xfeb3,     #  ARABIC LETTER SEEN INITIAL FORM
-    0x00d4: 0xfeb7,     #  ARABIC LETTER SHEEN INITIAL FORM
-    0x00d5: 0xfebb,     #  ARABIC LETTER SAD INITIAL FORM
-    0x00d6: 0xfebf,     #  ARABIC LETTER DAD INITIAL FORM
-    0x00d7: 0xfec1,     #  ARABIC LETTER TAH ISOLATED FORM
-    0x00d8: 0xfec5,     #  ARABIC LETTER ZAH ISOLATED FORM
-    0x00d9: 0xfecb,     #  ARABIC LETTER AIN INITIAL FORM
-    0x00da: 0xfecf,     #  ARABIC LETTER GHAIN INITIAL FORM
-    0x00db: 0x00a6,     #  BROKEN VERTICAL BAR
-    0x00dc: 0x00ac,     #  NOT SIGN
-    0x00dd: 0x00f7,     #  DIVISION SIGN
-    0x00de: 0x00d7,     #  MULTIPLICATION SIGN
-    0x00df: 0xfec9,     #  ARABIC LETTER AIN ISOLATED FORM
-    0x00e0: 0x0640,     #  ARABIC TATWEEL
-    0x00e1: 0xfed3,     #  ARABIC LETTER FEH INITIAL FORM
-    0x00e2: 0xfed7,     #  ARABIC LETTER QAF INITIAL FORM
-    0x00e3: 0xfedb,     #  ARABIC LETTER KAF INITIAL FORM
-    0x00e4: 0xfedf,     #  ARABIC LETTER LAM INITIAL FORM
-    0x00e5: 0xfee3,     #  ARABIC LETTER MEEM INITIAL FORM
-    0x00e6: 0xfee7,     #  ARABIC LETTER NOON INITIAL FORM
-    0x00e7: 0xfeeb,     #  ARABIC LETTER HEH INITIAL FORM
-    0x00e8: 0xfeed,     #  ARABIC LETTER WAW ISOLATED FORM
-    0x00e9: 0xfeef,     #  ARABIC LETTER ALEF MAKSURA ISOLATED FORM
-    0x00ea: 0xfef3,     #  ARABIC LETTER YEH INITIAL FORM
-    0x00eb: 0xfebd,     #  ARABIC LETTER DAD ISOLATED FORM
-    0x00ec: 0xfecc,     #  ARABIC LETTER AIN MEDIAL FORM
-    0x00ed: 0xfece,     #  ARABIC LETTER GHAIN FINAL FORM
-    0x00ee: 0xfecd,     #  ARABIC LETTER GHAIN ISOLATED FORM
-    0x00ef: 0xfee1,     #  ARABIC LETTER MEEM ISOLATED FORM
-    0x00f0: 0xfe7d,     #  ARABIC SHADDA MEDIAL FORM
-    0x00f1: 0x0651,     #  ARABIC SHADDAH
-    0x00f2: 0xfee5,     #  ARABIC LETTER NOON ISOLATED FORM
-    0x00f3: 0xfee9,     #  ARABIC LETTER HEH ISOLATED FORM
-    0x00f4: 0xfeec,     #  ARABIC LETTER HEH MEDIAL FORM
-    0x00f5: 0xfef0,     #  ARABIC LETTER ALEF MAKSURA FINAL FORM
-    0x00f6: 0xfef2,     #  ARABIC LETTER YEH FINAL FORM
-    0x00f7: 0xfed0,     #  ARABIC LETTER GHAIN MEDIAL FORM
-    0x00f8: 0xfed5,     #  ARABIC LETTER QAF ISOLATED FORM
-    0x00f9: 0xfef5,     #  ARABIC LIGATURE LAM WITH ALEF WITH MADDA ABOVE ISOLATED FORM
-    0x00fa: 0xfef6,     #  ARABIC LIGATURE LAM WITH ALEF WITH MADDA ABOVE FINAL FORM
-    0x00fb: 0xfedd,     #  ARABIC LETTER LAM ISOLATED FORM
-    0x00fc: 0xfed9,     #  ARABIC LETTER KAF ISOLATED FORM
-    0x00fd: 0xfef1,     #  ARABIC LETTER YEH ISOLATED FORM
-    0x00fe: 0x25a0,     #  BLACK SQUARE
-    0x00ff: None,       #  UNDEFINED
-})
-
-### Decoding Table
-
-decoding_table = (
-    '\x00'     #  0x0000 -> NULL
-    '\x01'     #  0x0001 -> START OF HEADING
-    '\x02'     #  0x0002 -> START OF TEXT
-    '\x03'     #  0x0003 -> END OF TEXT
-    '\x04'     #  0x0004 -> END OF TRANSMISSION
-    '\x05'     #  0x0005 -> ENQUIRY
-    '\x06'     #  0x0006 -> ACKNOWLEDGE
-    '\x07'     #  0x0007 -> BELL
-    '\x08'     #  0x0008 -> BACKSPACE
-    '\t'       #  0x0009 -> HORIZONTAL TABULATION
-    '\n'       #  0x000a -> LINE FEED
-    '\x0b'     #  0x000b -> VERTICAL TABULATION
-    '\x0c'     #  0x000c -> FORM FEED
-    '\r'       #  0x000d -> CARRIAGE RETURN
-    '\x0e'     #  0x000e -> SHIFT OUT
-    '\x0f'     #  0x000f -> SHIFT IN
-    '\x10'     #  0x0010 -> DATA LINK ESCAPE
-    '\x11'     #  0x0011 -> DEVICE CONTROL ONE
-    '\x12'     #  0x0012 -> DEVICE CONTROL TWO
-    '\x13'     #  0x0013 -> DEVICE CONTROL THREE
-    '\x14'     #  0x0014 -> DEVICE CONTROL FOUR
-    '\x15'     #  0x0015 -> NEGATIVE ACKNOWLEDGE
-    '\x16'     #  0x0016 -> SYNCHRONOUS IDLE
-    '\x17'     #  0x0017 -> END OF TRANSMISSION BLOCK
-    '\x18'     #  0x0018 -> CANCEL
-    '\x19'     #  0x0019 -> END OF MEDIUM
-    '\x1a'     #  0x001a -> SUBSTITUTE
-    '\x1b'     #  0x001b -> ESCAPE
-    '\x1c'     #  0x001c -> FILE SEPARATOR
-    '\x1d'     #  0x001d -> GROUP SEPARATOR
-    '\x1e'     #  0x001e -> RECORD SEPARATOR
-    '\x1f'     #  0x001f -> UNIT SEPARATOR
-    ' '        #  0x0020 -> SPACE
-    '!'        #  0x0021 -> EXCLAMATION MARK
-    '"'        #  0x0022 -> QUOTATION MARK
-    '#'        #  0x0023 -> NUMBER SIGN
-    '$'        #  0x0024 -> DOLLAR SIGN
-    '\u066a'   #  0x0025 -> ARABIC PERCENT SIGN
-    '&'        #  0x0026 -> AMPERSAND
-    "'"        #  0x0027 -> APOSTROPHE
-    '('        #  0x0028 -> LEFT PARENTHESIS
-    ')'        #  0x0029 -> RIGHT PARENTHESIS
-    '*'        #  0x002a -> ASTERISK
-    '+'        #  0x002b -> PLUS SIGN
-    ','        #  0x002c -> COMMA
-    '-'        #  0x002d -> HYPHEN-MINUS
-    '.'        #  0x002e -> FULL STOP
-    '/'        #  0x002f -> SOLIDUS
-    '0'        #  0x0030 -> DIGIT ZERO
-    '1'        #  0x0031 -> DIGIT ONE
-    '2'        #  0x0032 -> DIGIT TWO
-    '3'        #  0x0033 -> DIGIT THREE
-    '4'        #  0x0034 -> DIGIT FOUR
-    '5'        #  0x0035 -> DIGIT FIVE
-    '6'        #  0x0036 -> DIGIT SIX
-    '7'        #  0x0037 -> DIGIT SEVEN
-    '8'        #  0x0038 -> DIGIT EIGHT
-    '9'        #  0x0039 -> DIGIT NINE
-    ':'        #  0x003a -> COLON
-    ';'        #  0x003b -> SEMICOLON
-    '<'        #  0x003c -> LESS-THAN SIGN
-    '='        #  0x003d -> EQUALS SIGN
-    '>'        #  0x003e -> GREATER-THAN SIGN
-    '?'        #  0x003f -> QUESTION MARK
-    '@'        #  0x0040 -> COMMERCIAL AT
-    'A'        #  0x0041 -> LATIN CAPITAL LETTER A
-    'B'        #  0x0042 -> LATIN CAPITAL LETTER B
-    'C'        #  0x0043 -> LATIN CAPITAL LETTER C
-    'D'        #  0x0044 -> LATIN CAPITAL LETTER D
-    'E'        #  0x0045 -> LATIN CAPITAL LETTER E
-    'F'        #  0x0046 -> LATIN CAPITAL LETTER F
-    'G'        #  0x0047 -> LATIN CAPITAL LETTER G
-    'H'        #  0x0048 -> LATIN CAPITAL LETTER H
-    'I'        #  0x0049 -> LATIN CAPITAL LETTER I
-    'J'        #  0x004a -> LATIN CAPITAL LETTER J
-    'K'        #  0x004b -> LATIN CAPITAL LETTER K
-    'L'        #  0x004c -> LATIN CAPITAL LETTER L
-    'M'        #  0x004d -> LATIN CAPITAL LETTER M
-    'N'        #  0x004e -> LATIN CAPITAL LETTER N
-    'O'        #  0x004f -> LATIN CAPITAL LETTER O
-    'P'        #  0x0050 -> LATIN CAPITAL LETTER P
-    'Q'        #  0x0051 -> LATIN CAPITAL LETTER Q
-    'R'        #  0x0052 -> LATIN CAPITAL LETTER R
-    'S'        #  0x0053 -> LATIN CAPITAL LETTER S
-    'T'        #  0x0054 -> LATIN CAPITAL LETTER T
-    'U'        #  0x0055 -> LATIN CAPITAL LETTER U
-    'V'        #  0x0056 -> LATIN CAPITAL LETTER V
-    'W'        #  0x0057 -> LATIN CAPITAL LETTER W
-    'X'        #  0x0058 -> LATIN CAPITAL LETTER X
-    'Y'        #  0x0059 -> LATIN CAPITAL LETTER Y
-    'Z'        #  0x005a -> LATIN CAPITAL LETTER Z
-    '['        #  0x005b -> LEFT SQUARE BRACKET
-    '\\'       #  0x005c -> REVERSE SOLIDUS
-    ']'        #  0x005d -> RIGHT SQUARE BRACKET
-    '^'        #  0x005e -> CIRCUMFLEX ACCENT
-    '_'        #  0x005f -> LOW LINE
-    '`'        #  0x0060 -> GRAVE ACCENT
-    'a'        #  0x0061 -> LATIN SMALL LETTER A
-    'b'        #  0x0062 -> LATIN SMALL LETTER B
-    'c'        #  0x0063 -> LATIN SMALL LETTER C
-    'd'        #  0x0064 -> LATIN SMALL LETTER D
-    'e'        #  0x0065 -> LATIN SMALL LETTER E
-    'f'        #  0x0066 -> LATIN SMALL LETTER F
-    'g'        #  0x0067 -> LATIN SMALL LETTER G
-    'h'        #  0x0068 -> LATIN SMALL LETTER H
-    'i'        #  0x0069 -> LATIN SMALL LETTER I
-    'j'        #  0x006a -> LATIN SMALL LETTER J
-    'k'        #  0x006b -> LATIN SMALL LETTER K
-    'l'        #  0x006c -> LATIN SMALL LETTER L
-    'm'        #  0x006d -> LATIN SMALL LETTER M
-    'n'        #  0x006e -> LATIN SMALL LETTER N
-    'o'        #  0x006f -> LATIN SMALL LETTER O
-    'p'        #  0x0070 -> LATIN SMALL LETTER P
-    'q'        #  0x0071 -> LATIN SMALL LETTER Q
-    'r'        #  0x0072 -> LATIN SMALL LETTER R
-    's'        #  0x0073 -> LATIN SMALL LETTER S
-    't'        #  0x0074 -> LATIN SMALL LETTER T
-    'u'        #  0x0075 -> LATIN SMALL LETTER U
-    'v'        #  0x0076 -> LATIN SMALL LETTER V
-    'w'        #  0x0077 -> LATIN SMALL LETTER W
-    'x'        #  0x0078 -> LATIN SMALL LETTER X
-    'y'        #  0x0079 -> LATIN SMALL LETTER Y
-    'z'        #  0x007a -> LATIN SMALL LETTER Z
-    '{'        #  0x007b -> LEFT CURLY BRACKET
-    '|'        #  0x007c -> VERTICAL LINE
-    '}'        #  0x007d -> RIGHT CURLY BRACKET
-    '~'        #  0x007e -> TILDE
-    '\x7f'     #  0x007f -> DELETE
-    '\xb0'     #  0x0080 -> DEGREE SIGN
-    '\xb7'     #  0x0081 -> MIDDLE DOT
-    '\u2219'   #  0x0082 -> BULLET OPERATOR
-    '\u221a'   #  0x0083 -> SQUARE ROOT
-    '\u2592'   #  0x0084 -> MEDIUM SHADE
-    '\u2500'   #  0x0085 -> FORMS LIGHT HORIZONTAL
-    '\u2502'   #  0x0086 -> FORMS LIGHT VERTICAL
-    '\u253c'   #  0x0087 -> FORMS LIGHT VERTICAL AND HORIZONTAL
-    '\u2524'   #  0x0088 -> FORMS LIGHT VERTICAL AND LEFT
-    '\u252c'   #  0x0089 -> FORMS LIGHT DOWN AND HORIZONTAL
-    '\u251c'   #  0x008a -> FORMS LIGHT VERTICAL AND RIGHT
-    '\u2534'   #  0x008b -> FORMS LIGHT UP AND HORIZONTAL
-    '\u2510'   #  0x008c -> FORMS LIGHT DOWN AND LEFT
-    '\u250c'   #  0x008d -> FORMS LIGHT DOWN AND RIGHT
-    '\u2514'   #  0x008e -> FORMS LIGHT UP AND RIGHT
-    '\u2518'   #  0x008f -> FORMS LIGHT UP AND LEFT
-    '\u03b2'   #  0x0090 -> GREEK SMALL BETA
-    '\u221e'   #  0x0091 -> INFINITY
-    '\u03c6'   #  0x0092 -> GREEK SMALL PHI
-    '\xb1'     #  0x0093 -> PLUS-OR-MINUS SIGN
-    '\xbd'     #  0x0094 -> FRACTION 1/2
-    '\xbc'     #  0x0095 -> FRACTION 1/4
-    '\u2248'   #  0x0096 -> ALMOST EQUAL TO
-    '\xab'     #  0x0097 -> LEFT POINTING GUILLEMET
-    '\xbb'     #  0x0098 -> RIGHT POINTING GUILLEMET
-    '\ufef7'   #  0x0099 -> ARABIC LIGATURE LAM WITH ALEF WITH HAMZA ABOVE ISOLATED FORM
-    '\ufef8'   #  0x009a -> ARABIC LIGATURE LAM WITH ALEF WITH HAMZA ABOVE FINAL FORM
-    '\ufffe'   #  0x009b -> UNDEFINED
-    '\ufffe'   #  0x009c -> UNDEFINED
-    '\ufefb'   #  0x009d -> ARABIC LIGATURE LAM WITH ALEF ISOLATED FORM
-    '\ufefc'   #  0x009e -> ARABIC LIGATURE LAM WITH ALEF FINAL FORM
-    '\ufffe'   #  0x009f -> UNDEFINED
-    '\xa0'     #  0x00a0 -> NON-BREAKING SPACE
-    '\xad'     #  0x00a1 -> SOFT HYPHEN
-    '\ufe82'   #  0x00a2 -> ARABIC LETTER ALEF WITH MADDA ABOVE FINAL FORM
-    '\xa3'     #  0x00a3 -> POUND SIGN
-    '\xa4'     #  0x00a4 -> CURRENCY SIGN
-    '\ufe84'   #  0x00a5 -> ARABIC LETTER ALEF WITH HAMZA ABOVE FINAL FORM
-    '\ufffe'   #  0x00a6 -> UNDEFINED
-    '\ufffe'   #  0x00a7 -> UNDEFINED
-    '\ufe8e'   #  0x00a8 -> ARABIC LETTER ALEF FINAL FORM
-    '\ufe8f'   #  0x00a9 -> ARABIC LETTER BEH ISOLATED FORM
-    '\ufe95'   #  0x00aa -> ARABIC LETTER TEH ISOLATED FORM
-    '\ufe99'   #  0x00ab -> ARABIC LETTER THEH ISOLATED FORM
-    '\u060c'   #  0x00ac -> ARABIC COMMA
-    '\ufe9d'   #  0x00ad -> ARABIC LETTER JEEM ISOLATED FORM
-    '\ufea1'   #  0x00ae -> ARABIC LETTER HAH ISOLATED FORM
-    '\ufea5'   #  0x00af -> ARABIC LETTER KHAH ISOLATED FORM
-    '\u0660'   #  0x00b0 -> ARABIC-INDIC DIGIT ZERO
-    '\u0661'   #  0x00b1 -> ARABIC-INDIC DIGIT ONE
-    '\u0662'   #  0x00b2 -> ARABIC-INDIC DIGIT TWO
-    '\u0663'   #  0x00b3 -> ARABIC-INDIC DIGIT THREE
-    '\u0664'   #  0x00b4 -> ARABIC-INDIC DIGIT FOUR
-    '\u0665'   #  0x00b5 -> ARABIC-INDIC DIGIT FIVE
-    '\u0666'   #  0x00b6 -> ARABIC-INDIC DIGIT SIX
-    '\u0667'   #  0x00b7 -> ARABIC-INDIC DIGIT SEVEN
-    '\u0668'   #  0x00b8 -> ARABIC-INDIC DIGIT EIGHT
-    '\u0669'   #  0x00b9 -> ARABIC-INDIC DIGIT NINE
-    '\ufed1'   #  0x00ba -> ARABIC LETTER FEH ISOLATED FORM
-    '\u061b'   #  0x00bb -> ARABIC SEMICOLON
-    '\ufeb1'   #  0x00bc -> ARABIC LETTER SEEN ISOLATED FORM
-    '\ufeb5'   #  0x00bd -> ARABIC LETTER SHEEN ISOLATED FORM
-    '\ufeb9'   #  0x00be -> ARABIC LETTER SAD ISOLATED FORM
-    '\u061f'   #  0x00bf -> ARABIC QUESTION MARK
-    '\xa2'     #  0x00c0 -> CENT SIGN
-    '\ufe80'   #  0x00c1 -> ARABIC LETTER HAMZA ISOLATED FORM
-    '\ufe81'   #  0x00c2 -> ARABIC LETTER ALEF WITH MADDA ABOVE ISOLATED FORM
-    '\ufe83'   #  0x00c3 -> ARABIC LETTER ALEF WITH HAMZA ABOVE ISOLATED FORM
-    '\ufe85'   #  0x00c4 -> ARABIC LETTER WAW WITH HAMZA ABOVE ISOLATED FORM
-    '\ufeca'   #  0x00c5 -> ARABIC LETTER AIN FINAL FORM
-    '\ufe8b'   #  0x00c6 -> ARABIC LETTER YEH WITH HAMZA ABOVE INITIAL FORM
-    '\ufe8d'   #  0x00c7 -> ARABIC LETTER ALEF ISOLATED FORM
-    '\ufe91'   #  0x00c8 -> ARABIC LETTER BEH INITIAL FORM
-    '\ufe93'   #  0x00c9 -> ARABIC LETTER TEH MARBUTA ISOLATED FORM
-    '\ufe97'   #  0x00ca -> ARABIC LETTER TEH INITIAL FORM
-    '\ufe9b'   #  0x00cb -> ARABIC LETTER THEH INITIAL FORM
-    '\ufe9f'   #  0x00cc -> ARABIC LETTER JEEM INITIAL FORM
-    '\ufea3'   #  0x00cd -> ARABIC LETTER HAH INITIAL FORM
-    '\ufea7'   #  0x00ce -> ARABIC LETTER KHAH INITIAL FORM
-    '\ufea9'   #  0x00cf -> ARABIC LETTER DAL ISOLATED FORM
-    '\ufeab'   #  0x00d0 -> ARABIC LETTER THAL ISOLATED FORM
-    '\ufead'   #  0x00d1 -> ARABIC LETTER REH ISOLATED FORM
-    '\ufeaf'   #  0x00d2 -> ARABIC LETTER ZAIN ISOLATED FORM
-    '\ufeb3'   #  0x00d3 -> ARABIC LETTER SEEN INITIAL FORM
-    '\ufeb7'   #  0x00d4 -> ARABIC LETTER SHEEN INITIAL FORM
-    '\ufebb'   #  0x00d5 -> ARABIC LETTER SAD INITIAL FORM
-    '\ufebf'   #  0x00d6 -> ARABIC LETTER DAD INITIAL FORM
-    '\ufec1'   #  0x00d7 -> ARABIC LETTER TAH ISOLATED FORM
-    '\ufec5'   #  0x00d8 -> ARABIC LETTER ZAH ISOLATED FORM
-    '\ufecb'   #  0x00d9 -> ARABIC LETTER AIN INITIAL FORM
-    '\ufecf'   #  0x00da -> ARABIC LETTER GHAIN INITIAL FORM
-    '\xa6'     #  0x00db -> BROKEN VERTICAL BAR
-    '\xac'     #  0x00dc -> NOT SIGN
-    '\xf7'     #  0x00dd -> DIVISION SIGN
-    '\xd7'     #  0x00de -> MULTIPLICATION SIGN
-    '\ufec9'   #  0x00df -> ARABIC LETTER AIN ISOLATED FORM
-    '\u0640'   #  0x00e0 -> ARABIC TATWEEL
-    '\ufed3'   #  0x00e1 -> ARABIC LETTER FEH INITIAL FORM
-    '\ufed7'   #  0x00e2 -> ARABIC LETTER QAF INITIAL FORM
-    '\ufedb'   #  0x00e3 -> ARABIC LETTER KAF INITIAL FORM
-    '\ufedf'   #  0x00e4 -> ARABIC LETTER LAM INITIAL FORM
-    '\ufee3'   #  0x00e5 -> ARABIC LETTER MEEM INITIAL FORM
-    '\ufee7'   #  0x00e6 -> ARABIC LETTER NOON INITIAL FORM
-    '\ufeeb'   #  0x00e7 -> ARABIC LETTER HEH INITIAL FORM
-    '\ufeed'   #  0x00e8 -> ARABIC LETTER WAW ISOLATED FORM
-    '\ufeef'   #  0x00e9 -> ARABIC LETTER ALEF MAKSURA ISOLATED FORM
-    '\ufef3'   #  0x00ea -> ARABIC LETTER YEH INITIAL FORM
-    '\ufebd'   #  0x00eb -> ARABIC LETTER DAD ISOLATED FORM
-    '\ufecc'   #  0x00ec -> ARABIC LETTER AIN MEDIAL FORM
-    '\ufece'   #  0x00ed -> ARABIC LETTER GHAIN FINAL FORM
-    '\ufecd'   #  0x00ee -> ARABIC LETTER GHAIN ISOLATED FORM
-    '\ufee1'   #  0x00ef -> ARABIC LETTER MEEM ISOLATED FORM
-    '\ufe7d'   #  0x00f0 -> ARABIC SHADDA MEDIAL FORM
-    '\u0651'   #  0x00f1 -> ARABIC SHADDAH
-    '\ufee5'   #  0x00f2 -> ARABIC LETTER NOON ISOLATED FORM
-    '\ufee9'   #  0x00f3 -> ARABIC LETTER HEH ISOLATED FORM
-    '\ufeec'   #  0x00f4 -> ARABIC LETTER HEH MEDIAL FORM
-    '\ufef0'   #  0x00f5 -> ARABIC LETTER ALEF MAKSURA FINAL FORM
-    '\ufef2'   #  0x00f6 -> ARABIC LETTER YEH FINAL FORM
-    '\ufed0'   #  0x00f7 -> ARABIC LETTER GHAIN MEDIAL FORM
-    '\ufed5'   #  0x00f8 -> ARABIC LETTER QAF ISOLATED FORM
-    '\ufef5'   #  0x00f9 -> ARABIC LIGATURE LAM WITH ALEF WITH MADDA ABOVE ISOLATED FORM
-    '\ufef6'   #  0x00fa -> ARABIC LIGATURE LAM WITH ALEF WITH MADDA ABOVE FINAL FORM
-    '\ufedd'   #  0x00fb -> ARABIC LETTER LAM ISOLATED FORM
-    '\ufed9'   #  0x00fc -> ARABIC LETTER KAF ISOLATED FORM
-    '\ufef1'   #  0x00fd -> ARABIC LETTER YEH ISOLATED FORM
-    '\u25a0'   #  0x00fe -> BLACK SQUARE
-    '\ufffe'   #  0x00ff -> UNDEFINED
+decoding_map.update(
+    {
+        37: 1642,
+        128: 176,
+        129: 183,
+        130: 8729,
+        131: 8730,
+        132: 9618,
+        133: 9472,
+        134: 9474,
+        135: 9532,
+        136: 9508,
+        137: 9516,
+        138: 9500,
+        139: 9524,
+        140: 9488,
+        141: 9484,
+        142: 9492,
+        143: 9496,
+        144: 946,
+        145: 8734,
+        146: 966,
+        147: 177,
+        148: 189,
+        149: 188,
+        150: 8776,
+        151: 171,
+        152: 187,
+        153: 65271,
+        154: 65272,
+        155: None,
+        156: None,
+        157: 65275,
+        158: 65276,
+        159: None,
+        161: 173,
+        162: 65154,
+        165: 65156,
+        166: None,
+        167: None,
+        168: 65166,
+        169: 65167,
+        170: 65173,
+        171: 65177,
+        172: 1548,
+        173: 65181,
+        174: 65185,
+        175: 65189,
+        176: 1632,
+        177: 1633,
+        178: 1634,
+        179: 1635,
+        180: 1636,
+        181: 1637,
+        182: 1638,
+        183: 1639,
+        184: 1640,
+        185: 1641,
+        186: 65233,
+        187: 1563,
+        188: 65201,
+        189: 65205,
+        190: 65209,
+        191: 1567,
+        192: 162,
+        193: 65152,
+        194: 65153,
+        195: 65155,
+        196: 65157,
+        197: 65226,
+        198: 65163,
+        199: 65165,
+        200: 65169,
+        201: 65171,
+        202: 65175,
+        203: 65179,
+        204: 65183,
+        205: 65187,
+        206: 65191,
+        207: 65193,
+        208: 65195,
+        209: 65197,
+        210: 65199,
+        211: 65203,
+        212: 65207,
+        213: 65211,
+        214: 65215,
+        215: 65217,
+        216: 65221,
+        217: 65227,
+        218: 65231,
+        219: 166,
+        220: 172,
+        221: 247,
+        222: 215,
+        223: 65225,
+        224: 1600,
+        225: 65235,
+        226: 65239,
+        227: 65243,
+        228: 65247,
+        229: 65251,
+        230: 65255,
+        231: 65259,
+        232: 65261,
+        233: 65263,
+        234: 65267,
+        235: 65213,
+        236: 65228,
+        237: 65230,
+        238: 65229,
+        239: 65249,
+        240: 65149,
+        241: 1617,
+        242: 65253,
+        243: 65257,
+        244: 65260,
+        245: 65264,
+        246: 65266,
+        247: 65232,
+        248: 65237,
+        249: 65269,
+        250: 65270,
+        251: 65245,
+        252: 65241,
+        253: 65265,
+        254: 9632,
+        255: None,
+    }
 )
-
-### Encoding Map
-
+decoding_table = "\x00\x01\x02\x03\x04\x05\x06\x07\x08\t\n\x0b\x0c\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f !\"#$٪&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\x7f°·∙√▒─│┼┤┬├┴┐┌└┘β∞φ±½¼≈«»ﻷﻸ\ufffe\ufffeﻻﻼ\ufffe\xa0\xadﺂ£¤ﺄ\ufffe\ufffeﺎﺏﺕﺙ،ﺝﺡﺥ٠١٢٣٤٥٦٧٨٩ﻑ؛ﺱﺵﺹ؟¢ﺀﺁﺃﺅﻊﺋﺍﺑﺓﺗﺛﺟﺣﺧﺩﺫﺭﺯﺳﺷﺻﺿﻁﻅﻋﻏ¦¬÷×ﻉـﻓﻗﻛﻟﻣﻧﻫﻭﻯﻳﺽﻌﻎﻍﻡﹽّﻥﻩﻬﻰﻲﻐﻕﻵﻶﻝﻙﻱ■\ufffe"
 encoding_map = {
-    0x0000: 0x0000,     #  NULL
-    0x0001: 0x0001,     #  START OF HEADING
-    0x0002: 0x0002,     #  START OF TEXT
-    0x0003: 0x0003,     #  END OF TEXT
-    0x0004: 0x0004,     #  END OF TRANSMISSION
-    0x0005: 0x0005,     #  ENQUIRY
-    0x0006: 0x0006,     #  ACKNOWLEDGE
-    0x0007: 0x0007,     #  BELL
-    0x0008: 0x0008,     #  BACKSPACE
-    0x0009: 0x0009,     #  HORIZONTAL TABULATION
-    0x000a: 0x000a,     #  LINE FEED
-    0x000b: 0x000b,     #  VERTICAL TABULATION
-    0x000c: 0x000c,     #  FORM FEED
-    0x000d: 0x000d,     #  CARRIAGE RETURN
-    0x000e: 0x000e,     #  SHIFT OUT
-    0x000f: 0x000f,     #  SHIFT IN
-    0x0010: 0x0010,     #  DATA LINK ESCAPE
-    0x0011: 0x0011,     #  DEVICE CONTROL ONE
-    0x0012: 0x0012,     #  DEVICE CONTROL TWO
-    0x0013: 0x0013,     #  DEVICE CONTROL THREE
-    0x0014: 0x0014,     #  DEVICE CONTROL FOUR
-    0x0015: 0x0015,     #  NEGATIVE ACKNOWLEDGE
-    0x0016: 0x0016,     #  SYNCHRONOUS IDLE
-    0x0017: 0x0017,     #  END OF TRANSMISSION BLOCK
-    0x0018: 0x0018,     #  CANCEL
-    0x0019: 0x0019,     #  END OF MEDIUM
-    0x001a: 0x001a,     #  SUBSTITUTE
-    0x001b: 0x001b,     #  ESCAPE
-    0x001c: 0x001c,     #  FILE SEPARATOR
-    0x001d: 0x001d,     #  GROUP SEPARATOR
-    0x001e: 0x001e,     #  RECORD SEPARATOR
-    0x001f: 0x001f,     #  UNIT SEPARATOR
-    0x0020: 0x0020,     #  SPACE
-    0x0021: 0x0021,     #  EXCLAMATION MARK
-    0x0022: 0x0022,     #  QUOTATION MARK
-    0x0023: 0x0023,     #  NUMBER SIGN
-    0x0024: 0x0024,     #  DOLLAR SIGN
-    0x0026: 0x0026,     #  AMPERSAND
-    0x0027: 0x0027,     #  APOSTROPHE
-    0x0028: 0x0028,     #  LEFT PARENTHESIS
-    0x0029: 0x0029,     #  RIGHT PARENTHESIS
-    0x002a: 0x002a,     #  ASTERISK
-    0x002b: 0x002b,     #  PLUS SIGN
-    0x002c: 0x002c,     #  COMMA
-    0x002d: 0x002d,     #  HYPHEN-MINUS
-    0x002e: 0x002e,     #  FULL STOP
-    0x002f: 0x002f,     #  SOLIDUS
-    0x0030: 0x0030,     #  DIGIT ZERO
-    0x0031: 0x0031,     #  DIGIT ONE
-    0x0032: 0x0032,     #  DIGIT TWO
-    0x0033: 0x0033,     #  DIGIT THREE
-    0x0034: 0x0034,     #  DIGIT FOUR
-    0x0035: 0x0035,     #  DIGIT FIVE
-    0x0036: 0x0036,     #  DIGIT SIX
-    0x0037: 0x0037,     #  DIGIT SEVEN
-    0x0038: 0x0038,     #  DIGIT EIGHT
-    0x0039: 0x0039,     #  DIGIT NINE
-    0x003a: 0x003a,     #  COLON
-    0x003b: 0x003b,     #  SEMICOLON
-    0x003c: 0x003c,     #  LESS-THAN SIGN
-    0x003d: 0x003d,     #  EQUALS SIGN
-    0x003e: 0x003e,     #  GREATER-THAN SIGN
-    0x003f: 0x003f,     #  QUESTION MARK
-    0x0040: 0x0040,     #  COMMERCIAL AT
-    0x0041: 0x0041,     #  LATIN CAPITAL LETTER A
-    0x0042: 0x0042,     #  LATIN CAPITAL LETTER B
-    0x0043: 0x0043,     #  LATIN CAPITAL LETTER C
-    0x0044: 0x0044,     #  LATIN CAPITAL LETTER D
-    0x0045: 0x0045,     #  LATIN CAPITAL LETTER E
-    0x0046: 0x0046,     #  LATIN CAPITAL LETTER F
-    0x0047: 0x0047,     #  LATIN CAPITAL LETTER G
-    0x0048: 0x0048,     #  LATIN CAPITAL LETTER H
-    0x0049: 0x0049,     #  LATIN CAPITAL LETTER I
-    0x004a: 0x004a,     #  LATIN CAPITAL LETTER J
-    0x004b: 0x004b,     #  LATIN CAPITAL LETTER K
-    0x004c: 0x004c,     #  LATIN CAPITAL LETTER L
-    0x004d: 0x004d,     #  LATIN CAPITAL LETTER M
-    0x004e: 0x004e,     #  LATIN CAPITAL LETTER N
-    0x004f: 0x004f,     #  LATIN CAPITAL LETTER O
-    0x0050: 0x0050,     #  LATIN CAPITAL LETTER P
-    0x0051: 0x0051,     #  LATIN CAPITAL LETTER Q
-    0x0052: 0x0052,     #  LATIN CAPITAL LETTER R
-    0x0053: 0x0053,     #  LATIN CAPITAL LETTER S
-    0x0054: 0x0054,     #  LATIN CAPITAL LETTER T
-    0x0055: 0x0055,     #  LATIN CAPITAL LETTER U
-    0x0056: 0x0056,     #  LATIN CAPITAL LETTER V
-    0x0057: 0x0057,     #  LATIN CAPITAL LETTER W
-    0x0058: 0x0058,     #  LATIN CAPITAL LETTER X
-    0x0059: 0x0059,     #  LATIN CAPITAL LETTER Y
-    0x005a: 0x005a,     #  LATIN CAPITAL LETTER Z
-    0x005b: 0x005b,     #  LEFT SQUARE BRACKET
-    0x005c: 0x005c,     #  REVERSE SOLIDUS
-    0x005d: 0x005d,     #  RIGHT SQUARE BRACKET
-    0x005e: 0x005e,     #  CIRCUMFLEX ACCENT
-    0x005f: 0x005f,     #  LOW LINE
-    0x0060: 0x0060,     #  GRAVE ACCENT
-    0x0061: 0x0061,     #  LATIN SMALL LETTER A
-    0x0062: 0x0062,     #  LATIN SMALL LETTER B
-    0x0063: 0x0063,     #  LATIN SMALL LETTER C
-    0x0064: 0x0064,     #  LATIN SMALL LETTER D
-    0x0065: 0x0065,     #  LATIN SMALL LETTER E
-    0x0066: 0x0066,     #  LATIN SMALL LETTER F
-    0x0067: 0x0067,     #  LATIN SMALL LETTER G
-    0x0068: 0x0068,     #  LATIN SMALL LETTER H
-    0x0069: 0x0069,     #  LATIN SMALL LETTER I
-    0x006a: 0x006a,     #  LATIN SMALL LETTER J
-    0x006b: 0x006b,     #  LATIN SMALL LETTER K
-    0x006c: 0x006c,     #  LATIN SMALL LETTER L
-    0x006d: 0x006d,     #  LATIN SMALL LETTER M
-    0x006e: 0x006e,     #  LATIN SMALL LETTER N
-    0x006f: 0x006f,     #  LATIN SMALL LETTER O
-    0x0070: 0x0070,     #  LATIN SMALL LETTER P
-    0x0071: 0x0071,     #  LATIN SMALL LETTER Q
-    0x0072: 0x0072,     #  LATIN SMALL LETTER R
-    0x0073: 0x0073,     #  LATIN SMALL LETTER S
-    0x0074: 0x0074,     #  LATIN SMALL LETTER T
-    0x0075: 0x0075,     #  LATIN SMALL LETTER U
-    0x0076: 0x0076,     #  LATIN SMALL LETTER V
-    0x0077: 0x0077,     #  LATIN SMALL LETTER W
-    0x0078: 0x0078,     #  LATIN SMALL LETTER X
-    0x0079: 0x0079,     #  LATIN SMALL LETTER Y
-    0x007a: 0x007a,     #  LATIN SMALL LETTER Z
-    0x007b: 0x007b,     #  LEFT CURLY BRACKET
-    0x007c: 0x007c,     #  VERTICAL LINE
-    0x007d: 0x007d,     #  RIGHT CURLY BRACKET
-    0x007e: 0x007e,     #  TILDE
-    0x007f: 0x007f,     #  DELETE
-    0x00a0: 0x00a0,     #  NON-BREAKING SPACE
-    0x00a2: 0x00c0,     #  CENT SIGN
-    0x00a3: 0x00a3,     #  POUND SIGN
-    0x00a4: 0x00a4,     #  CURRENCY SIGN
-    0x00a6: 0x00db,     #  BROKEN VERTICAL BAR
-    0x00ab: 0x0097,     #  LEFT POINTING GUILLEMET
-    0x00ac: 0x00dc,     #  NOT SIGN
-    0x00ad: 0x00a1,     #  SOFT HYPHEN
-    0x00b0: 0x0080,     #  DEGREE SIGN
-    0x00b1: 0x0093,     #  PLUS-OR-MINUS SIGN
-    0x00b7: 0x0081,     #  MIDDLE DOT
-    0x00bb: 0x0098,     #  RIGHT POINTING GUILLEMET
-    0x00bc: 0x0095,     #  FRACTION 1/4
-    0x00bd: 0x0094,     #  FRACTION 1/2
-    0x00d7: 0x00de,     #  MULTIPLICATION SIGN
-    0x00f7: 0x00dd,     #  DIVISION SIGN
-    0x03b2: 0x0090,     #  GREEK SMALL BETA
-    0x03c6: 0x0092,     #  GREEK SMALL PHI
-    0x060c: 0x00ac,     #  ARABIC COMMA
-    0x061b: 0x00bb,     #  ARABIC SEMICOLON
-    0x061f: 0x00bf,     #  ARABIC QUESTION MARK
-    0x0640: 0x00e0,     #  ARABIC TATWEEL
-    0x0651: 0x00f1,     #  ARABIC SHADDAH
-    0x0660: 0x00b0,     #  ARABIC-INDIC DIGIT ZERO
-    0x0661: 0x00b1,     #  ARABIC-INDIC DIGIT ONE
-    0x0662: 0x00b2,     #  ARABIC-INDIC DIGIT TWO
-    0x0663: 0x00b3,     #  ARABIC-INDIC DIGIT THREE
-    0x0664: 0x00b4,     #  ARABIC-INDIC DIGIT FOUR
-    0x0665: 0x00b5,     #  ARABIC-INDIC DIGIT FIVE
-    0x0666: 0x00b6,     #  ARABIC-INDIC DIGIT SIX
-    0x0667: 0x00b7,     #  ARABIC-INDIC DIGIT SEVEN
-    0x0668: 0x00b8,     #  ARABIC-INDIC DIGIT EIGHT
-    0x0669: 0x00b9,     #  ARABIC-INDIC DIGIT NINE
-    0x066a: 0x0025,     #  ARABIC PERCENT SIGN
-    0x2219: 0x0082,     #  BULLET OPERATOR
-    0x221a: 0x0083,     #  SQUARE ROOT
-    0x221e: 0x0091,     #  INFINITY
-    0x2248: 0x0096,     #  ALMOST EQUAL TO
-    0x2500: 0x0085,     #  FORMS LIGHT HORIZONTAL
-    0x2502: 0x0086,     #  FORMS LIGHT VERTICAL
-    0x250c: 0x008d,     #  FORMS LIGHT DOWN AND RIGHT
-    0x2510: 0x008c,     #  FORMS LIGHT DOWN AND LEFT
-    0x2514: 0x008e,     #  FORMS LIGHT UP AND RIGHT
-    0x2518: 0x008f,     #  FORMS LIGHT UP AND LEFT
-    0x251c: 0x008a,     #  FORMS LIGHT VERTICAL AND RIGHT
-    0x2524: 0x0088,     #  FORMS LIGHT VERTICAL AND LEFT
-    0x252c: 0x0089,     #  FORMS LIGHT DOWN AND HORIZONTAL
-    0x2534: 0x008b,     #  FORMS LIGHT UP AND HORIZONTAL
-    0x253c: 0x0087,     #  FORMS LIGHT VERTICAL AND HORIZONTAL
-    0x2592: 0x0084,     #  MEDIUM SHADE
-    0x25a0: 0x00fe,     #  BLACK SQUARE
-    0xfe7d: 0x00f0,     #  ARABIC SHADDA MEDIAL FORM
-    0xfe80: 0x00c1,     #  ARABIC LETTER HAMZA ISOLATED FORM
-    0xfe81: 0x00c2,     #  ARABIC LETTER ALEF WITH MADDA ABOVE ISOLATED FORM
-    0xfe82: 0x00a2,     #  ARABIC LETTER ALEF WITH MADDA ABOVE FINAL FORM
-    0xfe83: 0x00c3,     #  ARABIC LETTER ALEF WITH HAMZA ABOVE ISOLATED FORM
-    0xfe84: 0x00a5,     #  ARABIC LETTER ALEF WITH HAMZA ABOVE FINAL FORM
-    0xfe85: 0x00c4,     #  ARABIC LETTER WAW WITH HAMZA ABOVE ISOLATED FORM
-    0xfe8b: 0x00c6,     #  ARABIC LETTER YEH WITH HAMZA ABOVE INITIAL FORM
-    0xfe8d: 0x00c7,     #  ARABIC LETTER ALEF ISOLATED FORM
-    0xfe8e: 0x00a8,     #  ARABIC LETTER ALEF FINAL FORM
-    0xfe8f: 0x00a9,     #  ARABIC LETTER BEH ISOLATED FORM
-    0xfe91: 0x00c8,     #  ARABIC LETTER BEH INITIAL FORM
-    0xfe93: 0x00c9,     #  ARABIC LETTER TEH MARBUTA ISOLATED FORM
-    0xfe95: 0x00aa,     #  ARABIC LETTER TEH ISOLATED FORM
-    0xfe97: 0x00ca,     #  ARABIC LETTER TEH INITIAL FORM
-    0xfe99: 0x00ab,     #  ARABIC LETTER THEH ISOLATED FORM
-    0xfe9b: 0x00cb,     #  ARABIC LETTER THEH INITIAL FORM
-    0xfe9d: 0x00ad,     #  ARABIC LETTER JEEM ISOLATED FORM
-    0xfe9f: 0x00cc,     #  ARABIC LETTER JEEM INITIAL FORM
-    0xfea1: 0x00ae,     #  ARABIC LETTER HAH ISOLATED FORM
-    0xfea3: 0x00cd,     #  ARABIC LETTER HAH INITIAL FORM
-    0xfea5: 0x00af,     #  ARABIC LETTER KHAH ISOLATED FORM
-    0xfea7: 0x00ce,     #  ARABIC LETTER KHAH INITIAL FORM
-    0xfea9: 0x00cf,     #  ARABIC LETTER DAL ISOLATED FORM
-    0xfeab: 0x00d0,     #  ARABIC LETTER THAL ISOLATED FORM
-    0xfead: 0x00d1,     #  ARABIC LETTER REH ISOLATED FORM
-    0xfeaf: 0x00d2,     #  ARABIC LETTER ZAIN ISOLATED FORM
-    0xfeb1: 0x00bc,     #  ARABIC LETTER SEEN ISOLATED FORM
-    0xfeb3: 0x00d3,     #  ARABIC LETTER SEEN INITIAL FORM
-    0xfeb5: 0x00bd,     #  ARABIC LETTER SHEEN ISOLATED FORM
-    0xfeb7: 0x00d4,     #  ARABIC LETTER SHEEN INITIAL FORM
-    0xfeb9: 0x00be,     #  ARABIC LETTER SAD ISOLATED FORM
-    0xfebb: 0x00d5,     #  ARABIC LETTER SAD INITIAL FORM
-    0xfebd: 0x00eb,     #  ARABIC LETTER DAD ISOLATED FORM
-    0xfebf: 0x00d6,     #  ARABIC LETTER DAD INITIAL FORM
-    0xfec1: 0x00d7,     #  ARABIC LETTER TAH ISOLATED FORM
-    0xfec5: 0x00d8,     #  ARABIC LETTER ZAH ISOLATED FORM
-    0xfec9: 0x00df,     #  ARABIC LETTER AIN ISOLATED FORM
-    0xfeca: 0x00c5,     #  ARABIC LETTER AIN FINAL FORM
-    0xfecb: 0x00d9,     #  ARABIC LETTER AIN INITIAL FORM
-    0xfecc: 0x00ec,     #  ARABIC LETTER AIN MEDIAL FORM
-    0xfecd: 0x00ee,     #  ARABIC LETTER GHAIN ISOLATED FORM
-    0xfece: 0x00ed,     #  ARABIC LETTER GHAIN FINAL FORM
-    0xfecf: 0x00da,     #  ARABIC LETTER GHAIN INITIAL FORM
-    0xfed0: 0x00f7,     #  ARABIC LETTER GHAIN MEDIAL FORM
-    0xfed1: 0x00ba,     #  ARABIC LETTER FEH ISOLATED FORM
-    0xfed3: 0x00e1,     #  ARABIC LETTER FEH INITIAL FORM
-    0xfed5: 0x00f8,     #  ARABIC LETTER QAF ISOLATED FORM
-    0xfed7: 0x00e2,     #  ARABIC LETTER QAF INITIAL FORM
-    0xfed9: 0x00fc,     #  ARABIC LETTER KAF ISOLATED FORM
-    0xfedb: 0x00e3,     #  ARABIC LETTER KAF INITIAL FORM
-    0xfedd: 0x00fb,     #  ARABIC LETTER LAM ISOLATED FORM
-    0xfedf: 0x00e4,     #  ARABIC LETTER LAM INITIAL FORM
-    0xfee1: 0x00ef,     #  ARABIC LETTER MEEM ISOLATED FORM
-    0xfee3: 0x00e5,     #  ARABIC LETTER MEEM INITIAL FORM
-    0xfee5: 0x00f2,     #  ARABIC LETTER NOON ISOLATED FORM
-    0xfee7: 0x00e6,     #  ARABIC LETTER NOON INITIAL FORM
-    0xfee9: 0x00f3,     #  ARABIC LETTER HEH ISOLATED FORM
-    0xfeeb: 0x00e7,     #  ARABIC LETTER HEH INITIAL FORM
-    0xfeec: 0x00f4,     #  ARABIC LETTER HEH MEDIAL FORM
-    0xfeed: 0x00e8,     #  ARABIC LETTER WAW ISOLATED FORM
-    0xfeef: 0x00e9,     #  ARABIC LETTER ALEF MAKSURA ISOLATED FORM
-    0xfef0: 0x00f5,     #  ARABIC LETTER ALEF MAKSURA FINAL FORM
-    0xfef1: 0x00fd,     #  ARABIC LETTER YEH ISOLATED FORM
-    0xfef2: 0x00f6,     #  ARABIC LETTER YEH FINAL FORM
-    0xfef3: 0x00ea,     #  ARABIC LETTER YEH INITIAL FORM
-    0xfef5: 0x00f9,     #  ARABIC LIGATURE LAM WITH ALEF WITH MADDA ABOVE ISOLATED FORM
-    0xfef6: 0x00fa,     #  ARABIC LIGATURE LAM WITH ALEF WITH MADDA ABOVE FINAL FORM
-    0xfef7: 0x0099,     #  ARABIC LIGATURE LAM WITH ALEF WITH HAMZA ABOVE ISOLATED FORM
-    0xfef8: 0x009a,     #  ARABIC LIGATURE LAM WITH ALEF WITH HAMZA ABOVE FINAL FORM
-    0xfefb: 0x009d,     #  ARABIC LIGATURE LAM WITH ALEF ISOLATED FORM
-    0xfefc: 0x009e,     #  ARABIC LIGATURE LAM WITH ALEF FINAL FORM
+    0: 0,
+    1: 1,
+    2: 2,
+    3: 3,
+    4: 4,
+    5: 5,
+    6: 6,
+    7: 7,
+    8: 8,
+    9: 9,
+    10: 10,
+    11: 11,
+    12: 12,
+    13: 13,
+    14: 14,
+    15: 15,
+    16: 16,
+    17: 17,
+    18: 18,
+    19: 19,
+    20: 20,
+    21: 21,
+    22: 22,
+    23: 23,
+    24: 24,
+    25: 25,
+    26: 26,
+    27: 27,
+    28: 28,
+    29: 29,
+    30: 30,
+    31: 31,
+    32: 32,
+    33: 33,
+    34: 34,
+    35: 35,
+    36: 36,
+    38: 38,
+    39: 39,
+    40: 40,
+    41: 41,
+    42: 42,
+    43: 43,
+    44: 44,
+    45: 45,
+    46: 46,
+    47: 47,
+    48: 48,
+    49: 49,
+    50: 50,
+    51: 51,
+    52: 52,
+    53: 53,
+    54: 54,
+    55: 55,
+    56: 56,
+    57: 57,
+    58: 58,
+    59: 59,
+    60: 60,
+    61: 61,
+    62: 62,
+    63: 63,
+    64: 64,
+    65: 65,
+    66: 66,
+    67: 67,
+    68: 68,
+    69: 69,
+    70: 70,
+    71: 71,
+    72: 72,
+    73: 73,
+    74: 74,
+    75: 75,
+    76: 76,
+    77: 77,
+    78: 78,
+    79: 79,
+    80: 80,
+    81: 81,
+    82: 82,
+    83: 83,
+    84: 84,
+    85: 85,
+    86: 86,
+    87: 87,
+    88: 88,
+    89: 89,
+    90: 90,
+    91: 91,
+    92: 92,
+    93: 93,
+    94: 94,
+    95: 95,
+    96: 96,
+    97: 97,
+    98: 98,
+    99: 99,
+    100: 100,
+    101: 101,
+    102: 102,
+    103: 103,
+    104: 104,
+    105: 105,
+    106: 106,
+    107: 107,
+    108: 108,
+    109: 109,
+    110: 110,
+    111: 111,
+    112: 112,
+    113: 113,
+    114: 114,
+    115: 115,
+    116: 116,
+    117: 117,
+    118: 118,
+    119: 119,
+    120: 120,
+    121: 121,
+    122: 122,
+    123: 123,
+    124: 124,
+    125: 125,
+    126: 126,
+    127: 127,
+    160: 160,
+    162: 192,
+    163: 163,
+    164: 164,
+    166: 219,
+    171: 151,
+    172: 220,
+    173: 161,
+    176: 128,
+    177: 147,
+    183: 129,
+    187: 152,
+    188: 149,
+    189: 148,
+    215: 222,
+    247: 221,
+    946: 144,
+    966: 146,
+    1548: 172,
+    1563: 187,
+    1567: 191,
+    1600: 224,
+    1617: 241,
+    1632: 176,
+    1633: 177,
+    1634: 178,
+    1635: 179,
+    1636: 180,
+    1637: 181,
+    1638: 182,
+    1639: 183,
+    1640: 184,
+    1641: 185,
+    1642: 37,
+    8729: 130,
+    8730: 131,
+    8734: 145,
+    8776: 150,
+    9472: 133,
+    9474: 134,
+    9484: 141,
+    9488: 140,
+    9492: 142,
+    9496: 143,
+    9500: 138,
+    9508: 136,
+    9516: 137,
+    9524: 139,
+    9532: 135,
+    9618: 132,
+    9632: 254,
+    65149: 240,
+    65152: 193,
+    65153: 194,
+    65154: 162,
+    65155: 195,
+    65156: 165,
+    65157: 196,
+    65163: 198,
+    65165: 199,
+    65166: 168,
+    65167: 169,
+    65169: 200,
+    65171: 201,
+    65173: 170,
+    65175: 202,
+    65177: 171,
+    65179: 203,
+    65181: 173,
+    65183: 204,
+    65185: 174,
+    65187: 205,
+    65189: 175,
+    65191: 206,
+    65193: 207,
+    65195: 208,
+    65197: 209,
+    65199: 210,
+    65201: 188,
+    65203: 211,
+    65205: 189,
+    65207: 212,
+    65209: 190,
+    65211: 213,
+    65213: 235,
+    65215: 214,
+    65217: 215,
+    65221: 216,
+    65225: 223,
+    65226: 197,
+    65227: 217,
+    65228: 236,
+    65229: 238,
+    65230: 237,
+    65231: 218,
+    65232: 247,
+    65233: 186,
+    65235: 225,
+    65237: 248,
+    65239: 226,
+    65241: 252,
+    65243: 227,
+    65245: 251,
+    65247: 228,
+    65249: 239,
+    65251: 229,
+    65253: 242,
+    65255: 230,
+    65257: 243,
+    65259: 231,
+    65260: 244,
+    65261: 232,
+    65263: 233,
+    65264: 245,
+    65265: 253,
+    65266: 246,
+    65267: 234,
+    65269: 249,
+    65270: 250,
+    65271: 153,
+    65272: 154,
+    65275: 157,
+    65276: 158,
 }

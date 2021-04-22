@@ -1,29 +1,22 @@
-"""Response classes used by urllib.
-
-The base class, addbase, defines a minimal file-like interface,
-including read() and readline().  The typical response object is an
-addinfourl instance, which defines an info() method that returns
-headers and a geturl() method that returns the url.
-"""
-
+"Response classes used by urllib.\n\nThe base class, addbase, defines a minimal file-like interface,\nincluding read() and readline().  The typical response object is an\naddinfourl instance, which defines an info() method that returns\nheaders and a geturl() method that returns the url.\n"
 import tempfile
 
-__all__ = ['addbase', 'addclosehook', 'addinfo', 'addinfourl']
+__all__ = ["addbase", "addclosehook", "addinfo", "addinfourl"]
 
 
 class addbase(tempfile._TemporaryFileWrapper):
-    """Base class for addinfo and addclosehook. Is a good idea for garbage collection."""
-
-    # XXX Add a method to expose the timeout on the underlying socket?
+    "Base class for addinfo and addclosehook. Is a good idea for garbage collection."
 
     def __init__(self, fp):
-        super(addbase,  self).__init__(fp, '<urllib response>', delete=False)
-        # Keep reference around as this was part of the original API.
+        super(addbase, self).__init__(fp, "<urllib response>", delete=False)
         self.fp = fp
 
     def __repr__(self):
-        return '<%s at %r whose fp = %r>' % (self.__class__.__name__,
-                                             id(self), self.file)
+        return "<%s at %r whose fp = %r>" % (
+            self.__class__.__name__,
+            id(self),
+            self.file,
+        )
 
     def __enter__(self):
         if self.fp.closed:
@@ -35,7 +28,7 @@ class addbase(tempfile._TemporaryFileWrapper):
 
 
 class addclosehook(addbase):
-    """Class to add a close hook to an open file."""
+    "Class to add a close hook to an open file."
 
     def __init__(self, fp, closehook, *hookargs):
         super(addclosehook, self).__init__(fp)
@@ -55,7 +48,7 @@ class addclosehook(addbase):
 
 
 class addinfo(addbase):
-    """class to add an info() method to an open file."""
+    "class to add an info() method to an open file."
 
     def __init__(self, fp, headers):
         super(addinfo, self).__init__(fp)
@@ -66,7 +59,7 @@ class addinfo(addbase):
 
 
 class addinfourl(addinfo):
-    """class to add info() and geturl() methods to an open file."""
+    "class to add info() and geturl() methods to an open file."
 
     def __init__(self, fp, headers, url, code=None):
         super(addinfourl, self).__init__(fp, headers)

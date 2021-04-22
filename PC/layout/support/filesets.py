@@ -1,10 +1,6 @@
-"""
-File sets and globbing helper for make_layout.
-"""
-
+"\nFile sets and globbing helper for make_layout.\n"
 __author__ = "Steve Dower <steve.dower@python.org>"
 __version__ = "3.8"
-
 import os
 
 
@@ -15,7 +11,7 @@ class FileStemSet:
         self._suffixes = []
         for p in map(os.path.normcase, patterns):
             if p.endswith("*"):
-                self._prefixes.append(p[:-1])
+                self._prefixes.append(p[:(-1)])
             elif p.startswith("*"):
                 self._suffixes.append(p[1:])
             else:
@@ -27,7 +23,7 @@ class FileStemSet:
     def __contains__(self, f):
         bn = self._make_name(f)
         return (
-            bn in self._names
+            (bn in self._names)
             or any(map(bn.startswith, self._prefixes))
             or any(map(bn.endswith, self._suffixes))
         )
@@ -49,11 +45,11 @@ class FileSuffixSet:
             elif p.startswith("*"):
                 self._suffixes.append(p[1:])
             elif p.endswith("*"):
-                self._prefixes.append(p[:-1])
+                self._prefixes.append(p[:(-1)])
             elif p.startswith("."):
                 self._names.add(p)
             else:
-                self._names.add("." + p)
+                self._names.add(("." + p))
 
     def _make_name(self, f):
         return os.path.normcase(f.suffix)
@@ -61,7 +57,7 @@ class FileSuffixSet:
     def __contains__(self, f):
         bn = self._make_name(f)
         return (
-            bn in self._names
+            (bn in self._names)
             or any(map(bn.startswith, self._prefixes))
             or any(map(bn.endswith, self._suffixes))
         )
@@ -72,7 +68,6 @@ def _rglob(root, pattern, condition):
     recurse = pattern[:3] in {"**/", "**\\"}
     if recurse:
         pattern = pattern[3:]
-
     while dirs:
         d = dirs.pop(0)
         if recurse:
@@ -81,10 +76,12 @@ def _rglob(root, pattern, condition):
                     condition, (type(root)(f2) for f2 in os.scandir(d) if f2.is_dir())
                 )
             )
-        yield from (
-            (f.relative_to(root), f)
-            for f in d.glob(pattern)
-            if f.is_file() and condition(f)
+        (
+            yield from (
+                (f.relative_to(root), f)
+                for f in d.glob(pattern)
+                if (f.is_file() and condition(f))
+            )
         )
 
 
@@ -95,6 +92,6 @@ def _return_true(f):
 def rglob(root, patterns, condition=None):
     if isinstance(patterns, tuple):
         for p in patterns:
-            yield from _rglob(root, p, condition or _return_true)
+            (yield from _rglob(root, p, (condition or _return_true)))
     else:
-        yield from _rglob(root, patterns, condition or _return_true)
+        (yield from _rglob(root, patterns, (condition or _return_true)))

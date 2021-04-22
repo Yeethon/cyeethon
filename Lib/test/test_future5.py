@@ -1,13 +1,10 @@
-# Check that multiple features can be enabled.
 from __future__ import unicode_literals, print_function
-
 import sys
 import unittest
 from test import support
 
 
 class TestMultipleFeatures(unittest.TestCase):
-
     def test_unicode_literals(self):
         self.assertIsInstance("", str)
 
@@ -17,5 +14,5 @@ class TestMultipleFeatures(unittest.TestCase):
         self.assertEqual(s.getvalue(), "foo\n")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

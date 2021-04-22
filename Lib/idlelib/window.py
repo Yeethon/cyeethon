@@ -3,7 +3,6 @@ import sys
 
 
 class WindowList:
-
     def __init__(self):
         self.dict = {}
         self.callbacks = []
@@ -16,11 +15,10 @@ class WindowList:
         try:
             del self.dict[str(window)]
         except KeyError:
-            # Sometimes, destroy() is called twice
             pass
         self.call_callbacks()
 
-    def add_windows_to_menu(self,  menu):
+    def add_windows_to_menu(self, menu):
         list = []
         for key in self.dict:
             window = self.dict[key]
@@ -30,7 +28,7 @@ class WindowList:
                 continue
             list.append((title, key, window))
         list.sort()
-        for title, key, window in list:
+        for (title, key, window) in list:
             menu.add_command(label=title, command=window.wakeup)
 
     def register_callback(self, callback):
@@ -47,19 +45,17 @@ class WindowList:
             try:
                 callback()
             except:
-                t, v, tb = sys.exc_info()
+                (t, v, tb) = sys.exc_info()
                 print("warning: callback failed in WindowList", t, ":", v)
 
 
 registry = WindowList()
-
 add_windows_to_menu = registry.add_windows_to_menu
 register_callback = registry.register_callback
 unregister_callback = registry.unregister_callback
 
 
 class ListedToplevel(Toplevel):
-
     def __init__(self, master, **kw):
         Toplevel.__init__(self, master, kw)
         registry.add(self)
@@ -68,8 +64,6 @@ class ListedToplevel(Toplevel):
     def destroy(self):
         registry.delete(self)
         Toplevel.destroy(self)
-        # If this is Idle's last window then quit the mainloop
-        # (Needed for clean exit on Windows 98)
         if not registry.dict:
             self.quit()
 
@@ -77,7 +71,6 @@ class ListedToplevel(Toplevel):
         registry.call_callbacks()
 
     def get_title(self):
-        # Subclass can override
         return self.wm_title()
 
     def wakeup(self):
@@ -88,11 +81,10 @@ class ListedToplevel(Toplevel):
             self.tkraise()
             self.focused_widget.focus_set()
         except TclError:
-            # This can happen when the Window menu was torn off.
-            # Simply ignore it.
             pass
 
 
 if __name__ == "__main__":
     from unittest import main
-    main('idlelib.idle_test.test_window', verbosity=2)
+
+    main("idlelib.idle_test.test_window", verbosity=2)

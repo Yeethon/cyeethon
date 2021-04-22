@@ -1,6 +1,4 @@
-"""Tests for sys.audit and sys.addaudithook
-"""
-
+"Tests for sys.audit and sys.addaudithook\n"
 import subprocess
 import sys
 import unittest
@@ -8,10 +6,8 @@ from test import support
 from test.support import import_helper
 from test.support import os_helper
 
-
-if not hasattr(sys, "addaudithook") or not hasattr(sys, "audit"):
+if (not hasattr(sys, "addaudithook")) or (not hasattr(sys, "audit")):
     raise unittest.SkipTest("test only relevant when sys.audit is available")
-
 AUDIT_TESTS_PY = support.findfile("audit-tests.py")
 
 
@@ -56,7 +52,6 @@ class AuditTest(unittest.TestCase):
 
     def test_pickle(self):
         import_helper.import_module("pickle")
-
         self.do_test("test_pickle")
 
     def test_monkeypatch(self):
@@ -72,19 +67,20 @@ class AuditTest(unittest.TestCase):
         self.do_test("test_mmap")
 
     def test_excepthook(self):
-        returncode, events, stderr = self.run_python("test_excepthook")
+        (returncode, events, stderr) = self.run_python("test_excepthook")
         if not returncode:
-            self.fail(f"Expected fatal exception\n{stderr}")
-
+            self.fail(
+                f"""Expected fatal exception
+{stderr}"""
+            )
         self.assertSequenceEqual(
             [("sys.excepthook", " ", "RuntimeError('fatal-error')")], events
         )
 
     def test_unraisablehook(self):
-        returncode, events, stderr = self.run_python("test_unraisablehook")
+        (returncode, events, stderr) = self.run_python("test_unraisablehook")
         if returncode:
             self.fail(stderr)
-
         self.assertEqual(events[0][0], "sys.unraisablehook")
         self.assertEqual(
             events[0][2],
@@ -93,41 +89,40 @@ class AuditTest(unittest.TestCase):
 
     def test_winreg(self):
         import_helper.import_module("winreg")
-        returncode, events, stderr = self.run_python("test_winreg")
+        (returncode, events, stderr) = self.run_python("test_winreg")
         if returncode:
             self.fail(stderr)
-
         self.assertEqual(events[0][0], "winreg.OpenKey")
         self.assertEqual(events[1][0], "winreg.OpenKey/result")
         expected = events[1][2]
         self.assertTrue(expected)
         self.assertSequenceEqual(["winreg.EnumKey", " ", f"{expected} 0"], events[2])
-        self.assertSequenceEqual(["winreg.EnumKey", " ", f"{expected} 10000"], events[3])
+        self.assertSequenceEqual(
+            ["winreg.EnumKey", " ", f"{expected} 10000"], events[3]
+        )
         self.assertSequenceEqual(["winreg.PyHKEY.Detach", " ", expected], events[4])
 
     def test_socket(self):
         import_helper.import_module("socket")
-        returncode, events, stderr = self.run_python("test_socket")
+        (returncode, events, stderr) = self.run_python("test_socket")
         if returncode:
             self.fail(stderr)
-
         if support.verbose:
-            print(*events, sep='\n')
+            print(*events, sep="\n")
         self.assertEqual(events[0][0], "socket.gethostname")
         self.assertEqual(events[1][0], "socket.__new__")
         self.assertEqual(events[2][0], "socket.bind")
         self.assertTrue(events[2][2].endswith("('127.0.0.1', 8080)"))
 
     def test_gc(self):
-        returncode, events, stderr = self.run_python("test_gc")
+        (returncode, events, stderr) = self.run_python("test_gc")
         if returncode:
             self.fail(stderr)
-
         if support.verbose:
-            print(*events, sep='\n')
+            print(*events, sep="\n")
         self.assertEqual(
             [event[0] for event in events],
-            ["gc.get_objects", "gc.get_referrers", "gc.get_referents"]
+            ["gc.get_objects", "gc.get_referrers", "gc.get_referents"],
         )
 
 

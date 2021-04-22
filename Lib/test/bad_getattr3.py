@@ -1,5 +1,5 @@
 def __getattr__(name):
-    if name != 'delgetattr':
+    if name != "delgetattr":
         raise AttributeError
-    del globals()['__getattr__']
+    del globals()["__getattr__"]
     raise AttributeError

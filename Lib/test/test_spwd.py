@@ -2,14 +2,13 @@ import os
 import unittest
 from test.support import import_helper
 
+spwd = import_helper.import_module("spwd")
 
-spwd = import_helper.import_module('spwd')
 
-
-@unittest.skipUnless(hasattr(os, 'geteuid') and os.geteuid() == 0,
-                     'root privileges required')
+@unittest.skipUnless(
+    (hasattr(os, "geteuid") and (os.geteuid() == 0)), "root privileges required"
+)
 class TestSpwdRoot(unittest.TestCase):
-
     def test_getspall(self):
         entries = spwd.getspall()
         self.assertIsInstance(entries, list)
@@ -19,7 +18,7 @@ class TestSpwdRoot(unittest.TestCase):
     def test_getspnam(self):
         entries = spwd.getspall()
         if not entries:
-            self.skipTest('empty shadow password database')
+            self.skipTest("empty shadow password database")
         random_name = entries[0].sp_namp
         entry = spwd.getspnam(random_name)
         self.assertIsInstance(entry, spwd.struct_spwd)
@@ -44,7 +43,7 @@ class TestSpwdRoot(unittest.TestCase):
         self.assertIsInstance(entry.sp_flag, int)
         self.assertEqual(entry.sp_flag, entry[8])
         with self.assertRaises(KeyError) as cx:
-            spwd.getspnam('invalid user name')
+            spwd.getspnam("invalid user name")
         self.assertEqual(str(cx.exception), "'getspnam(): name not found'")
         self.assertRaises(TypeError, spwd.getspnam)
         self.assertRaises(TypeError, spwd.getspnam, 0)
@@ -57,17 +56,17 @@ class TestSpwdRoot(unittest.TestCase):
             self.assertRaises(TypeError, spwd.getspnam, bytes_name)
 
 
-@unittest.skipUnless(hasattr(os, 'geteuid') and os.geteuid() != 0,
-                     'non-root user required')
+@unittest.skipUnless(
+    (hasattr(os, "geteuid") and (os.geteuid() != 0)), "non-root user required"
+)
 class TestSpwdNonRoot(unittest.TestCase):
-
     def test_getspnam_exception(self):
-        name = 'bin'
+        name = "bin"
         try:
             with self.assertRaises(PermissionError) as cm:
                 spwd.getspnam(name)
         except KeyError as exc:
-            self.skipTest("spwd entry %r doesn't exist: %s" % (name, exc))
+            self.skipTest(("spwd entry %r doesn't exist: %s" % (name, exc)))
 
 
 if __name__ == "__main__":

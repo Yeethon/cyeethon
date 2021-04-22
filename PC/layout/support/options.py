@@ -1,11 +1,6 @@
-"""
-List of optional components.
-"""
-
+"\nList of optional components.\n"
 __author__ = "Steve Dower <steve.dower@python.org>"
 __version__ = "3.8"
-
-
 __all__ = []
 
 
@@ -34,8 +29,6 @@ OPTIONS = {
     "chm": {"help": "the CHM documentation"},
     "html-doc": {"help": "the HTML documentation"},
 }
-
-
 PRESETS = {
     "appx": {
         "help": "APPX package",
@@ -50,7 +43,6 @@ PRESETS = {
             "dev",
             "launchers",
             "appxmanifest",
-            # XXX: Disabled for now "precompile",
         ],
     },
     "nuget": {
@@ -92,16 +84,14 @@ PRESETS = {
 
 @public
 def get_argparse_options():
-    for opt, info in OPTIONS.items():
+    for (opt, info) in OPTIONS.items():
         help = "When specified, includes {}".format(info["help"])
         if info.get("not-in-all"):
             help = "{}. Not affected by --include-all".format(help)
-
-        yield "--include-{}".format(opt), help
-
-    for opt, info in PRESETS.items():
+        (yield ("--include-{}".format(opt), help))
+    for (opt, info) in PRESETS.items():
         help = "When specified, includes default options for {}".format(info["help"])
-        yield "--preset-{}".format(opt), help
+        (yield ("--preset-{}".format(opt), help))
 
 
 def ns_get(ns, key, default=False):
@@ -121,11 +111,10 @@ def ns_set(ns, key, value=True):
 
 @public
 def update_presets(ns):
-    for preset, info in PRESETS.items():
+    for (preset, info) in PRESETS.items():
         if ns_get(ns, "preset-{}".format(preset)):
             for opt in info["options"]:
                 ns_set(ns, opt)
-
     if ns.include_all:
         for opt in OPTIONS:
             if OPTIONS[opt].get("not-in-all"):

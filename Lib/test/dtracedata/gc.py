@@ -1,5 +1,6 @@
 import gc
 
+
 def start():
     gc.collect(0)
     gc.collect(1)
@@ -8,6 +9,7 @@ def start():
     l.append(l)
     del l
     gc.collect(2)
+
 
 gc.collect()
 start()

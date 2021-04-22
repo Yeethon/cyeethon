@@ -1,31 +1,4 @@
-"""RPC Implementation, originally written for the Python Idle IDE
-
-For security reasons, GvR requested that Idle's Python execution server process
-connect to the Idle process, which listens for the connection.  Since Idle has
-only one client per server, this was not a limitation.
-
-   +---------------------------------+ +-------------+
-   | socketserver.BaseRequestHandler | | SocketIO    |
-   +---------------------------------+ +-------------+
-                   ^                   | register()  |
-                   |                   | unregister()|
-                   |                   +-------------+
-                   |                      ^  ^
-                   |                      |  |
-                   | + -------------------+  |
-                   | |                       |
-   +-------------------------+        +-----------------+
-   | RPCHandler              |        | RPCClient       |
-   | [attribute of RPCServer]|        |                 |
-   +-------------------------+        +-----------------+
-
-The RPCServer handler class is expected to provide register/unregister methods.
-RPCHandler inherits the mix-in class SocketIO, which provides these methods.
-
-See the Idle run.main() docstring for further information on how this was
-accomplished in Idle.
-
-"""
+"RPC Implementation, originally written for the Python Idle IDE\n\nFor security reasons, GvR requested that Idle's Python execution server process\nconnect to the Idle process, which listens for the connection.  Since Idle has\nonly one client per server, this was not a limitation.\n\n   +---------------------------------+ +-------------+\n   | socketserver.BaseRequestHandler | | SocketIO    |\n   +---------------------------------+ +-------------+\n                   ^                   | register()  |\n                   |                   | unregister()|\n                   |                   +-------------+\n                   |                      ^  ^\n                   |                      |  |\n                   | + -------------------+  |\n                   | |                       |\n   +-------------------------+        +-----------------+\n   | RPCHandler              |        | RPCClient       |\n   | [attribute of RPCServer]|        |                 |\n   +-------------------------+        +-----------------+\n\nThe RPCServer handler class is expected to provide register/unregister methods.\nRPCHandler inherits the mix-in class SocketIO, which provides these methods.\n\nSee the Idle run.main() docstring for further information on how this was\naccomplished in Idle.\n\n"
 import builtins
 import copyreg
 import io
@@ -42,21 +15,23 @@ import threading
 import traceback
 import types
 
+
 def unpickle_code(ms):
     "Return code object from marshal string ms."
     co = marshal.loads(ms)
     assert isinstance(co, types.CodeType)
     return co
 
+
 def pickle_code(co):
     "Return unpickle function and tuple with marshalled co code object."
     assert isinstance(co, types.CodeType)
     ms = marshal.dumps(co)
-    return unpickle_code, (ms,)
+    return (unpickle_code, (ms,))
+
 
 def dumps(obj, protocol=None):
     "Return pickled (or marshalled) string for obj."
-    # IDLE passes 'None' to select pickle.DEFAULT_PROTOCOL.
     f = io.BytesIO()
     p = CodePickler(f, protocol)
     p.dump(obj)
@@ -67,11 +42,11 @@ class CodePickler(pickle.Pickler):
     dispatch_table = {types.CodeType: pickle_code, **copyreg.dispatch_table}
 
 
-BUFSIZE = 8*1024
-LOCALHOST = '127.0.0.1'
+BUFSIZE = 8 * 1024
+LOCALHOST = "127.0.0.1"
+
 
 class RPCServer(socketserver.TCPServer):
-
     def __init__(self, addr, handlerclass=None):
         if handlerclass is None:
             handlerclass = RPCHandler
@@ -82,43 +57,31 @@ class RPCServer(socketserver.TCPServer):
         pass
 
     def server_activate(self):
-        """Override TCPServer method, connect() instead of listen()
-
-        Due to the reversed connection, self.server_address is actually the
-        address of the Idle Client to which we are connecting.
-
-        """
+        "Override TCPServer method, connect() instead of listen()\n\n        Due to the reversed connection, self.server_address is actually the\n        address of the Idle Client to which we are connecting.\n\n        "
         self.socket.connect(self.server_address)
 
     def get_request(self):
         "Override TCPServer method, return already connected socket"
-        return self.socket, self.server_address
+        return (self.socket, self.server_address)
 
     def handle_error(self, request, client_address):
-        """Override TCPServer method
-
-        Error message goes to __stderr__.  No error message if exiting
-        normally or socket raised EOF.  Other exceptions not handled in
-        server code will cause os._exit.
-
-        """
+        "Override TCPServer method\n\n        Error message goes to __stderr__.  No error message if exiting\n        normally or socket raised EOF.  Other exceptions not handled in\n        server code will cause os._exit.\n\n        "
         try:
             raise
         except SystemExit:
             raise
         except:
             erf = sys.__stderr__
-            print('\n' + '-'*40, file=erf)
-            print('Unhandled server exception!', file=erf)
-            print('Thread: %s' % threading.current_thread().name, file=erf)
-            print('Client Address: ', client_address, file=erf)
-            print('Request: ', repr(request), file=erf)
+            print(("\n" + ("-" * 40)), file=erf)
+            print("Unhandled server exception!", file=erf)
+            print(("Thread: %s" % threading.current_thread().name), file=erf)
+            print("Client Address: ", client_address, file=erf)
+            print("Request: ", repr(request), file=erf)
             traceback.print_exc(file=erf)
-            print('\n*** Unrecoverable, server exiting!', file=erf)
-            print('-'*40, file=erf)
+            print("\n*** Unrecoverable, server exiting!", file=erf)
+            print(("-" * 40), file=erf)
             os._exit(0)
 
-#----------------- end class RPCServer --------------------
 
 objecttable = {}
 request_queue = queue.Queue(0)
@@ -126,7 +89,6 @@ response_queue = queue.Queue(0)
 
 
 class SocketIO:
-
     nextseq = 0
 
     def __init__(self, sock, objtable=None, debugging=None):
@@ -153,9 +115,9 @@ class SocketIO:
     def debug(self, *args):
         if not self.debugging:
             return
-        s = self.location + " " + str(threading.current_thread().name)
+        s = (self.location + " ") + str(threading.current_thread().name)
         for a in args:
-            s = s + " " + str(a)
+            s = (s + " ") + str(a)
         print(s, file=sys.__stderr__)
 
     def register(self, oid, object):
@@ -170,11 +132,11 @@ class SocketIO:
     def localcall(self, seq, request):
         self.debug("localcall:", request)
         try:
-            how, (oid, methodname, args, kwargs) = request
+            (how, (oid, methodname, args, kwargs)) = request
         except TypeError:
             return ("ERROR", "Bad request format")
         if oid not in self.objtable:
-            return ("ERROR", "Unknown object id: %r" % (oid,))
+            return ("ERROR", ("Unknown object id: %r" % (oid,)))
         obj = self.objtable[oid]
         if methodname == "__methods__":
             methods = {}
@@ -185,19 +147,19 @@ class SocketIO:
             _getattributes(obj, attributes)
             return ("OK", attributes)
         if not hasattr(obj, methodname):
-            return ("ERROR", "Unsupported method name: %r" % (methodname,))
+            return ("ERROR", ("Unsupported method name: %r" % (methodname,)))
         method = getattr(obj, methodname)
         try:
-            if how == 'CALL':
+            if how == "CALL":
                 ret = method(*args, **kwargs)
                 if isinstance(ret, RemoteObject):
                     ret = remoteref(ret)
                 return ("OK", ret)
-            elif how == 'QUEUE':
+            elif how == "QUEUE":
                 request_queue.put((seq, (method, args, kwargs)))
-                return("QUEUED", None)
+                return ("QUEUED", None)
             else:
-                return ("ERROR", "Unsupported message type: %s" % how)
+                return ("ERROR", ("Unsupported message type: %s" % how))
         except SystemExit:
             raise
         except KeyboardInterrupt:
@@ -207,9 +169,8 @@ class SocketIO:
         except Exception as ex:
             return ("CALLEXC", ex)
         except:
-            msg = "*** Internal Error: rpc.py:SocketIO.localcall()\n\n"\
-                  " Object: %s \n Method: %s \n Args: %s\n"
-            print(msg % (oid, method, args), file=sys.__stderr__)
+            msg = "*** Internal Error: rpc.py:SocketIO.localcall()\n\n Object: %s \n Method: %s \n Args: %s\n"
+            print((msg % (oid, method, args)), file=sys.__stderr__)
             traceback.print_exc(file=sys.__stderr__)
             return ("EXCEPTION", None)
 
@@ -244,13 +205,13 @@ class SocketIO:
         return seq
 
     def asyncreturn(self, seq):
-        self.debug("asyncreturn:%d:call getresponse(): " % seq)
+        self.debug(("asyncreturn:%d:call getresponse(): " % seq))
         response = self.getresponse(seq, wait=0.05)
         self.debug(("asyncreturn:%d:response: " % seq), response)
         return self.decoderesponse(response)
 
     def decoderesponse(self, response):
-        how, what = response
+        (how, what) = response
         if how == "OK":
             return what
         if how == "QUEUED":
@@ -275,12 +236,7 @@ class SocketIO:
         raise EOFError
 
     def mainloop(self):
-        """Listen on socket until I/O not ready or EOF
-
-        pollresponse() will loop looking for seq number None, which
-        never comes, and exit on EOFError.
-
-        """
+        "Listen on socket until I/O not ready or EOF\n\n        pollresponse() will loop looking for seq number None, which\n        never comes, and exit on EOFError.\n\n        "
         try:
             self.getresponse(myseq=None, wait=0.05)
         except EOFError:
@@ -290,9 +246,9 @@ class SocketIO:
     def getresponse(self, myseq, wait):
         response = self._getresponse(myseq, wait)
         if response is not None:
-            how, what = response
+            (how, what) = response
             if how == "OK":
-                response = how, self._proxify(what)
+                response = (how, self._proxify(what))
         return response
 
     def _proxify(self, obj):
@@ -300,26 +256,24 @@ class SocketIO:
             return RPCProxy(self, obj.oid)
         if isinstance(obj, list):
             return list(map(self._proxify, obj))
-        # XXX Check for other types -- not currently needed
         return obj
 
     def _getresponse(self, myseq, wait):
         self.debug("_getresponse:myseq:", myseq)
         if threading.current_thread() is self.sockthread:
-            # this thread does all reading of requests or responses
             while 1:
                 response = self.pollresponse(myseq, wait)
                 if response is not None:
                     return response
         else:
-            # wait for notification from socket handling thread
             cvar = self.cvars[myseq]
             cvar.acquire()
             while myseq not in self.responses:
                 cvar.wait()
             response = self.responses[myseq]
-            self.debug("_getresponse:%s: thread woke up: response: %s" %
-                       (myseq, response))
+            self.debug(
+                ("_getresponse:%s: thread woke up: response: %s" % (myseq, response))
+            )
             del self.responses[myseq]
             del self.cvars[myseq]
             cvar.release()
@@ -330,7 +284,7 @@ class SocketIO:
         return seq
 
     def putmessage(self, message):
-        self.debug("putmessage:%d:" % message[0])
+        self.debug(("putmessage:%d:" % message[0]))
         try:
             s = dumps(message)
         except pickle.PicklingError:
@@ -339,20 +293,20 @@ class SocketIO:
         s = struct.pack("<i", len(s)) + s
         while len(s) > 0:
             try:
-                r, w, x = select.select([], [self.sock], [])
+                (r, w, x) = select.select([], [self.sock], [])
                 n = self.sock.send(s[:BUFSIZE])
             except (AttributeError, TypeError):
                 raise OSError("socket no longer exists")
             s = s[n:]
 
-    buff = b''
+    buff = b""
     bufneed = 4
-    bufstate = 0 # meaning: 0 => reading count; 1 => reading data
+    bufstate = 0
 
     def pollpacket(self, wait):
         self._stage0()
         if len(self.buff) < self.bufneed:
-            r, w, x = select.select([self.sock.fileno()], [], [], wait)
+            (r, w, x) = select.select([self.sock.fileno()], [], [], wait)
             if len(r) == 0:
                 return None
             try:
@@ -366,16 +320,16 @@ class SocketIO:
         return self._stage1()
 
     def _stage0(self):
-        if self.bufstate == 0 and len(self.buff) >= 4:
+        if (self.bufstate == 0) and (len(self.buff) >= 4):
             s = self.buff[:4]
             self.buff = self.buff[4:]
             self.bufneed = struct.unpack("<i", s)[0]
             self.bufstate = 1
 
     def _stage1(self):
-        if self.bufstate == 1 and len(self.buff) >= self.bufneed:
-            packet = self.buff[:self.bufneed]
-            self.buff = self.buff[self.bufneed:]
+        if (self.bufstate == 1) and (len(self.buff) >= self.bufneed):
+            packet = self.buff[: self.bufneed]
+            self.buff = self.buff[self.bufneed :]
             self.bufneed = 4
             self.bufstate = 0
             return packet
@@ -395,71 +349,41 @@ class SocketIO:
         return message
 
     def pollresponse(self, myseq, wait):
-        """Handle messages received on the socket.
-
-        Some messages received may be asynchronous 'call' or 'queue' requests,
-        and some may be responses for other threads.
-
-        'call' requests are passed to self.localcall() with the expectation of
-        immediate execution, during which time the socket is not serviced.
-
-        'queue' requests are used for tasks (which may block or hang) to be
-        processed in a different thread.  These requests are fed into
-        request_queue by self.localcall().  Responses to queued requests are
-        taken from response_queue and sent across the link with the associated
-        sequence numbers.  Messages in the queues are (sequence_number,
-        request/response) tuples and code using this module removing messages
-        from the request_queue is responsible for returning the correct
-        sequence number in the response_queue.
-
-        pollresponse() will loop until a response message with the myseq
-        sequence number is received, and will save other responses in
-        self.responses and notify the owning thread.
-
-        """
+        "Handle messages received on the socket.\n\n        Some messages received may be asynchronous 'call' or 'queue' requests,\n        and some may be responses for other threads.\n\n        'call' requests are passed to self.localcall() with the expectation of\n        immediate execution, during which time the socket is not serviced.\n\n        'queue' requests are used for tasks (which may block or hang) to be\n        processed in a different thread.  These requests are fed into\n        request_queue by self.localcall().  Responses to queued requests are\n        taken from response_queue and sent across the link with the associated\n        sequence numbers.  Messages in the queues are (sequence_number,\n        request/response) tuples and code using this module removing messages\n        from the request_queue is responsible for returning the correct\n        sequence number in the response_queue.\n\n        pollresponse() will loop until a response message with the myseq\n        sequence number is received, and will save other responses in\n        self.responses and notify the owning thread.\n\n        "
         while 1:
-            # send queued response if there is one available
             try:
                 qmsg = response_queue.get(0)
             except queue.Empty:
                 pass
             else:
-                seq, response = qmsg
-                message = (seq, ('OK', response))
+                (seq, response) = qmsg
+                message = (seq, ("OK", response))
                 self.putmessage(message)
-            # poll for message on link
             try:
                 message = self.pollmessage(wait)
-                if message is None:  # socket not ready
+                if message is None:
                     return None
             except EOFError:
                 self.handle_EOF()
                 return None
             except AttributeError:
                 return None
-            seq, resq = message
+            (seq, resq) = message
             how = resq[0]
-            self.debug("pollresponse:%d:myseq:%s" % (seq, myseq))
-            # process or queue a request
+            self.debug(("pollresponse:%d:myseq:%s" % (seq, myseq)))
             if how in ("CALL", "QUEUE"):
-                self.debug("pollresponse:%d:localcall:call:" % seq)
+                self.debug(("pollresponse:%d:localcall:call:" % seq))
                 response = self.localcall(seq, resq)
-                self.debug("pollresponse:%d:localcall:response:%s"
-                           % (seq, response))
+                self.debug(("pollresponse:%d:localcall:response:%s" % (seq, response)))
                 if how == "CALL":
                     self.putmessage((seq, response))
                 elif how == "QUEUE":
-                    # don't acknowledge the 'queue' request!
                     pass
                 continue
-            # return if completed message transaction
             elif seq == myseq:
                 return resq
-            # must be a response for a different thread:
             else:
                 cv = self.cvars.get(seq, None)
-                # response involving unknown sequence number is discarded,
-                # probably intended for prior incarnation of server
                 if cv is not None:
                     cv.acquire()
                     self.responses[seq] = resq
@@ -474,20 +398,17 @@ class SocketIO:
         for key in self.cvars:
             cv = self.cvars[key]
             cv.acquire()
-            self.responses[key] = ('EOF', None)
+            self.responses[key] = ("EOF", None)
             cv.notify()
             cv.release()
-        # call our (possibly overridden) exit function
         self.exithook()
 
     def EOFhook(self):
         "Classes using rpc client/server can override to augment EOF action"
         pass
 
-#----------------- end class SocketIO --------------------
 
 class RemoteObject:
-    # Token mix-in class
     pass
 
 
@@ -498,18 +419,16 @@ def remoteref(obj):
 
 
 class RemoteProxy:
-
     def __init__(self, oid):
         self.oid = oid
 
 
 class RPCHandler(socketserver.BaseRequestHandler, SocketIO):
-
     debugging = False
-    location = "#S"  # Server
+    location = "#S"
 
     def __init__(self, sock, addr, svr):
-        svr.current_handler = self ## cgt xxx
+        svr.current_handler = self
         SocketIO.__init__(self, sock)
         socketserver.BaseRequestHandler.__init__(self, sock, addr, svr)
 
@@ -522,11 +441,9 @@ class RPCHandler(socketserver.BaseRequestHandler, SocketIO):
 
 
 class RPCClient(SocketIO):
-
     debugging = False
-    location = "#C"  # Client
-
-    nextseq = 1 # Requests coming from the client are odd numbered
+    location = "#C"
+    nextseq = 1
 
     def __init__(self, address, family=socket.AF_INET, type=socket.SOCK_STREAM):
         self.listening_sock = socket.socket(family, type)
@@ -534,7 +451,7 @@ class RPCClient(SocketIO):
         self.listening_sock.listen(1)
 
     def accept(self):
-        working_sock, address = self.listening_sock.accept()
+        (working_sock, address) = self.listening_sock.accept()
         if self.debugging:
             print("****** Connection request from ", address, file=sys.__stderr__)
         if address[0] == LOCALHOST:
@@ -548,7 +465,6 @@ class RPCClient(SocketIO):
 
 
 class RPCProxy:
-
     __methods = None
     __attributes = None
 
@@ -564,23 +480,19 @@ class RPCProxy:
         if self.__attributes is None:
             self.__getattributes()
         if name in self.__attributes:
-            value = self.sockio.remotecall(self.oid, '__getattribute__',
-                                           (name,), {})
+            value = self.sockio.remotecall(self.oid, "__getattribute__", (name,), {})
             return value
         else:
             raise AttributeError(name)
 
     def __getattributes(self):
-        self.__attributes = self.sockio.remotecall(self.oid,
-                                                "__attributes__", (), {})
+        self.__attributes = self.sockio.remotecall(self.oid, "__attributes__", (), {})
 
     def __getmethods(self):
-        self.__methods = self.sockio.remotecall(self.oid,
-                                                "__methods__", (), {})
+        self.__methods = self.sockio.remotecall(self.oid, "__methods__", (), {})
+
 
 def _getmethods(obj, methods):
-    # Helper to get a list of methods from an object
-    # Adds names to dictionary argument 'methods'
     for name in dir(obj):
         attr = getattr(obj, name)
         if callable(attr):
@@ -588,6 +500,7 @@ def _getmethods(obj, methods):
     if isinstance(obj, type):
         for super in obj.__bases__:
             _getmethods(super, methods)
+
 
 def _getattributes(obj, attributes):
     for name in dir(obj):
@@ -597,7 +510,6 @@ def _getattributes(obj, attributes):
 
 
 class MethodProxy:
-
     def __init__(self, sockio, oid, name):
         self.sockio = sockio
         self.oid = oid
@@ -608,28 +520,24 @@ class MethodProxy:
         return value
 
 
-# XXX KBK 09Sep03  We need a proper unit test for this module.  Previously
-#                  existing test code was removed at Rev 1.27 (r34098).
-
 def displayhook(value):
-    """Override standard display hook to use non-locale encoding"""
+    "Override standard display hook to use non-locale encoding"
     if value is None:
         return
-    # Set '_' to None to avoid recursion
     builtins._ = None
     text = repr(value)
     try:
         sys.stdout.write(text)
     except UnicodeEncodeError:
-        # let's use ascii while utf8-bmp codec doesn't present
-        encoding = 'ascii'
-        bytes = text.encode(encoding, 'backslashreplace')
-        text = bytes.decode(encoding, 'strict')
+        encoding = "ascii"
+        bytes = text.encode(encoding, "backslashreplace")
+        text = bytes.decode(encoding, "strict")
         sys.stdout.write(text)
     sys.stdout.write("\n")
     builtins._ = value
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     from unittest import main
-    main('idlelib.idle_test.test_rpc', verbosity=2,)
+
+    main("idlelib.idle_test.test_rpc", verbosity=2)

@@ -1,14 +1,14 @@
 from idlelib import rpc
 
+
 def remote_object_tree_item(item):
     wrapper = WrappedObjectTreeItem(item)
     oid = id(wrapper)
     rpc.objecttable[oid] = wrapper
     return oid
 
-class WrappedObjectTreeItem:
-    # Lives in PYTHON subprocess
 
+class WrappedObjectTreeItem:
     def __init__(self, item):
         self.__item = item
 
@@ -20,9 +20,8 @@ class WrappedObjectTreeItem:
         sub_list = self.__item._GetSubList()
         return list(map(remote_object_tree_item, sub_list))
 
-class StubObjectTreeItem:
-    # Lives in IDLE process
 
+class StubObjectTreeItem:
     def __init__(self, sockio, oid):
         self.sockio = sockio
         self.oid = oid
@@ -36,6 +35,7 @@ class StubObjectTreeItem:
         return [StubObjectTreeItem(self.sockio, oid) for oid in sub_list]
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     from unittest import main
-    main('idlelib.idle_test.test_debugobj_r', verbosity=2)
+
+    main("idlelib.idle_test.test_debugobj_r", verbosity=2)

@@ -3,9 +3,7 @@ from idlelib.redirector import WidgetRedirector
 
 
 class Percolator:
-
     def __init__(self, text):
-        # XXX would be nice to inherit from Delegator
         self.text = text
         self.redir = WidgetRedirector(text)
         self.top = self.bottom = Delegator(text)
@@ -24,22 +22,18 @@ class Percolator:
         self.text = None
 
     def insert(self, index, chars, tags=None):
-        # Could go away if inheriting from Delegator
         self.top.insert(index, chars, tags)
 
     def delete(self, index1, index2=None):
-        # Could go away if inheriting from Delegator
         self.top.delete(index1, index2)
 
     def insertfilter(self, filter):
-        # Perhaps rename to pushfilter()?
         assert isinstance(filter, Delegator)
         assert filter.delegate is None
         filter.setdelegate(self.top)
         self.top = filter
 
     def removefilter(self, filter):
-        # XXX Perhaps should only support popfilter()?
         assert isinstance(filter, Delegator)
         assert filter.delegate is not None
         f = self.top
@@ -55,7 +49,7 @@ class Percolator:
             filter.setdelegate(None)
 
 
-def _percolator(parent):  # htest #
+def _percolator(parent):
     import tkinter as tk
 
     class Tracer(Delegator):
@@ -73,8 +67,8 @@ def _percolator(parent):  # htest #
 
     box = tk.Toplevel(parent)
     box.title("Test Percolator")
-    x, y = map(int, parent.geometry().split('+')[1:])
-    box.geometry("+%d+%d" % (x, y + 175))
+    (x, y) = map(int, parent.geometry().split("+")[1:])
+    box.geometry(("+%d+%d" % (x, (y + 175))))
     text = tk.Text(box)
     p = Percolator(text)
     pin = p.insertfilter
@@ -84,6 +78,7 @@ def _percolator(parent):  # htest #
 
     def toggle1():
         (pin if var1.get() else pout)(t1)
+
     def toggle2():
         (pin if var2.get() else pout)(t2)
 
@@ -95,9 +90,11 @@ def _percolator(parent):  # htest #
     cb2 = tk.Checkbutton(box, text="Tracer2", command=toggle2, variable=var2)
     cb2.pack()
 
+
 if __name__ == "__main__":
     from unittest import main
-    main('idlelib.idle_test.test_percolator', verbosity=2, exit=False)
 
+    main("idlelib.idle_test.test_percolator", verbosity=2, exit=False)
     from idlelib.idle_test.htest import run
+
     run(_percolator)

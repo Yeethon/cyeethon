@@ -1,8 +1,1 @@
-"""Python interfaces to XML parsers.
-
-This package contains one module:
-
-expat -- Python wrapper for James Clark's Expat parser, with namespace
-         support.
-
-"""
+"Python interfaces to XML parsers.\n\nThis package contains one module:\n\nexpat -- Python wrapper for James Clark's Expat parser, with namespace\n         support.\n\n"

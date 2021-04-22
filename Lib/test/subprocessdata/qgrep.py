@@ -1,6 +1,4 @@
-"""When called with a single argument, simulated fgrep with a single
-argument and no options."""
-
+"When called with a single argument, simulated fgrep with a single\nargument and no options."
 import sys
 
 if __name__ == "__main__":

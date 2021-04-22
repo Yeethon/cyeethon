@@ -1,14 +1,11 @@
 from contextlib import suppress
-
 from . import abc
 
 
 class SpecLoaderAdapter:
-    """
-    Adapt a package spec to adapt the underlying loader.
-    """
+    "\n    Adapt a package spec to adapt the underlying loader.\n    "
 
-    def __init__(self, spec, adapter=lambda spec: spec.loader):
+    def __init__(self, spec, adapter=(lambda spec: spec.loader)):
         self.spec = spec
         self.loader = adapter(spec)
 
@@ -17,9 +14,7 @@ class SpecLoaderAdapter:
 
 
 class TraversableResourcesLoader:
-    """
-    Adapt a loader to provide TraversableResources.
-    """
+    "\n    Adapt a loader to provide TraversableResources.\n    "
 
     def __init__(self, spec):
         self.spec = spec
@@ -29,10 +24,7 @@ class TraversableResourcesLoader:
 
 
 class DegenerateFiles:
-    """
-    Adapter for an existing or non-existant resource reader
-    to provide a degenerate .files().
-    """
+    "\n    Adapter for an existing or non-existant resource reader\n    to provide a degenerate .files().\n    "
 
     class Path(abc.Traversable):
         def iterdir(self):
@@ -41,13 +33,13 @@ class DegenerateFiles:
         def is_dir(self):
             return False
 
-        is_file = exists = is_dir  # type: ignore
+        is_file = exists = is_dir
 
         def joinpath(self, other):
             return DegenerateFiles.Path()
 
         def name(self):
-            return ''
+            return ""
 
         def open(self):
             raise ValueError()
@@ -61,11 +53,9 @@ class DegenerateFiles:
             return self.spec.loader.get_resource_reader(self.spec.name)
 
     def _native(self):
-        """
-        Return the native reader if it supports files().
-        """
+        "\n        Return the native reader if it supports files().\n        "
         reader = self._reader
-        return reader if hasattr(reader, 'files') else self
+        return reader if hasattr(reader, "files") else self
 
     def __getattr__(self, attr):
         return getattr(self._reader, attr)
@@ -75,8 +65,5 @@ class DegenerateFiles:
 
 
 def wrap_spec(package):
-    """
-    Construct a package spec with traversable compatibility
-    on the spec/loader/reader.
-    """
+    "\n    Construct a package spec with traversable compatibility\n    on the spec/loader/reader.\n    "
     return SpecLoaderAdapter(package.__spec__, TraversableResourcesLoader)

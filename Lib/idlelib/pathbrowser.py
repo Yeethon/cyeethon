@@ -1,17 +1,13 @@
 import importlib.machinery
 import os
 import sys
-
 from idlelib.browser import ModuleBrowser, ModuleBrowserTreeItem
 from idlelib.tree import TreeItem
 
 
 class PathBrowser(ModuleBrowser):
-
     def __init__(self, master, *, _htest=False, _utest=False):
-        """
-        _htest - bool, change box location when running htest
-        """
+        "\n        _htest - bool, change box location when running htest\n        "
         self.master = master
         self._htest = _htest
         self._utest = _utest
@@ -27,7 +23,6 @@ class PathBrowser(ModuleBrowser):
 
 
 class PathBrowserTreeItem(TreeItem):
-
     def GetText(self):
         return "sys.path"
 
@@ -40,7 +35,6 @@ class PathBrowserTreeItem(TreeItem):
 
 
 class DirBrowserTreeItem(TreeItem):
-
     def __init__(self, dir, packages=[]):
         self.dir = dir
         self.packages = packages
@@ -49,11 +43,11 @@ class DirBrowserTreeItem(TreeItem):
         if not self.packages:
             return self.dir
         else:
-            return self.packages[-1] + ": package"
+            return self.packages[(-1)] + ": package"
 
     def GetSubList(self):
         try:
-            names = os.listdir(self.dir or os.curdir)
+            names = os.listdir((self.dir or os.curdir))
         except OSError:
             return []
         packages = []
@@ -64,10 +58,10 @@ class DirBrowserTreeItem(TreeItem):
                 packages.append((nn, name, file))
         packages.sort()
         sublist = []
-        for nn, name, file in packages:
-            item = DirBrowserTreeItem(file, self.packages + [name])
+        for (nn, name, file) in packages:
+            item = DirBrowserTreeItem(file, (self.packages + [name]))
             sublist.append(item)
-        for nn, name in self.listmodules(names):
+        for (nn, name) in self.listmodules(names):
             item = ModuleBrowserTreeItem(os.path.join(self.dir, name))
             sublist.append(item)
         return sublist
@@ -99,13 +93,15 @@ class DirBrowserTreeItem(TreeItem):
         return sorted
 
 
-def _path_browser(parent):  # htest #
+def _path_browser(parent):
     PathBrowser(parent, _htest=True)
     parent.mainloop()
 
+
 if __name__ == "__main__":
     from unittest import main
-    main('idlelib.idle_test.test_pathbrowser', verbosity=2, exit=False)
 
+    main("idlelib.idle_test.test_pathbrowser", verbosity=2, exit=False)
     from idlelib.idle_test.htest import run
+
     run(_path_browser)

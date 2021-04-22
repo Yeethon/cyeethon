@@ -1,19 +1,16 @@
-"""Unit tests for __instancecheck__ and __subclasscheck__."""
-
+"Unit tests for __instancecheck__ and __subclasscheck__."
 import unittest
 
 
 class ABC(type):
-
     def __instancecheck__(cls, inst):
-        """Implement isinstance(inst, cls)."""
-        return any(cls.__subclasscheck__(c)
-                   for c in {type(inst), inst.__class__})
+        "Implement isinstance(inst, cls)."
+        return any((cls.__subclasscheck__(c) for c in {type(inst), inst.__class__}))
 
     def __subclasscheck__(cls, sub):
-        """Implement issubclass(sub, cls)."""
+        "Implement issubclass(sub, cls)."
         candidates = cls.__dict__.get("__subclass__", set()) | {cls}
-        return any(c in candidates for c in sub.mro())
+        return any(((c in candidates) for c in sub.mro()))
 
 
 class Integer(metaclass=ABC):
@@ -25,7 +22,6 @@ class SubInt(Integer):
 
 
 class TypeChecksTest(unittest.TestCase):
-
     def testIsSubclassInternal(self):
         self.assertEqual(Integer.__subclasscheck__(int), True)
         self.assertEqual(Integer.__subclasscheck__(float), False)

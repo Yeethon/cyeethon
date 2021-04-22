@@ -1,10 +1,7 @@
-#!/usr/bin/env python3.8
-
 import argparse
 import pprint
 import sys
 from typing import Set, Dict
-
 from pegen.build import build_parser
 from pegen.grammar import (
     Alt,
@@ -29,21 +26,21 @@ from pegen.grammar import (
 )
 
 argparser = argparse.ArgumentParser(
-    prog="calculate_first_sets", description="Calculate the first sets of a grammar",
+    prog="calculate_first_sets", description="Calculate the first sets of a grammar"
 )
 argparser.add_argument("grammar_file", help="The grammar file")
 
 
 class FirstSetCalculator(GrammarVisitor):
-    def __init__(self, rules: Dict[str, Rule]) -> None:
+    def __init__(self, rules: Dict[(str, Rule)]) -> None:
         self.rules = rules
         for rule in rules.values():
             rule.nullable_visit(rules)
-        self.first_sets: Dict[str, Set[str]] = dict()
+        self.first_sets: Dict[(str, Set[str])] = dict()
         self.in_process: Set[str] = set()
 
-    def calculate(self) -> Dict[str, Set[str]]:
-        for name, rule in self.rules.items():
+    def calculate(self) -> Dict[(str, Set[str])]:
+        for (name, rule) in self.rules.items():
             self.visit(rule)
         return self.first_sets
 
@@ -57,21 +54,11 @@ class FirstSetCalculator(GrammarVisitor):
             result |= new_terminals
             if to_remove:
                 result -= to_remove
-
-            # If the set of new terminals can start with the empty string,
-            # it means that the item is completelly nullable and we should
-            # also considering at least the next item in case the current
-            # one fails to parse.
-
             if "" in new_terminals:
                 continue
-
             if not isinstance(other.item, (Opt, NegativeLookahead, Repeat0)):
                 break
-
-        # Do not allow the empty string to propagate.
         result.discard("")
-
         return result
 
     def visit_Cut(self, item: Cut) -> Set[str]:
@@ -104,13 +91,11 @@ class FirstSetCalculator(GrammarVisitor):
     def visit_NameLeaf(self, item: NameLeaf) -> Set[str]:
         if item.value not in self.rules:
             return {item.value}
-
         if item.value not in self.first_sets:
             self.first_sets[item.value] = self.visit(self.rules[item.value])
             return self.first_sets[item.value]
         elif item.value in self.in_process:
             return set()
-
         return self.first_sets[item.value]
 
     def visit_StringLeaf(self, item: StringLeaf) -> Set[str]:
@@ -137,13 +122,11 @@ class FirstSetCalculator(GrammarVisitor):
 
 def main() -> None:
     args = argparser.parse_args()
-
     try:
-        grammar, parser, tokenizer = build_parser(args.grammar_file)
+        (grammar, parser, tokenizer) = build_parser(args.grammar_file)
     except Exception as err:
         print("ERROR: Failed to parse grammar file", file=sys.stderr)
         sys.exit(1)
-
     firs_sets = FirstSetCalculator(grammar.rules).calculate()
     pprint.pprint(firs_sets)
 

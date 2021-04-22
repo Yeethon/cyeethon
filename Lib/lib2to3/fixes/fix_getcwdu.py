@@ -1,18 +1,11 @@
-"""
-Fixer that changes os.getcwdu() to os.getcwd().
-"""
-# Author: Victor Stinner
-
-# Local imports
+"\nFixer that changes os.getcwdu() to os.getcwd().\n"
 from .. import fixer_base
 from ..fixer_util import Name
 
+
 class FixGetcwdu(fixer_base.BaseFix):
     BM_compatible = True
-
-    PATTERN = """
-              power< 'os' trailer< dot='.' name='getcwdu' > any* >
-              """
+    PATTERN = "\n              power< 'os' trailer< dot='.' name='getcwdu' > any* >\n              "
 
     def transform(self, node, results):
         name = results["name"]

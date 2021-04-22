@@ -1,25 +1,8 @@
 import string
-
 from idlelib.delegator import Delegator
-
-# tkinter import not needed because module does not create widgets,
-# although many methods operate on text widget arguments.
-
-#$ event <<redo>>
-#$ win <Control-y>
-#$ unix <Alt-z>
-
-#$ event <<undo>>
-#$ win <Control-z>
-#$ unix <Control-z>
-
-#$ event <<dump-undo-state>>
-#$ win <Control-backslash>
-#$ unix <Control-backslash>
 
 
 class UndoDelegator(Delegator):
-
     max_undo = 1000
 
     def __init__(self):
@@ -39,19 +22,20 @@ class UndoDelegator(Delegator):
 
     def dump_event(self, event):
         from pprint import pprint
-        pprint(self.undolist[:self.pointer])
-        print("pointer:", self.pointer, end=' ')
-        print("saved:", self.saved, end=' ')
-        print("can_merge:", self.can_merge, end=' ')
+
+        pprint(self.undolist[: self.pointer])
+        print("pointer:", self.pointer, end=" ")
+        print("saved:", self.saved, end=" ")
+        print("can_merge:", self.can_merge, end=" ")
         print("get_saved():", self.get_saved())
-        pprint(self.undolist[self.pointer:])
+        pprint(self.undolist[self.pointer :])
         return "break"
 
     def reset_undo(self):
         self.was_saved = -1
         self.pointer = 0
         self.undolist = []
-        self.undoblock = 0  # or a CommandSequence instance
+        self.undoblock = 0
         self.set_saved(1)
 
     def set_saved(self, flag):
@@ -85,32 +69,18 @@ class UndoDelegator(Delegator):
     def delete(self, index1, index2=None):
         self.addcmd(DeleteCommand(index1, index2))
 
-    # Clients should call undo_block_start() and undo_block_stop()
-    # around a sequence of editing cmds to be treated as a unit by
-    # undo & redo.  Nested matching calls are OK, and the inner calls
-    # then act like nops.  OK too if no editing cmds, or only one
-    # editing cmd, is issued in between:  if no cmds, the whole
-    # sequence has no effect; and if only one cmd, that cmd is entered
-    # directly into the undo list, as if undo_block_xxx hadn't been
-    # called.  The intent of all that is to make this scheme easy
-    # to use:  all the client has to worry about is making sure each
-    # _start() call is matched by a _stop() call.
-
     def undo_block_start(self):
         if self.undoblock == 0:
             self.undoblock = CommandSequence()
         self.undoblock.bump_depth()
 
     def undo_block_stop(self):
-        if self.undoblock.bump_depth(-1) == 0:
+        if self.undoblock.bump_depth((-1)) == 0:
             cmd = self.undoblock
             self.undoblock = 0
             if len(cmd) > 0:
                 if len(cmd) == 1:
-                    # no need to wrap a single cmd
                     cmd = cmd.getcmd(0)
-                # this blk of cmds, or single cmd, has already
-                # been done, so don't execute it again
                 self.addcmd(cmd, 0)
 
     def addcmd(self, cmd, execute=True):
@@ -119,16 +89,15 @@ class UndoDelegator(Delegator):
         if self.undoblock != 0:
             self.undoblock.append(cmd)
             return
-        if self.can_merge and self.pointer > 0:
-            lastcmd = self.undolist[self.pointer-1]
+        if self.can_merge and (self.pointer > 0):
+            lastcmd = self.undolist[(self.pointer - 1)]
             if lastcmd.merge(cmd):
                 return
-        self.undolist[self.pointer:] = [cmd]
+        self.undolist[self.pointer :] = [cmd]
         if self.saved > self.pointer:
             self.saved = -1
         self.pointer = self.pointer + 1
         if len(self.undolist) > self.max_undo:
-            ##print "truncating undo list"
             del self.undolist[0]
             self.pointer = self.pointer - 1
             if self.saved >= 0:
@@ -140,7 +109,7 @@ class UndoDelegator(Delegator):
         if self.pointer == 0:
             self.bell()
             return "break"
-        cmd = self.undolist[self.pointer - 1]
+        cmd = self.undolist[(self.pointer - 1)]
         cmd.undo(self.delegate)
         self.pointer = self.pointer - 1
         self.can_merge = False
@@ -160,8 +129,6 @@ class UndoDelegator(Delegator):
 
 
 class Command:
-    # Base class for Undoable commands
-
     tags = None
 
     def __init__(self, index1, index2, chars, tags=None):
@@ -177,7 +144,7 @@ class Command:
         s = self.__class__.__name__
         t = (self.index1, self.index2, self.chars, self.tags)
         if self.tags is None:
-            t = t[:-1]
+            t = t[:(-1)]
         return s + repr(t)
 
     def do(self, text):
@@ -195,18 +162,16 @@ class Command:
     def save_marks(self, text):
         marks = {}
         for name in text.mark_names():
-            if name != "insert" and name != "current":
+            if (name != "insert") and (name != "current"):
                 marks[name] = text.index(name)
         return marks
 
     def set_marks(self, text, marks):
-        for name, index in marks.items():
+        for (name, index) in marks.items():
             text.mark_set(name, index)
 
 
 class InsertCommand(Command):
-    # Undoable insert command
-
     def __init__(self, index1, chars, tags=None):
         Command.__init__(self, index1, None, chars, tags)
 
@@ -214,26 +179,22 @@ class InsertCommand(Command):
         self.marks_before = self.save_marks(text)
         self.index1 = text.index(self.index1)
         if text.compare(self.index1, ">", "end-1c"):
-            # Insert before the final newline
             self.index1 = text.index("end-1c")
         text.insert(self.index1, self.chars, self.tags)
-        self.index2 = text.index("%s+%dc" % (self.index1, len(self.chars)))
+        self.index2 = text.index(("%s+%dc" % (self.index1, len(self.chars))))
         self.marks_after = self.save_marks(text)
-        ##sys.__stderr__.write("do: %s\n" % self)
 
     def redo(self, text):
-        text.mark_set('insert', self.index1)
+        text.mark_set("insert", self.index1)
         text.insert(self.index1, self.chars, self.tags)
         self.set_marks(text, self.marks_after)
-        text.see('insert')
-        ##sys.__stderr__.write("redo: %s\n" % self)
+        text.see("insert")
 
     def undo(self, text):
-        text.mark_set('insert', self.index1)
+        text.mark_set("insert", self.index1)
         text.delete(self.index1, self.index2)
         self.set_marks(text, self.marks_before)
-        text.see('insert')
-        ##sys.__stderr__.write("undo: %s\n" % self)
+        text.see("insert")
 
     def merge(self, cmd):
         if self.__class__ is not cmd.__class__:
@@ -244,14 +205,13 @@ class InsertCommand(Command):
             return False
         if len(cmd.chars) != 1:
             return False
-        if self.chars and \
-           self.classify(self.chars[-1]) != self.classify(cmd.chars):
+        if self.chars and (self.classify(self.chars[(-1)]) != self.classify(cmd.chars)):
             return False
         self.index2 = cmd.index2
         self.chars = self.chars + cmd.chars
         return True
 
-    alphanumeric = string.ascii_letters + string.digits + "_"
+    alphanumeric = (string.ascii_letters + string.digits) + "_"
 
     def classify(self, c):
         if c in self.alphanumeric:
@@ -262,8 +222,6 @@ class InsertCommand(Command):
 
 
 class DeleteCommand(Command):
-    # Undoable delete command
-
     def __init__(self, index1, index2=None):
         Command.__init__(self, index1, index2, None, None)
 
@@ -273,34 +231,27 @@ class DeleteCommand(Command):
         if self.index2:
             self.index2 = text.index(self.index2)
         else:
-            self.index2 = text.index(self.index1 + " +1c")
+            self.index2 = text.index((self.index1 + " +1c"))
         if text.compare(self.index2, ">", "end-1c"):
-            # Don't delete the final newline
             self.index2 = text.index("end-1c")
         self.chars = text.get(self.index1, self.index2)
         text.delete(self.index1, self.index2)
         self.marks_after = self.save_marks(text)
-        ##sys.__stderr__.write("do: %s\n" % self)
 
     def redo(self, text):
-        text.mark_set('insert', self.index1)
+        text.mark_set("insert", self.index1)
         text.delete(self.index1, self.index2)
         self.set_marks(text, self.marks_after)
-        text.see('insert')
-        ##sys.__stderr__.write("redo: %s\n" % self)
+        text.see("insert")
 
     def undo(self, text):
-        text.mark_set('insert', self.index1)
+        text.mark_set("insert", self.index1)
         text.insert(self.index1, self.chars)
         self.set_marks(text, self.marks_before)
-        text.see('insert')
-        ##sys.__stderr__.write("undo: %s\n" % self)
+        text.see("insert")
 
 
 class CommandSequence(Command):
-    # Wrapper for a sequence of undoable cmds to be undone/redone
-    # as a unit
-
     def __init__(self):
         self.cmds = []
         self.depth = 0
@@ -309,8 +260,8 @@ class CommandSequence(Command):
         s = self.__class__.__name__
         strs = []
         for cmd in self.cmds:
-            strs.append("    %r" % (cmd,))
-        return s + "(\n" + ",\n".join(strs) + "\n)"
+            strs.append(("    %r" % (cmd,)))
+        return ((s + "(\n") + ",\n".join(strs)) + "\n)"
 
     def __len__(self):
         return len(self.cmds)
@@ -336,31 +287,32 @@ class CommandSequence(Command):
         return self.depth
 
 
-def _undo_delegator(parent):  # htest #
+def _undo_delegator(parent):
     from tkinter import Toplevel, Text, Button
     from idlelib.percolator import Percolator
+
     undowin = Toplevel(parent)
     undowin.title("Test UndoDelegator")
-    x, y = map(int, parent.geometry().split('+')[1:])
-    undowin.geometry("+%d+%d" % (x, y + 175))
-
+    (x, y) = map(int, parent.geometry().split("+")[1:])
+    undowin.geometry(("+%d+%d" % (x, (y + 175))))
     text = Text(undowin, height=10)
     text.pack()
     text.focus_set()
     p = Percolator(text)
     d = UndoDelegator()
     p.insertfilter(d)
+    undo = Button(undowin, text="Undo", command=(lambda: d.undo_event(None)))
+    undo.pack(side="left")
+    redo = Button(undowin, text="Redo", command=(lambda: d.redo_event(None)))
+    redo.pack(side="left")
+    dump = Button(undowin, text="Dump", command=(lambda: d.dump_event(None)))
+    dump.pack(side="left")
 
-    undo = Button(undowin, text="Undo", command=lambda:d.undo_event(None))
-    undo.pack(side='left')
-    redo = Button(undowin, text="Redo", command=lambda:d.redo_event(None))
-    redo.pack(side='left')
-    dump = Button(undowin, text="Dump", command=lambda:d.dump_event(None))
-    dump.pack(side='left')
 
 if __name__ == "__main__":
     from unittest import main
-    main('idlelib.idle_test.test_undo', verbosity=2, exit=False)
 
+    main("idlelib.idle_test.test_undo", verbosity=2, exit=False)
     from idlelib.idle_test.htest import run
+
     run(_undo_delegator)

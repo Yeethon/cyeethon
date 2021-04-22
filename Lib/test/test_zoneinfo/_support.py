@@ -11,7 +11,7 @@ TZPATH_TEST_LOCK = threading.Lock()
 
 
 def call_once(f):
-    """Decorator that ensures a function is only ever called once."""
+    "Decorator that ensures a function is only ever called once."
     lock = threading.Lock()
     cached = functools.lru_cache(None)(f)
 
@@ -25,37 +25,23 @@ def call_once(f):
 
 @call_once
 def get_modules():
-    """Retrieve two copies of zoneinfo: pure Python and C accelerated.
-
-    Because this function manipulates the import system in a way that might
-    be fragile or do unexpected things if it is run many times, it uses a
-    `call_once` decorator to ensure that this is only ever called exactly
-    one time — in other words, when using this function you will only ever
-    get one copy of each module rather than a fresh import each time.
-    """
+    "Retrieve two copies of zoneinfo: pure Python and C accelerated.\n\n    Because this function manipulates the import system in a way that might\n    be fragile or do unexpected things if it is run many times, it uses a\n    `call_once` decorator to ensure that this is only ever called exactly\n    one time — in other words, when using this function you will only ever\n    get one copy of each module rather than a fresh import each time.\n    "
     import zoneinfo as c_module
 
     py_module = import_fresh_module("zoneinfo", blocked=["_zoneinfo"])
-
-    return py_module, c_module
+    return (py_module, c_module)
 
 
 @contextlib.contextmanager
 def set_zoneinfo_module(module):
-    """Make sure sys.modules["zoneinfo"] refers to `module`.
-
-    This is necessary because `pickle` will refuse to serialize
-    an type calling itself `zoneinfo.ZoneInfo` unless `zoneinfo.ZoneInfo`
-    refers to the same object.
-    """
-
+    'Make sure sys.modules["zoneinfo"] refers to `module`.\n\n    This is necessary because `pickle` will refuse to serialize\n    an type calling itself `zoneinfo.ZoneInfo` unless `zoneinfo.ZoneInfo`\n    refers to the same object.\n    '
     NOT_PRESENT = object()
     old_zoneinfo = sys.modules.get("zoneinfo", NOT_PRESENT)
     sys.modules["zoneinfo"] = module
-    yield
+    (yield)
     if old_zoneinfo is not NOT_PRESENT:
         sys.modules["zoneinfo"] = old_zoneinfo
-    else:  # pragma: nocover
+    else:
         sys.modules.pop("zoneinfo")
 
 
@@ -70,31 +56,22 @@ class ZoneInfoTestBase(unittest.TestCase):
         def pop_tzdata_modules():
             tzdata_modules = {}
             for modname in list(sys.modules):
-                if modname.split(".", 1)[0] != "tzdata":  # pragma: nocover
+                if modname.split(".", 1)[0] != "tzdata":
                     continue
-
                 tzdata_modules[modname] = sys.modules.pop(modname)
-
             return tzdata_modules
 
         with lock:
             if block_tzdata:
-                # In order to fully exclude tzdata from the path, we need to
-                # clear the sys.modules cache of all its contents — setting the
-                # root package to None is not enough to block direct access of
-                # already-imported submodules (though it will prevent new
-                # imports of submodules).
                 tzdata_modules = pop_tzdata_modules()
                 sys.modules["tzdata"] = None
-
             old_path = self.module.TZPATH
             try:
                 self.module.reset_tzpath(tzpath)
-                yield
+                (yield)
             finally:
                 if block_tzdata:
                     sys.modules.pop("tzdata")
-                    for modname, module in tzdata_modules.items():
+                    for (modname, module) in tzdata_modules.items():
                         sys.modules[modname] = module
-
                 self.module.reset_tzpath(old_path)

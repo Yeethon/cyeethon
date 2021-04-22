@@ -1,13 +1,8 @@
-# Used by test_doctest.py.
-
 class TwoNames:
-    '''f() and g() are two names for the same method'''
+    "f() and g() are two names for the same method"
 
     def f(self):
-        '''
-        >>> print(TwoNames().f())
-        f
-        '''
-        return 'f'
+        "\n        >>> print(TwoNames().f())\n        f\n        "
+        return "f"
 
-    g = f # define an alias for f
+    g = f

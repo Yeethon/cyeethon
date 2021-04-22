@@ -1,4 +1,3 @@
-
 try:
     from _decimal import *
     from _decimal import __doc__

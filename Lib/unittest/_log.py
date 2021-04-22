@@ -1,16 +1,12 @@
 import logging
 import collections
-
 from .case import _BaseTestCaseContext
 
+_LoggingWatcher = collections.namedtuple("_LoggingWatcher", ["records", "output"])
 
-_LoggingWatcher = collections.namedtuple("_LoggingWatcher",
-                                         ["records", "output"])
 
 class _CapturingHandler(logging.Handler):
-    """
-    A logging handler capturing all (raw and formatted) logging output.
-    """
+    "\n    A logging handler capturing all (raw and formatted) logging output.\n    "
 
     def __init__(self):
         logging.Handler.__init__(self)
@@ -26,8 +22,7 @@ class _CapturingHandler(logging.Handler):
 
 
 class _AssertLogsContext(_BaseTestCaseContext):
-    """A context manager for assertLogs() and assertNoLogs() """
-
+    "A context manager for assertLogs() and assertNoLogs() "
     LOGGING_FORMAT = "%(levelname)s:%(name)s:%(message)s"
 
     def __init__(self, test_case, logger_name, level, no_logs):
@@ -64,23 +59,16 @@ class _AssertLogsContext(_BaseTestCaseContext):
         self.logger.handlers = self.old_handlers
         self.logger.propagate = self.old_propagate
         self.logger.setLevel(self.old_level)
-
         if exc_type is not None:
-            # let unexpected exceptions pass through
             return False
-
         if self.no_logs:
-            # assertNoLogs
             if len(self.watcher.records) > 0:
                 self._raiseFailure(
-                    "Unexpected logs found: {!r}".format(
-                        self.watcher.output
-                    )
+                    "Unexpected logs found: {!r}".format(self.watcher.output)
                 )
-
-        else:
-            # assertLogs
-            if len(self.watcher.records) == 0:
-                self._raiseFailure(
-                    "no logs of level {} or higher triggered on {}"
-                    .format(logging.getLevelName(self.level), self.logger.name))
+        elif len(self.watcher.records) == 0:
+            self._raiseFailure(
+                "no logs of level {} or higher triggered on {}".format(
+                    logging.getLevelName(self.level), self.logger.name
+                )
+            )

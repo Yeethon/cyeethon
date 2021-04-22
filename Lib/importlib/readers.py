@@ -13,11 +13,7 @@ class FileReader(abc.TraversableResources):
         self.path = pathlib.Path(loader.path).parent
 
     def resource_path(self, resource):
-        """
-        Return the file system path to prevent
-        `resources.path()` from creating a temporary
-        copy.
-        """
+        "\n        Return the file system path to prevent\n        `resources.path()` from creating a temporary\n        copy.\n        "
         return str(self.path.joinpath(resource))
 
     def files(self):
@@ -26,8 +22,8 @@ class FileReader(abc.TraversableResources):
 
 class ZipReader(abc.TraversableResources):
     def __init__(self, loader, module):
-        _, _, name = module.rpartition('.')
-        self.prefix = loader.prefix.replace('\\', '/') + name + '/'
+        (_, _, name) = module.rpartition(".")
+        self.prefix = (loader.prefix.replace("\\", "/") + name) + "/"
         self.archive = loader.archive
 
     def open_resource(self, resource):
@@ -37,8 +33,6 @@ class ZipReader(abc.TraversableResources):
             raise FileNotFoundError(exc.args[0])
 
     def is_resource(self, path):
-        # workaround for `zipfile.Path.is_file` returning true
-        # for non-existent paths.
         target = self.files().joinpath(path)
         return target.is_file() and target.exists()
 
@@ -47,20 +41,15 @@ class ZipReader(abc.TraversableResources):
 
 
 class MultiplexedPath(abc.Traversable):
-    """
-    Given a series of Traversable objects, implement a merged
-    version of the interface across all objects. Useful for
-    namespace packages which may be multihomed at a single
-    name.
-    """
+    "\n    Given a series of Traversable objects, implement a merged\n    version of the interface across all objects. Useful for\n    namespace packages which may be multihomed at a single\n    name.\n    "
 
     def __init__(self, *paths):
         self._paths = list(map(pathlib.Path, remove_duplicates(paths)))
         if not self._paths:
-            message = 'MultiplexedPath must contain at least one path'
+            message = "MultiplexedPath must contain at least one path"
             raise FileNotFoundError(message)
-        if not all(path.is_dir() for path in self._paths):
-            raise NotADirectoryError('MultiplexedPath only supports directories')
+        if not all((path.is_dir() for path in self._paths)):
+            raise NotADirectoryError("MultiplexedPath only supports directories")
 
     def iterdir(self):
         visited = []
@@ -69,13 +58,13 @@ class MultiplexedPath(abc.Traversable):
                 if file.name in visited:
                     continue
                 visited.append(file.name)
-                yield file
+                (yield file)
 
     def read_bytes(self):
-        raise FileNotFoundError(f'{self} is not a file')
+        raise FileNotFoundError(f"{self} is not a file")
 
     def read_text(self, *args, **kwargs):
-        raise FileNotFoundError(f'{self} is not a file')
+        raise FileNotFoundError(f"{self} is not a file")
 
     def is_dir(self):
         return True
@@ -84,39 +73,33 @@ class MultiplexedPath(abc.Traversable):
         return False
 
     def joinpath(self, child):
-        # first try to find child in current paths
         for file in self.iterdir():
             if file.name == child:
                 return file
-        # if it does not exist, construct it with the first path
         return self._paths[0] / child
 
     __truediv__ = joinpath
 
     def open(self, *args, **kwargs):
-        raise FileNotFoundError('{} is not a file'.format(self))
+        raise FileNotFoundError("{} is not a file".format(self))
 
     def name(self):
         return self._paths[0].name
 
     def __repr__(self):
-        return 'MultiplexedPath({})'.format(
-            ', '.join("'{}'".format(path) for path in self._paths)
+        return "MultiplexedPath({})".format(
+            ", ".join(("'{}'".format(path) for path in self._paths))
         )
 
 
 class NamespaceReader(abc.TraversableResources):
     def __init__(self, namespace_path):
-        if 'NamespacePath' not in str(namespace_path):
-            raise ValueError('Invalid path')
+        if "NamespacePath" not in str(namespace_path):
+            raise ValueError("Invalid path")
         self.path = MultiplexedPath(*list(namespace_path))
 
     def resource_path(self, resource):
-        """
-        Return the file system path to prevent
-        `resources.path()` from creating a temporary
-        copy.
-        """
+        "\n        Return the file system path to prevent\n        `resources.path()` from creating a temporary\n        copy.\n        "
         return str(self.path.joinpath(resource))
 
     def files(self):

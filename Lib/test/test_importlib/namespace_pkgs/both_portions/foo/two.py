@@ -1,1 +1,1 @@
-attr = 'both_portions foo two'
+attr = "both_portions foo two"

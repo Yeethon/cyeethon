@@ -1,30 +1,9 @@
-#!/usr/bin/env python3.8
-
-""" Convert a grammar into a dot-file suitable for use with GraphViz
-
-    For example:
-        Generate the GraphViz file:
-        # scripts/grammar_grapher.py data/python.gram > python.gv
-
-        Then generate the graph...
-
-        # twopi python.gv -Tpng > python_twopi.png
-
-        or
-
-        # dot python.gv -Tpng > python_dot.png
-
-        NOTE: The _dot_ and _twopi_ tools seem to produce the most useful results.
-              The _circo_ tool is the worst of the bunch. Don't even bother.
-"""
-
+" Convert a grammar into a dot-file suitable for use with GraphViz\n\n    For example:\n        Generate the GraphViz file:\n        # scripts/grammar_grapher.py data/python.gram > python.gv\n\n        Then generate the graph...\n\n        # twopi python.gv -Tpng > python_twopi.png\n\n        or\n\n        # dot python.gv -Tpng > python_dot.png\n\n        NOTE: The _dot_ and _twopi_ tools seem to produce the most useful results.\n              The _circo_ tool is the worst of the bunch. Don't even bother.\n"
 import argparse
 import sys
-
 from typing import Any, List
 
 sys.path.insert(0, ".")
-
 from pegen.build import build_parser
 from pegen.grammar import (
     Alt,
@@ -41,7 +20,9 @@ from pegen.grammar import (
     Rhs,
 )
 
-argparser = argparse.ArgumentParser(prog="graph_grammar", description="Graph a grammar tree",)
+argparser = argparse.ArgumentParser(
+    prog="graph_grammar", description="Graph a grammar tree"
+)
 argparser.add_argument(
     "-s",
     "--start",
@@ -63,15 +44,12 @@ def references_for_item(item: Any) -> List[Any]:
         return references_for_item(item.node)
     elif isinstance(item, NamedItem):
         return references_for_item(item.item)
-
-    # NOTE NameLeaf must be before Leaf
     elif isinstance(item, NameLeaf):
         if item.value == "ENDMARKER":
             return []
         return [item.value]
     elif isinstance(item, Leaf):
         return []
-
     elif isinstance(item, Opt):
         return references_for_item(item.node)
     elif isinstance(item, Repeat):
@@ -86,27 +64,22 @@ def references_for_item(item: Any) -> List[Any]:
 
 def main() -> None:
     args = argparser.parse_args()
-
     try:
-        grammar, parser, tokenizer = build_parser(args.grammar_file)
+        (grammar, parser, tokenizer) = build_parser(args.grammar_file)
     except Exception as err:
         print("ERROR: Failed to parse grammar file", file=sys.stderr)
         sys.exit(1)
-
     references = {}
-    for name, rule in grammar.rules.items():
+    for (name, rule) in grammar.rules.items():
         references[name] = set(references_for_item(rule))
-
-    # Flatten the start node if has only a single reference
     root_node = {"exec": "file", "eval": "eval", "single": "interactive"}[args.start]
-
     print("digraph g1 {")
-    print('\toverlap="scale";')  # Force twopi to scale the graph to avoid overlaps
-    print(f'\troot="{root_node}";')
-    print(f"\t{root_node} [color=green, shape=circle];")
-    for name, refs in references.items():
+    print('\toverlap="scale";')
+    print(f'	root="{root_node}";')
+    print(f"	{root_node} [color=green, shape=circle];")
+    for (name, refs) in references.items():
         for ref in refs:
-            print(f"\t{name} -> {ref};")
+            print(f"	{name} -> {ref};")
     print("}")
 
 

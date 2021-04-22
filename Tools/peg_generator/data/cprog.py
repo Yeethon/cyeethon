@@ -1,5 +1,5 @@
 if 1:
-    print("Hello " + "world")
+    print(("Hello " + "world"))
     if 0:
         print("then")
         print("clause")

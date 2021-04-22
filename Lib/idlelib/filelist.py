@@ -1,29 +1,24 @@
 "idlelib.filelist"
-
 import os
 from tkinter import messagebox
 
 
 class FileList:
-
-    # N.B. this import overridden in PyShellFileList.
     from idlelib.editor import EditorWindow
 
     def __init__(self, root):
         self.root = root
         self.dict = {}
         self.inversedict = {}
-        self.vars = {} # For EditorWindow.getrawvar (shared Tcl variables)
+        self.vars = {}
 
     def open(self, filename, action=None):
         assert filename
         filename = self.canonize(filename)
         if os.path.isdir(filename):
-            # This can happen when bad filename is passed on command line:
             messagebox.showerror(
-                "File Error",
-                "%r is a directory." % (filename,),
-                master=self.root)
+                "File Error", ("%r is a directory." % (filename,)), master=self.root
+            )
             return None
         key = os.path.normcase(filename)
         if key in self.dict:
@@ -31,7 +26,6 @@ class FileList:
             edit.top.wakeup()
             return edit
         if action:
-            # Don't create window, perform 'action', e.g. open in same window
             return action(filename)
         else:
             edit = self.EditorWindow(self, filename, key)
@@ -43,7 +37,7 @@ class FileList:
 
     def gotofileline(self, filename, lineno=None):
         edit = self.open(filename)
-        if edit is not None and lineno is not None:
+        if (edit is not None) and (lineno is not None):
             edit.gotoline(lineno)
 
     def new(self, filename=None):
@@ -90,8 +84,9 @@ class FileList:
             self.inversedict[conflict] = None
             messagebox.showerror(
                 "Name Conflict",
-                "You now have multiple edit windows open for %r" % (filename,),
-                master=self.root)
+                ("You now have multiple edit windows open for %r" % (filename,)),
+                master=self.root,
+            )
         self.dict[newkey] = edit
         self.inversedict[edit] = newkey
         if key:
@@ -111,10 +106,11 @@ class FileList:
         return os.path.normpath(filename)
 
 
-def _test():  # TODO check and convert to htest
+def _test():
     from tkinter import Tk
     from idlelib.editor import fixwordbreaks
     from idlelib.run import fix_scaling
+
     root = Tk()
     fix_scaling(root)
     fixwordbreaks(root)
@@ -124,8 +120,8 @@ def _test():  # TODO check and convert to htest
     if flist.inversedict:
         root.mainloop()
 
-if __name__ == '__main__':
-    from unittest import main
-    main('idlelib.idle_test.test_filelist', verbosity=2)
 
-#    _test()
+if __name__ == "__main__":
+    from unittest import main
+
+    main("idlelib.idle_test.test_filelist", verbosity=2)

@@ -2,8 +2,8 @@ import unittest
 from test.support import import_helper
 import types
 
-xxlimited = import_helper.import_module('xxlimited')
-xxlimited_35 = import_helper.import_module('xxlimited_35')
+xxlimited = import_helper.import_module("xxlimited")
+xxlimited_35 = import_helper.import_module("xxlimited_35")
 
 
 class CommonTests:
@@ -18,22 +18,18 @@ class CommonTests:
             xxo.foo
         with self.assertRaises(AttributeError):
             del xxo.foo
-
         xxo.foo = 1234
         self.assertEqual(xxo.foo, 1234)
-
         del xxo.foo
         with self.assertRaises(AttributeError):
             xxo.foo
 
     def test_foo(self):
-        # the foo function adds 2 numbers
         self.assertEqual(self.module.foo(1, 2), 3)
 
     def test_str(self):
         self.assertTrue(issubclass(self.module.Str, str))
         self.assertIsNot(self.module.Str, str)
-
         custom_string = self.module.Str("abcd")
         self.assertEqual(custom_string, "abcd")
         self.assertEqual(custom_string.upper(), "ABCD")
@@ -69,7 +65,6 @@ class TestXXLimited35(CommonTests, unittest.TestCase):
         self.assertEqual(xxo.demo(0), None)
 
     def test_roj(self):
-        # the roj function always fails
         with self.assertRaises(SystemError):
             self.module.roj(0)
 

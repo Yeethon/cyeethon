@@ -1,164 +1,23 @@
-doctests = """
-########### Tests borrowed from or inspired by test_genexps.py ############
+doctests = "\n########### Tests borrowed from or inspired by test_genexps.py ############\n\nTest simple loop with conditional\n\n    >>> sum([i*i for i in range(100) if i&1 == 1])\n    166650\n\nTest simple nesting\n\n    >>> [(i,j) for i in range(3) for j in range(4)]\n    [(0, 0), (0, 1), (0, 2), (0, 3), (1, 0), (1, 1), (1, 2), (1, 3), (2, 0), (2, 1), (2, 2), (2, 3)]\n\nTest nesting with the inner expression dependent on the outer\n\n    >>> [(i,j) for i in range(4) for j in range(i)]\n    [(1, 0), (2, 0), (2, 1), (3, 0), (3, 1), (3, 2)]\n\nTest the idiom for temporary variable assignment in comprehensions.\n\n    >>> [j*j for i in range(4) for j in [i+1]]\n    [1, 4, 9, 16]\n    >>> [j*k for i in range(4) for j in [i+1] for k in [j+1]]\n    [2, 6, 12, 20]\n    >>> [j*k for i in range(4) for j, k in [(i+1, i+2)]]\n    [2, 6, 12, 20]\n\nNot assignment\n\n    >>> [i*i for i in [*range(4)]]\n    [0, 1, 4, 9]\n    >>> [i*i for i in (*range(4),)]\n    [0, 1, 4, 9]\n\nMake sure the induction variable is not exposed\n\n    >>> i = 20\n    >>> sum([i*i for i in range(100)])\n    328350\n\n    >>> i\n    20\n\nVerify that syntax error's are raised for listcomps used as lvalues\n\n    >>> [y for y in (1,2)] = 10          # doctest: +IGNORE_EXCEPTION_DETAIL\n    Traceback (most recent call last):\n       ...\n    SyntaxError: ...\n\n    >>> [y for y in (1,2)] += 10         # doctest: +IGNORE_EXCEPTION_DETAIL\n    Traceback (most recent call last):\n       ...\n    SyntaxError: ...\n\n\n########### Tests borrowed from or inspired by test_generators.py ############\n\nMake a nested list comprehension that acts like range()\n\n    >>> def frange(n):\n    ...     return [i for i in range(n)]\n    >>> frange(10)\n    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]\n\nSame again, only as a lambda expression instead of a function definition\n\n    >>> lrange = lambda n:  [i for i in range(n)]\n    >>> lrange(10)\n    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]\n\nGenerators can call other generators:\n\n    >>> def grange(n):\n    ...     for x in [i for i in range(n)]:\n    ...         yield x\n    >>> list(grange(5))\n    [0, 1, 2, 3, 4]\n\n\nMake sure that None is a valid return value\n\n    >>> [None for i in range(10)]\n    [None, None, None, None, None, None, None, None, None, None]\n\n########### Tests for various scoping corner cases ############\n\nReturn lambdas that use the iteration variable as a default argument\n\n    >>> items = [(lambda i=i: i) for i in range(5)]\n    >>> [x() for x in items]\n    [0, 1, 2, 3, 4]\n\nSame again, only this time as a closure variable\n\n    >>> items = [(lambda: i) for i in range(5)]\n    >>> [x() for x in items]\n    [4, 4, 4, 4, 4]\n\nAnother way to test that the iteration variable is local to the list comp\n\n    >>> items = [(lambda: i) for i in range(5)]\n    >>> i = 20\n    >>> [x() for x in items]\n    [4, 4, 4, 4, 4]\n\nAnd confirm that a closure can jump over the list comp scope\n\n    >>> items = [(lambda: y) for i in range(5)]\n    >>> y = 2\n    >>> [x() for x in items]\n    [2, 2, 2, 2, 2]\n\nWe also repeat each of the above scoping tests inside a function\n\n    >>> def test_func():\n    ...     items = [(lambda i=i: i) for i in range(5)]\n    ...     return [x() for x in items]\n    >>> test_func()\n    [0, 1, 2, 3, 4]\n\n    >>> def test_func():\n    ...     items = [(lambda: i) for i in range(5)]\n    ...     return [x() for x in items]\n    >>> test_func()\n    [4, 4, 4, 4, 4]\n\n    >>> def test_func():\n    ...     items = [(lambda: i) for i in range(5)]\n    ...     i = 20\n    ...     return [x() for x in items]\n    >>> test_func()\n    [4, 4, 4, 4, 4]\n\n    >>> def test_func():\n    ...     items = [(lambda: y) for i in range(5)]\n    ...     y = 2\n    ...     return [x() for x in items]\n    >>> test_func()\n    [2, 2, 2, 2, 2]\n\n"
+__test__ = {"doctests": doctests}
 
-Test simple loop with conditional
-
-    >>> sum([i*i for i in range(100) if i&1 == 1])
-    166650
-
-Test simple nesting
-
-    >>> [(i,j) for i in range(3) for j in range(4)]
-    [(0, 0), (0, 1), (0, 2), (0, 3), (1, 0), (1, 1), (1, 2), (1, 3), (2, 0), (2, 1), (2, 2), (2, 3)]
-
-Test nesting with the inner expression dependent on the outer
-
-    >>> [(i,j) for i in range(4) for j in range(i)]
-    [(1, 0), (2, 0), (2, 1), (3, 0), (3, 1), (3, 2)]
-
-Test the idiom for temporary variable assignment in comprehensions.
-
-    >>> [j*j for i in range(4) for j in [i+1]]
-    [1, 4, 9, 16]
-    >>> [j*k for i in range(4) for j in [i+1] for k in [j+1]]
-    [2, 6, 12, 20]
-    >>> [j*k for i in range(4) for j, k in [(i+1, i+2)]]
-    [2, 6, 12, 20]
-
-Not assignment
-
-    >>> [i*i for i in [*range(4)]]
-    [0, 1, 4, 9]
-    >>> [i*i for i in (*range(4),)]
-    [0, 1, 4, 9]
-
-Make sure the induction variable is not exposed
-
-    >>> i = 20
-    >>> sum([i*i for i in range(100)])
-    328350
-
-    >>> i
-    20
-
-Verify that syntax error's are raised for listcomps used as lvalues
-
-    >>> [y for y in (1,2)] = 10          # doctest: +IGNORE_EXCEPTION_DETAIL
-    Traceback (most recent call last):
-       ...
-    SyntaxError: ...
-
-    >>> [y for y in (1,2)] += 10         # doctest: +IGNORE_EXCEPTION_DETAIL
-    Traceback (most recent call last):
-       ...
-    SyntaxError: ...
-
-
-########### Tests borrowed from or inspired by test_generators.py ############
-
-Make a nested list comprehension that acts like range()
-
-    >>> def frange(n):
-    ...     return [i for i in range(n)]
-    >>> frange(10)
-    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-
-Same again, only as a lambda expression instead of a function definition
-
-    >>> lrange = lambda n:  [i for i in range(n)]
-    >>> lrange(10)
-    [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-
-Generators can call other generators:
-
-    >>> def grange(n):
-    ...     for x in [i for i in range(n)]:
-    ...         yield x
-    >>> list(grange(5))
-    [0, 1, 2, 3, 4]
-
-
-Make sure that None is a valid return value
-
-    >>> [None for i in range(10)]
-    [None, None, None, None, None, None, None, None, None, None]
-
-########### Tests for various scoping corner cases ############
-
-Return lambdas that use the iteration variable as a default argument
-
-    >>> items = [(lambda i=i: i) for i in range(5)]
-    >>> [x() for x in items]
-    [0, 1, 2, 3, 4]
-
-Same again, only this time as a closure variable
-
-    >>> items = [(lambda: i) for i in range(5)]
-    >>> [x() for x in items]
-    [4, 4, 4, 4, 4]
-
-Another way to test that the iteration variable is local to the list comp
-
-    >>> items = [(lambda: i) for i in range(5)]
-    >>> i = 20
-    >>> [x() for x in items]
-    [4, 4, 4, 4, 4]
-
-And confirm that a closure can jump over the list comp scope
-
-    >>> items = [(lambda: y) for i in range(5)]
-    >>> y = 2
-    >>> [x() for x in items]
-    [2, 2, 2, 2, 2]
-
-We also repeat each of the above scoping tests inside a function
-
-    >>> def test_func():
-    ...     items = [(lambda i=i: i) for i in range(5)]
-    ...     return [x() for x in items]
-    >>> test_func()
-    [0, 1, 2, 3, 4]
-
-    >>> def test_func():
-    ...     items = [(lambda: i) for i in range(5)]
-    ...     return [x() for x in items]
-    >>> test_func()
-    [4, 4, 4, 4, 4]
-
-    >>> def test_func():
-    ...     items = [(lambda: i) for i in range(5)]
-    ...     i = 20
-    ...     return [x() for x in items]
-    >>> test_func()
-    [4, 4, 4, 4, 4]
-
-    >>> def test_func():
-    ...     items = [(lambda: y) for i in range(5)]
-    ...     y = 2
-    ...     return [x() for x in items]
-    >>> test_func()
-    [2, 2, 2, 2, 2]
-
-"""
-
-
-__test__ = {'doctests' : doctests}
 
 def test_main(verbose=None):
     import sys
     from test import support
     from test import test_listcomps
-    support.run_doctest(test_listcomps, verbose)
 
-    # verify reference counting
+    support.run_doctest(test_listcomps, verbose)
     if verbose and hasattr(sys, "gettotalrefcount"):
         import gc
+
         counts = [None] * 5
         for i in range(len(counts)):
             support.run_doctest(test_listcomps, verbose)
             gc.collect()
             counts[i] = sys.gettotalrefcount()
         print(counts)
+
 
 if __name__ == "__main__":
     test_main(verbose=True)

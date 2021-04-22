@@ -1,3 +1,3 @@
 import unittest
 
-unittest.main('test.test_zoneinfo')
+unittest.main("test.test_zoneinfo")

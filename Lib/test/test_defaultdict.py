@@ -1,18 +1,17 @@
-"""Unit tests for collections.defaultdict."""
-
+"Unit tests for collections.defaultdict."
 import os
 import copy
 import pickle
 import tempfile
 import unittest
-
 from collections import defaultdict
+
 
 def foobar():
     return list
 
-class TestDefaultDict(unittest.TestCase):
 
+class TestDefaultDict(unittest.TestCase):
     def test_basic(self):
         d1 = defaultdict()
         self.assertEqual(d1.default_factory, None)
@@ -24,7 +23,7 @@ class TestDefaultDict(unittest.TestCase):
         d1[13]
         d1[14]
         self.assertEqual(d1, {12: [42, 24], 13: [], 14: []})
-        self.assertTrue(d1[12] is not d1[13] is not d1[14])
+        self.assertTrue((d1[12] is not d1[13] is not d1[14]))
         d2 = defaultdict(list, foo=1, bar=2)
         self.assertEqual(d2.default_factory, list)
         self.assertEqual(d2, {"foo": 1, "bar": 2})
@@ -66,11 +65,14 @@ class TestDefaultDict(unittest.TestCase):
         self.assertEqual(d2.default_factory, int)
         d2[12] = 42
         self.assertEqual(repr(d2), "defaultdict(<class 'int'>, {12: 42})")
-        def foo(): return 43
+
+        def foo():
+            return 43
+
         d3 = defaultdict(foo)
-        self.assertTrue(d3.default_factory is foo)
+        self.assertTrue((d3.default_factory is foo))
         d3[13]
-        self.assertEqual(repr(d3), "defaultdict(%s, {13: 43})" % repr(foo))
+        self.assertEqual(repr(d3), ("defaultdict(%s, {13: 43})" % repr(foo)))
 
     def test_copy(self):
         d1 = defaultdict()
@@ -90,12 +92,10 @@ class TestDefaultDict(unittest.TestCase):
         self.assertEqual(d4, {42: []})
         d4[12]
         self.assertEqual(d4, {42: [], 12: []})
-
-        # Issue 6637: Copy fails for empty default dict
         d = defaultdict()
-        d['a'] = 42
+        d["a"] = 42
         e = d.copy()
-        self.assertEqual(e['a'], 42)
+        self.assertEqual(e["a"], 42)
 
     def test_shallow_copy(self):
         d1 = defaultdict(foobar, {1: 1})
@@ -112,7 +112,7 @@ class TestDefaultDict(unittest.TestCase):
         d2 = copy.deepcopy(d1)
         self.assertEqual(d2.default_factory, foobar)
         self.assertEqual(d2, d1)
-        self.assertTrue(d1[1] is not d2[1])
+        self.assertTrue((d1[1] is not d2[1]))
         d1.default_factory = list
         d2 = copy.deepcopy(d1)
         self.assertEqual(d2.default_factory, list)
@@ -128,16 +128,18 @@ class TestDefaultDict(unittest.TestCase):
             self.fail("expected KeyError")
 
     def test_recursive_repr(self):
-        # Issue2045: stack overflow when default_factory is a bound method
         class sub(defaultdict):
             def __init__(self):
                 self.default_factory = self._factory
+
             def _factory(self):
                 return []
+
         d = sub()
-        self.assertRegex(repr(d),
-            r"sub\(<bound method .*sub\._factory "
-            r"of sub\(\.\.\., \{\}\)>, \{\}\)")
+        self.assertRegex(
+            repr(d),
+            "sub\\(<bound method .*sub\\._factory of sub\\(\\.\\.\\., \\{\\}\\)>, \\{\\}\\)",
+        )
 
     def test_callable_arg(self):
         self.assertRaises(TypeError, defaultdict, {})
@@ -145,7 +147,7 @@ class TestDefaultDict(unittest.TestCase):
     def test_pickling(self):
         d = defaultdict(int)
         d[1]
-        for proto in range(pickle.HIGHEST_PROTOCOL + 1):
+        for proto in range((pickle.HIGHEST_PROTOCOL + 1)):
             s = pickle.dumps(d, proto)
             o = pickle.loads(s)
             self.assertEqual(d, o)
@@ -153,40 +155,33 @@ class TestDefaultDict(unittest.TestCase):
     def test_union(self):
         i = defaultdict(int, {1: 1, 2: 2})
         s = defaultdict(str, {0: "zero", 1: "one"})
-
         i_s = i | s
         self.assertIs(i_s.default_factory, int)
         self.assertDictEqual(i_s, {1: "one", 2: 2, 0: "zero"})
         self.assertEqual(list(i_s), [1, 2, 0])
-
         s_i = s | i
         self.assertIs(s_i.default_factory, str)
         self.assertDictEqual(s_i, {0: "zero", 1: 1, 2: 2})
         self.assertEqual(list(s_i), [0, 1, 2])
-
         i_ds = i | dict(s)
         self.assertIs(i_ds.default_factory, int)
         self.assertDictEqual(i_ds, {1: "one", 2: 2, 0: "zero"})
         self.assertEqual(list(i_ds), [1, 2, 0])
-
         ds_i = dict(s) | i
         self.assertIs(ds_i.default_factory, int)
         self.assertDictEqual(ds_i, {0: "zero", 1: 1, 2: 2})
         self.assertEqual(list(ds_i), [0, 1, 2])
-
         with self.assertRaises(TypeError):
-            i | list(s.items())
+            (i | list(s.items()))
         with self.assertRaises(TypeError):
-            list(s.items()) | i
-
-        # We inherit a fine |= from dict, so just a few sanity checks here:
+            (list(s.items()) | i)
         i |= list(s.items())
         self.assertIs(i.default_factory, int)
         self.assertDictEqual(i, {1: "one", 2: 2, 0: "zero"})
         self.assertEqual(list(i), [1, 2, 0])
-
         with self.assertRaises(TypeError):
             i |= None
+
 
 if __name__ == "__main__":
     unittest.main()

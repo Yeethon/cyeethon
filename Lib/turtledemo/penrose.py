@@ -1,26 +1,11 @@
-#!/usr/bin/env python3
-"""       xturtle-example-suite:
-
-          xtx_kites_and_darts.py
-
-Constructs two aperiodic penrose-tilings,
-consisting of kites and darts, by the method
-of inflation in six steps.
-
-Starting points are the patterns "sun"
-consisting of five kites and "star"
-consisting of five darts.
-
-For more information see:
- http://en.wikipedia.org/wiki/Penrose_tiling
- -------------------------------------------
-"""
+'       xturtle-example-suite:\n\n          xtx_kites_and_darts.py\n\nConstructs two aperiodic penrose-tilings,\nconsisting of kites and darts, by the method\nof inflation in six steps.\n\nStarting points are the patterns "sun"\nconsisting of five kites and "star"\nconsisting of five darts.\n\nFor more information see:\n http://en.wikipedia.org/wiki/Penrose_tiling\n -------------------------------------------\n'
 from turtle import *
 from math import cos, pi
 from time import perf_counter as clock, sleep
 
-f = (5**0.5-1)/2.0   # (sqrt(5)-1)/2 -- golden ratio
-d = 2 * cos(3*pi/10)
+f = ((5 ** 0.5) - 1) / 2.0
+d = 2 * cos(((3 * pi) / 10))
+
 
 def kite(l):
     fl = f * l
@@ -34,6 +19,7 @@ def kite(l):
     fd(l)
     rt(144)
 
+
 def dart(l):
     fl = f * l
     lt(36)
@@ -46,53 +32,56 @@ def dart(l):
     fd(l)
     rt(144)
 
+
 def inflatekite(l, n):
     if n == 0:
-        px, py = pos()
-        h, x, y = int(heading()), round(px,3), round(py,3)
-        tiledict[(h,x,y)] = True
+        (px, py) = pos()
+        (h, x, y) = (int(heading()), round(px, 3), round(py, 3))
+        tiledict[(h, x, y)] = True
         return
     fl = f * l
     lt(36)
-    inflatedart(fl, n-1)
+    inflatedart(fl, (n - 1))
     fd(l)
     rt(144)
-    inflatekite(fl, n-1)
+    inflatekite(fl, (n - 1))
     lt(18)
-    fd(l*d)
+    fd((l * d))
     rt(162)
-    inflatekite(fl, n-1)
+    inflatekite(fl, (n - 1))
     lt(36)
     fd(l)
     rt(180)
-    inflatedart(fl, n-1)
+    inflatedart(fl, (n - 1))
     lt(36)
+
 
 def inflatedart(l, n):
     if n == 0:
-        px, py = pos()
-        h, x, y = int(heading()), round(px,3), round(py,3)
-        tiledict[(h,x,y)] = False
+        (px, py) = pos()
+        (h, x, y) = (int(heading()), round(px, 3), round(py, 3))
+        tiledict[(h, x, y)] = False
         return
     fl = f * l
-    inflatekite(fl, n-1)
+    inflatekite(fl, (n - 1))
     lt(36)
     fd(l)
     rt(180)
-    inflatedart(fl, n-1)
+    inflatedart(fl, (n - 1))
     lt(54)
-    fd(l*d)
+    fd((l * d))
     rt(126)
-    inflatedart(fl, n-1)
+    inflatedart(fl, (n - 1))
     fd(l)
     rt(144)
 
+
 def draw(l, n, th=2):
     clear()
-    l = l * f**n
-    shapesize(l/100.0, l/100.0, th)
+    l = l * (f ** n)
+    shapesize((l / 100.0), (l / 100.0), th)
     for k in tiledict:
-        h, x, y = k
+        (h, x, y) = k
         setpos(x, y)
         setheading(h)
         if tiledict[k]:
@@ -103,15 +92,18 @@ def draw(l, n, th=2):
             color("black", (0.75, 0, 0))
         stamp()
 
+
 def sun(l, n):
     for i in range(5):
         inflatekite(l, n)
         lt(72)
 
-def star(l,n):
+
+def star(l, n):
     for i in range(5):
         inflatedart(l, n)
         lt(72)
+
 
 def makeshapes():
     tracer(0)
@@ -125,6 +117,7 @@ def makeshapes():
     register_shape("dart", get_poly())
     tracer(1)
 
+
 def start():
     reset()
     ht()
@@ -132,7 +125,8 @@ def start():
     makeshapes()
     resizemode("user")
 
-def test(l=200, n=4, fun=sun, startpos=(0,0), th=2):
+
+def test(l=200, n=4, fun=sun, startpos=(0, 0), th=2):
     global tiledict
     goto(startpos)
     setheading(0)
@@ -142,8 +136,9 @@ def test(l=200, n=4, fun=sun, startpos=(0,0), th=2):
     draw(l, n, th)
     tracer(1)
     nk = len([x for x in tiledict if tiledict[x]])
-    nd = len([x for x in tiledict if not tiledict[x]])
-    print("%d kites and %d darts = %d pieces." % (nk, nd, nk+nd))
+    nd = len([x for x in tiledict if (not tiledict[x])])
+    print(("%d kites and %d darts = %d pieces." % (nk, nd, (nk + nd))))
+
 
 def demo(fun=sun):
     start()
@@ -153,22 +148,22 @@ def demo(fun=sun):
         b = clock()
         t = b - a
         if t < 2:
-            sleep(2 - t)
+            sleep((2 - t))
+
 
 def main():
-    #title("Penrose-tiling with kites and darts.")
     mode("logo")
     bgcolor(0.3, 0.3, 0)
     demo(sun)
     sleep(2)
     demo(star)
     pencolor("black")
-    goto(0,-200)
-    pencolor(0.7,0.7,1)
-    write("Please wait...",
-          align="center", font=('Arial Black', 36, 'bold'))
+    goto(0, (-200))
+    pencolor(0.7, 0.7, 1)
+    write("Please wait...", align="center", font=("Arial Black", 36, "bold"))
     test(600, 8, startpos=(70, 117))
     return "Done"
+
 
 if __name__ == "__main__":
     msg = main()

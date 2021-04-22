@@ -1,23 +1,4 @@
-#!/usr/bin/env python3
-
-"""
-Sorting algorithms visualizer using Tkinter.
-
-This module is comprised of three ``components'':
-
-- an array visualizer with methods that implement basic sorting
-operations (compare, swap) as well as methods for ``annotating'' the
-sorting algorithm (e.g. to show the pivot element);
-
-- a number of sorting algorithms (currently quicksort, insertion sort,
-selection sort and bubble sort, as well as a randomization function),
-all using the array visualizer for its basic operations and with calls
-to its annotation methods;
-
-- and a ``driver'' class which can be used as a Grail applet or as a
-stand-alone application.
-"""
-
+"\nSorting algorithms visualizer using Tkinter.\n\nThis module is comprised of three ``components'':\n\n- an array visualizer with methods that implement basic sorting\noperations (compare, swap) as well as methods for ``annotating'' the\nsorting algorithm (e.g. to show the pivot element);\n\n- a number of sorting algorithms (currently quicksort, insertion sort,\nselection sort and bubble sort, as well as a randomization function),\nall using the array visualizer for its basic operations and with calls\nto its annotation methods;\n\n- and a ``driver'' class which can be used as a Grail applet or as a\nstand-alone application.\n"
 from tkinter import *
 import random
 
@@ -27,7 +8,6 @@ WIDTH = 6
 
 
 class Array:
-
     class Cancelled(BaseException):
         pass
 
@@ -56,11 +36,12 @@ class Array:
             item.delete()
         self.size = len(data)
         self.maxvalue = max(data)
-        self.canvas.config(width=(self.size+1)*XGRID,
-                           height=(self.maxvalue+1)*YGRID)
+        self.canvas.config(
+            width=((self.size + 1) * XGRID), height=((self.maxvalue + 1) * YGRID)
+        )
         for i in range(self.size):
             self.items.append(ArrayItem(self, i, data[i]))
-        self.reset("Sort demo, size %d" % self.size)
+        self.reset(("Sort demo, size %d" % self.size))
 
     speed = "normal"
 
@@ -86,7 +67,7 @@ class Array:
         if self.speed == "fastest":
             msecs = 0
         elif self.speed == "fast":
-            msecs = msecs//10
+            msecs = msecs // 10
         elif self.speed == "single-step":
             msecs = 1000000000
         if not self.stop_mainloop:
@@ -108,32 +89,31 @@ class Array:
         for i in range(self.size):
             item = self.items[i]
             if first <= i < last:
-                self.canvas.itemconfig(item, fill='red')
+                self.canvas.itemconfig(item, fill="red")
             else:
-                self.canvas.itemconfig(item, fill='orange')
+                self.canvas.itemconfig(item, fill="orange")
         self.hide_left_right_pivot()
 
     def hide_partition(self):
         for i in range(self.size):
             item = self.items[i]
-            self.canvas.itemconfig(item, fill='red')
+            self.canvas.itemconfig(item, fill="red")
         self.hide_left_right_pivot()
 
     def show_left(self, left):
-        if not 0 <= left < self.size:
+        if not (0 <= left < self.size):
             self.hide_left()
             return
-        x1, y1, x2, y2 = self.items[left].position()
-##      top, bot = HIRO
-        self.canvas.coords(self.left, (x1 - 2, 0, x1 - 2, 9999))
+        (x1, y1, x2, y2) = self.items[left].position()
+        self.canvas.coords(self.left, ((x1 - 2), 0, (x1 - 2), 9999))
         self.master.update()
 
     def show_right(self, right):
-        if not 0 <= right < self.size:
+        if not (0 <= right < self.size):
             self.hide_right()
             return
-        x1, y1, x2, y2 = self.items[right].position()
-        self.canvas.coords(self.right, (x2 + 2, 0, x2 + 2, 9999))
+        (x1, y1, x2, y2) = self.items[right].position()
+        self.canvas.coords(self.right, ((x2 + 2), 0, (x2 + 2), 9999))
         self.master.update()
 
     def hide_left_right_pivot(self):
@@ -148,18 +128,19 @@ class Array:
         self.canvas.coords(self.right, (0, 0, 0, 0))
 
     def show_pivot(self, pivot):
-        x1, y1, x2, y2 = self.items[pivot].position()
-        self.canvas.coords(self.pivot, (0, y1 - 2, 9999, y1 - 2))
+        (x1, y1, x2, y2) = self.items[pivot].position()
+        self.canvas.coords(self.pivot, (0, (y1 - 2), 9999, (y1 - 2)))
 
     def hide_pivot(self):
         self.canvas.coords(self.pivot, (0, 0, 0, 0))
 
     def swap(self, i, j):
-        if i == j: return
+        if i == j:
+            return
         self.countswap()
         item = self.items[i]
         other = self.items[j]
-        self.items[i], self.items[j] = other, item
+        (self.items[i], self.items[j]) = (other, item)
         item.swapwith(other)
 
     def compare(self, i, j):
@@ -192,18 +173,18 @@ class Array:
 
 
 class ArrayItem:
-
     def __init__(self, array, index, value):
         self.array = array
         self.index = index
         self.value = value
         self.canvas = array.canvas
-        x1, y1, x2, y2 = self.position()
-        self.item_id = array.canvas.create_rectangle(x1, y1, x2, y2,
-            fill='red', outline='black', width=1)
-        self.canvas.tag_bind(self.item_id, '<Button-1>', self.mouse_down)
-        self.canvas.tag_bind(self.item_id, '<Button1-Motion>', self.mouse_move)
-        self.canvas.tag_bind(self.item_id, '<ButtonRelease-1>', self.mouse_up)
+        (x1, y1, x2, y2) = self.position()
+        self.item_id = array.canvas.create_rectangle(
+            x1, y1, x2, y2, fill="red", outline="black", width=1
+        )
+        self.canvas.tag_bind(self.item_id, "<Button-1>", self.mouse_down)
+        self.canvas.tag_bind(self.item_id, "<Button1-Motion>", self.mouse_move)
+        self.canvas.tag_bind(self.item_id, "<ButtonRelease-1>", self.mouse_up)
 
     def delete(self):
         item_id = self.item_id
@@ -219,8 +200,7 @@ class ArrayItem:
         self.canvas.tag_raise(self.item_id)
 
     def mouse_move(self, event):
-        self.canvas.move(self.item_id,
-                         event.x - self.lastx, event.y - self.lasty)
+        self.canvas.move(self.item_id, (event.x - self.lastx), (event.y - self.lasty))
         self.lastx = event.x
         self.lasty = event.y
 
@@ -232,15 +212,16 @@ class ArrayItem:
             i = 0
         other = self.array.items[i]
         here = self.index
-        self.array.items[here], self.array.items[i] = other, self
+        (self.array.items[here], self.array.items[i]) = (other, self)
         self.index = i
-        x1, y1, x2, y2 = self.position()
+        (x1, y1, x2, y2) = self.position()
         self.canvas.coords(self.item_id, (x1, y1, x2, y2))
         other.setindex(here)
 
     def setindex(self, index):
         nsteps = steps(self.index, index)
-        if not nsteps: return
+        if not nsteps:
+            return
         if self.array.speed == "fastest":
             nsteps = 0
         oldpts = self.position()
@@ -254,18 +235,19 @@ class ArrayItem:
 
     def swapwith(self, other):
         nsteps = steps(self.index, other.index)
-        if not nsteps: return
+        if not nsteps:
+            return
         if self.array.speed == "fastest":
             nsteps = 0
         myoldpts = self.position()
         otheroldpts = other.position()
-        self.index, other.index = other.index, self.index
+        (self.index, other.index) = (other.index, self.index)
         mynewpts = self.position()
         othernewpts = other.position()
-        myfill = self.canvas.itemcget(self.item_id, 'fill')
-        otherfill = self.canvas.itemcget(other.item_id, 'fill')
-        self.canvas.itemconfig(self.item_id, fill='green')
-        self.canvas.itemconfig(other.item_id, fill='yellow')
+        myfill = self.canvas.itemcget(self.item_id, "fill")
+        otherfill = self.canvas.itemcget(other.item_id, "fill")
+        self.canvas.itemconfig(self.item_id, fill="green")
+        self.canvas.itemconfig(other.item_id, fill="yellow")
         self.array.master.update()
         if self.array.speed == "single-step":
             self.canvas.coords(self.item_id, mynewpts)
@@ -291,26 +273,26 @@ class ArrayItem:
                 self.canvas.coords(other.item_id, otherpts)
                 self.array.wait(50)
         finally:
-            mypts = mytrajectory[-1]
-            otherpts = othertrajectory[-1]
+            mypts = mytrajectory[(-1)]
+            otherpts = othertrajectory[(-1)]
             self.canvas.coords(self.item_id, mypts)
             self.canvas.coords(other.item_id, otherpts)
             self.canvas.itemconfig(self.item_id, fill=myfill)
             self.canvas.itemconfig(other.item_id, fill=otherfill)
 
     def compareto(self, other):
-        myfill = self.canvas.itemcget(self.item_id, 'fill')
-        otherfill = self.canvas.itemcget(other.item_id, 'fill')
+        myfill = self.canvas.itemcget(self.item_id, "fill")
+        otherfill = self.canvas.itemcget(other.item_id, "fill")
         if self.value < other.value:
-            myflash = 'white'
-            otherflash = 'black'
+            myflash = "white"
+            otherflash = "black"
             outcome = -1
         elif self.value > other.value:
-            myflash = 'black'
-            otherflash = 'white'
+            myflash = "black"
+            otherflash = "white"
             outcome = 1
         else:
-            myflash = otherflash = 'grey'
+            myflash = otherflash = "grey"
             outcome = 0
         try:
             self.canvas.itemconfig(self.item_id, fill=myflash)
@@ -322,20 +304,18 @@ class ArrayItem:
         return outcome
 
     def position(self):
-        x1 = (self.index+1)*XGRID - WIDTH//2
-        x2 = x1+WIDTH
-        y2 = (self.array.maxvalue+1)*YGRID
-        y1 = y2 - (self.value)*YGRID
-        return x1, y1, x2, y2
+        x1 = ((self.index + 1) * XGRID) - (WIDTH // 2)
+        x2 = x1 + WIDTH
+        y2 = (self.array.maxvalue + 1) * YGRID
+        y1 = y2 - (self.value * YGRID)
+        return (x1, y1, x2, y2)
 
     def nearestindex(self, x):
-        return int(round(float(x)/XGRID)) - 1
+        return int(round((float(x) / XGRID))) - 1
 
-
-# Subroutines that don't need an object
 
 def steps(here, there):
-    nsteps = abs(here - there)
+    nsteps = abs((here - there))
     if nsteps <= 3:
         nsteps = nsteps * 3
     elif nsteps <= 5:
@@ -344,50 +324,53 @@ def steps(here, there):
         nsteps = 10
     return nsteps
 
+
 def interpolate(oldpts, newpts, n):
     if len(oldpts) != len(newpts):
         raise ValueError("can't interpolate arrays of different length")
-    pts = [0]*len(oldpts)
+    pts = [0] * len(oldpts)
     res = [tuple(oldpts)]
     for i in range(1, n):
         for k in range(len(pts)):
-            pts[k] = oldpts[k] + (newpts[k] - oldpts[k])*i//n
+            pts[k] = oldpts[k] + (((newpts[k] - oldpts[k]) * i) // n)
         res.append(tuple(pts))
     res.append(tuple(newpts))
     return res
 
 
-# Various (un)sorting algorithms
-
 def uniform(array):
     size = array.getsize()
-    array.setdata([(size+1)//2] * size)
-    array.reset("Uniform data, size %d" % size)
+    array.setdata(([((size + 1) // 2)] * size))
+    array.reset(("Uniform data, size %d" % size))
+
 
 def distinct(array):
     size = array.getsize()
-    array.setdata(range(1, size+1))
-    array.reset("Distinct data, size %d" % size)
+    array.setdata(range(1, (size + 1)))
+    array.reset(("Distinct data, size %d" % size))
+
 
 def randomize(array):
     array.reset("Randomizing")
     n = array.getsize()
     for i in range(n):
-        j = random.randint(0, n-1)
+        j = random.randint(0, (n - 1))
         array.swap(i, j)
     array.message("Randomized")
+
 
 def insertionsort(array):
     size = array.getsize()
     array.reset("Insertion sort")
     for i in range(1, size):
-        j = i-1
+        j = i - 1
         while j >= 0:
-            if array.compare(j, j+1) <= 0:
+            if array.compare(j, (j + 1)) <= 0:
                 break
-            array.swap(j, j+1)
-            j = j-1
+            array.swap(j, (j + 1))
+            j = j - 1
     array.message("Sorted")
+
 
 def selectionsort(array):
     size = array.getsize()
@@ -395,21 +378,23 @@ def selectionsort(array):
     try:
         for i in range(size):
             array.show_partition(i, size)
-            for j in range(i+1, size):
+            for j in range((i + 1), size):
                 if array.compare(i, j) > 0:
                     array.swap(i, j)
         array.message("Sorted")
     finally:
         array.hide_partition()
 
+
 def bubblesort(array):
     size = array.getsize()
     array.reset("Bubble sort")
     for i in range(size):
         for j in range(1, size):
-            if array.compare(j-1, j) > 0:
-                array.swap(j-1, j)
+            if array.compare((j - 1), j) > 0:
+                array.swap((j - 1), j)
     array.message("Sorted")
+
 
 def quicksort(array):
     size = array.getsize()
@@ -417,21 +402,21 @@ def quicksort(array):
     try:
         stack = [(0, size)]
         while stack:
-            first, last = stack[-1]
-            del stack[-1]
+            (first, last) = stack[(-1)]
+            del stack[(-1)]
             array.show_partition(first, last)
-            if last-first < 5:
+            if (last - first) < 5:
                 array.message("Insertion sort")
-                for i in range(first+1, last):
-                    j = i-1
+                for i in range((first + 1), last):
+                    j = i - 1
                     while j >= first:
-                        if array.compare(j, j+1) <= 0:
+                        if array.compare(j, (j + 1)) <= 0:
                             break
-                        array.swap(j, j+1)
-                        j = j-1
+                        array.swap(j, (j + 1))
+                        j = j - 1
                 continue
             array.message("Choosing pivot")
-            j, i, k = first, (first+last) // 2, last-1
+            (j, i, k) = (first, ((first + last) // 2), (last - 1))
             if array.compare(k, i) < 0:
                 array.swap(k, i)
             if array.compare(k, j) < 0:
@@ -446,16 +431,16 @@ def quicksort(array):
             right = last
             while True:
                 array.message("Sweep right pointer")
-                right = right-1
+                right = right - 1
                 array.show_right(right)
-                while right > first and array.compare(right, pivot) >= 0:
-                    right = right-1
+                while (right > first) and (array.compare(right, pivot) >= 0):
+                    right = right - 1
                     array.show_right(right)
                 array.message("Sweep left pointer")
-                left = left+1
+                left = left + 1
                 array.show_left(left)
-                while left < last and array.compare(left, pivot) <= 0:
-                    left = left+1
+                while (left < last) and (array.compare(left, pivot) <= 0):
+                    left = left + 1
                     array.show_left(left)
                 if left > right:
                     array.message("End of partition")
@@ -464,13 +449,16 @@ def quicksort(array):
                 array.swap(left, right)
             array.message("Swap pivot back")
             array.swap(pivot, right)
-            n1 = right-first
-            n2 = last-left
-            if n1 > 1: stack.append((first, right))
-            if n2 > 1: stack.append((left, last))
+            n1 = right - first
+            n2 = last - left
+            if n1 > 1:
+                stack.append((first, right))
+            if n2 > 1:
+                stack.append((left, last))
         array.message("Sorted")
     finally:
         array.hide_partition()
+
 
 def demosort(array):
     while True:
@@ -479,44 +467,41 @@ def demosort(array):
             alg(array)
 
 
-# Sort demo class -- usable as a Grail applet
-
 class SortDemo:
-
     def __init__(self, master, size=15):
         self.master = master
         self.size = size
         self.busy = 0
         self.array = Array(self.master)
-
         self.botframe = Frame(master)
         self.botframe.pack(side=BOTTOM)
         self.botleftframe = Frame(self.botframe)
         self.botleftframe.pack(side=LEFT, fill=Y)
         self.botrightframe = Frame(self.botframe)
         self.botrightframe.pack(side=RIGHT, fill=Y)
-
-        self.b_qsort = Button(self.botleftframe,
-                              text="Quicksort", command=self.c_qsort)
+        self.b_qsort = Button(self.botleftframe, text="Quicksort", command=self.c_qsort)
         self.b_qsort.pack(fill=X)
-        self.b_isort = Button(self.botleftframe,
-                              text="Insertion sort", command=self.c_isort)
+        self.b_isort = Button(
+            self.botleftframe, text="Insertion sort", command=self.c_isort
+        )
         self.b_isort.pack(fill=X)
-        self.b_ssort = Button(self.botleftframe,
-                              text="Selection sort", command=self.c_ssort)
+        self.b_ssort = Button(
+            self.botleftframe, text="Selection sort", command=self.c_ssort
+        )
         self.b_ssort.pack(fill=X)
-        self.b_bsort = Button(self.botleftframe,
-                              text="Bubble sort", command=self.c_bsort)
+        self.b_bsort = Button(
+            self.botleftframe, text="Bubble sort", command=self.c_bsort
+        )
         self.b_bsort.pack(fill=X)
 
-        # Terrible hack to overcome limitation of OptionMenu...
         class MyIntVar(IntVar):
             def __init__(self, master, demo):
                 self.demo = demo
                 IntVar.__init__(self, master)
+
             def set(self, value):
                 IntVar.set(self, value)
-                if str(value) != '0':
+                if str(value) != "0":
                     self.demo.resize(value)
 
         self.v_size = MyIntVar(self.master, self)
@@ -527,35 +512,32 @@ class SortDemo:
             sizes.sort()
         self.m_size = OptionMenu(self.botleftframe, self.v_size, *sizes)
         self.m_size.pack(fill=X)
-
         self.v_speed = StringVar(self.master)
         self.v_speed.set("normal")
-        self.m_speed = OptionMenu(self.botleftframe, self.v_speed,
-                                  "single-step", "normal", "fast", "fastest")
+        self.m_speed = OptionMenu(
+            self.botleftframe, self.v_speed, "single-step", "normal", "fast", "fastest"
+        )
         self.m_speed.pack(fill=X)
-
-        self.b_step = Button(self.botleftframe,
-                             text="Step", command=self.c_step)
+        self.b_step = Button(self.botleftframe, text="Step", command=self.c_step)
         self.b_step.pack(fill=X)
-
-        self.b_randomize = Button(self.botrightframe,
-                                  text="Randomize", command=self.c_randomize)
+        self.b_randomize = Button(
+            self.botrightframe, text="Randomize", command=self.c_randomize
+        )
         self.b_randomize.pack(fill=X)
-        self.b_uniform = Button(self.botrightframe,
-                                  text="Uniform", command=self.c_uniform)
+        self.b_uniform = Button(
+            self.botrightframe, text="Uniform", command=self.c_uniform
+        )
         self.b_uniform.pack(fill=X)
-        self.b_distinct = Button(self.botrightframe,
-                                  text="Distinct", command=self.c_distinct)
+        self.b_distinct = Button(
+            self.botrightframe, text="Distinct", command=self.c_distinct
+        )
         self.b_distinct.pack(fill=X)
-        self.b_demo = Button(self.botrightframe,
-                             text="Demo", command=self.c_demo)
+        self.b_demo = Button(self.botrightframe, text="Demo", command=self.c_demo)
         self.b_demo.pack(fill=X)
-        self.b_cancel = Button(self.botrightframe,
-                               text="Cancel", command=self.c_cancel)
+        self.b_cancel = Button(self.botrightframe, text="Cancel", command=self.c_cancel)
         self.b_cancel.pack(fill=X)
         self.b_cancel.config(state=DISABLED)
-        self.b_quit = Button(self.botrightframe,
-                             text="Quit", command=self.c_quit)
+        self.b_quit = Button(self.botrightframe, text="Quit", command=self.c_quit)
         self.b_quit.pack(fill=X)
 
     def resize(self, newsize):
@@ -563,7 +545,7 @@ class SortDemo:
             self.master.bell()
             return
         self.size = newsize
-        self.array.setdata(range(1, self.size+1))
+        self.array.setdata(range(1, (self.size + 1)))
 
     def c_qsort(self):
         self.run(quicksort)
@@ -623,13 +605,12 @@ class SortDemo:
         self.master.after_idle(self.master.quit)
 
 
-# Main program -- for stand-alone operation outside Grail
-
 def main():
     root = Tk()
     demo = SortDemo(root)
-    root.protocol('WM_DELETE_WINDOW', demo.c_quit)
+    root.protocol("WM_DELETE_WINDOW", demo.c_quit)
     root.mainloop()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

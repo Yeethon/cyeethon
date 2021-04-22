@@ -2,39 +2,40 @@ import unittest
 from test.support import import_helper
 from test.support import warnings_helper
 
-# Skip this test if the _testcapi module isn't available.
-import_helper.import_module('_testcapi')
-from _testcapi import _test_structmembersType, \
-    CHAR_MAX, CHAR_MIN, UCHAR_MAX, \
-    SHRT_MAX, SHRT_MIN, USHRT_MAX, \
-    INT_MAX, INT_MIN, UINT_MAX, \
-    LONG_MAX, LONG_MIN, ULONG_MAX, \
-    LLONG_MAX, LLONG_MIN, ULLONG_MAX, \
-    PY_SSIZE_T_MAX, PY_SSIZE_T_MIN
+import_helper.import_module("_testcapi")
+from _testcapi import (
+    _test_structmembersType,
+    CHAR_MAX,
+    CHAR_MIN,
+    UCHAR_MAX,
+    SHRT_MAX,
+    SHRT_MIN,
+    USHRT_MAX,
+    INT_MAX,
+    INT_MIN,
+    UINT_MAX,
+    LONG_MAX,
+    LONG_MIN,
+    ULONG_MAX,
+    LLONG_MAX,
+    LLONG_MIN,
+    ULLONG_MAX,
+    PY_SSIZE_T_MAX,
+    PY_SSIZE_T_MIN,
+)
 
-ts=_test_structmembersType(False,  # T_BOOL
-                          1,      # T_BYTE
-                          2,      # T_UBYTE
-                          3,      # T_SHORT
-                          4,      # T_USHORT
-                          5,      # T_INT
-                          6,      # T_UINT
-                          7,      # T_LONG
-                          8,      # T_ULONG
-                          23,     # T_PYSSIZET
-                          9.99999,# T_FLOAT
-                          10.1010101010, # T_DOUBLE
-                          "hi" # T_STRING_INPLACE
-                          )
+ts = _test_structmembersType(
+    False, 1, 2, 3, 4, 5, 6, 7, 8, 23, 9.99999, 10.101010101, "hi"
+)
+
 
 class ReadWriteTests(unittest.TestCase):
-
     def test_bool(self):
         ts.T_BOOL = True
         self.assertEqual(ts.T_BOOL, True)
         ts.T_BOOL = False
         self.assertEqual(ts.T_BOOL, False)
-        self.assertRaises(TypeError, setattr, ts, 'T_BOOL', 1)
+        self.assertRaises(TypeError, setattr, ts, "T_BOOL", 1)
 
     def test_byte(self):
         ts.T_BYTE = CHAR_MAX
@@ -80,11 +81,8 @@ class ReadWriteTests(unittest.TestCase):
         self.assertEqual(ts.T_LONGLONG, LLONG_MAX)
         ts.T_LONGLONG = LLONG_MIN
         self.assertEqual(ts.T_LONGLONG, LLONG_MIN)
-
         ts.T_ULONGLONG = ULLONG_MAX
         self.assertEqual(ts.T_ULONGLONG, ULLONG_MAX)
-
-        ## make sure these will accept a plain int as well as a long
         ts.T_LONGLONG = 3
         self.assertEqual(ts.T_LONGLONG, 3)
         ts.T_ULONGLONG = 4
@@ -92,19 +90,20 @@ class ReadWriteTests(unittest.TestCase):
 
     def test_bad_assignments(self):
         integer_attributes = [
-            'T_BOOL',
-            'T_BYTE', 'T_UBYTE',
-            'T_SHORT', 'T_USHORT',
-            'T_INT', 'T_UINT',
-            'T_LONG', 'T_ULONG',
-            'T_PYSSIZET'
-            ]
-        if hasattr(ts, 'T_LONGLONG'):
-            integer_attributes.extend(['T_LONGLONG', 'T_ULONGLONG'])
-
-        # issue8014: this produced 'bad argument to internal function'
-        # internal error
-        for nonint in None, 3.2j, "full of eels", {}, []:
+            "T_BOOL",
+            "T_BYTE",
+            "T_UBYTE",
+            "T_SHORT",
+            "T_USHORT",
+            "T_INT",
+            "T_UINT",
+            "T_LONG",
+            "T_ULONG",
+            "T_PYSSIZET",
+        ]
+        if hasattr(ts, "T_LONGLONG"):
+            integer_attributes.extend(["T_LONGLONG", "T_ULONGLONG"])
+        for nonint in (None, 3.2j, "full of eels", {}, []):
             for attr in integer_attributes:
                 self.assertRaises(TypeError, setattr, ts, attr, nonint)
 
@@ -115,30 +114,29 @@ class ReadWriteTests(unittest.TestCase):
 
 
 class TestWarnings(unittest.TestCase):
-
     def test_byte_max(self):
-        with warnings_helper.check_warnings(('', RuntimeWarning)):
-            ts.T_BYTE = CHAR_MAX+1
+        with warnings_helper.check_warnings(("", RuntimeWarning)):
+            ts.T_BYTE = CHAR_MAX + 1
 
     def test_byte_min(self):
-        with warnings_helper.check_warnings(('', RuntimeWarning)):
-            ts.T_BYTE = CHAR_MIN-1
+        with warnings_helper.check_warnings(("", RuntimeWarning)):
+            ts.T_BYTE = CHAR_MIN - 1
 
     def test_ubyte_max(self):
-        with warnings_helper.check_warnings(('', RuntimeWarning)):
-            ts.T_UBYTE = UCHAR_MAX+1
+        with warnings_helper.check_warnings(("", RuntimeWarning)):
+            ts.T_UBYTE = UCHAR_MAX + 1
 
     def test_short_max(self):
-        with warnings_helper.check_warnings(('', RuntimeWarning)):
-            ts.T_SHORT = SHRT_MAX+1
+        with warnings_helper.check_warnings(("", RuntimeWarning)):
+            ts.T_SHORT = SHRT_MAX + 1
 
     def test_short_min(self):
-        with warnings_helper.check_warnings(('', RuntimeWarning)):
-            ts.T_SHORT = SHRT_MIN-1
+        with warnings_helper.check_warnings(("", RuntimeWarning)):
+            ts.T_SHORT = SHRT_MIN - 1
 
     def test_ushort_max(self):
-        with warnings_helper.check_warnings(('', RuntimeWarning)):
-            ts.T_USHORT = USHRT_MAX+1
+        with warnings_helper.check_warnings(("", RuntimeWarning)):
+            ts.T_USHORT = USHRT_MAX + 1
 
 
 if __name__ == "__main__":

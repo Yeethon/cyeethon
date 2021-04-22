@@ -1,45 +1,5 @@
-#! /usr/bin/env python3
-
-"""(Ostensibly) fix copyright notices in files.
-
-Actually, this script will simply replace a block of text in a file from one
-string to another.  It will only do this once though, i.e. not globally
-throughout the file.  It writes a backup file and then does an os.rename()
-dance for atomicity.
-
-Usage: fixnotices.py [options] [filenames]
-Options:
-    -h / --help
-        Print this message and exit
-
-    --oldnotice=file
-        Use the notice in the file as the old (to be replaced) string, instead
-        of the hard coded value in the script.
-
-    --newnotice=file
-        Use the notice in the file as the new (replacement) string, instead of
-        the hard coded value in the script.
-
-    --dry-run
-        Don't actually make the changes, but print out the list of files that
-        would change.  When used with -v, a status will be printed for every
-        file.
-
-    -v / --verbose
-        Print a message for every file looked at, indicating whether the file
-        is changed or not.
-"""
-
-OLD_NOTICE = """/***********************************************************
-Copyright (c) 2000, BeOpen.com.
-Copyright (c) 1995-2000, Corporation for National Research Initiatives.
-Copyright (c) 1990-1995, Stichting Mathematisch Centrum.
-All rights reserved.
-
-See the file "Misc/COPYRIGHT" for information on usage and
-redistribution of this file, and for a DISCLAIMER OF ALL WARRANTIES.
-******************************************************************/
-"""
+"(Ostensibly) fix copyright notices in files.\n\nActually, this script will simply replace a block of text in a file from one\nstring to another.  It will only do this once though, i.e. not globally\nthroughout the file.  It writes a backup file and then does an os.rename()\ndance for atomicity.\n\nUsage: fixnotices.py [options] [filenames]\nOptions:\n    -h / --help\n        Print this message and exit\n\n    --oldnotice=file\n        Use the notice in the file as the old (to be replaced) string, instead\n        of the hard coded value in the script.\n\n    --newnotice=file\n        Use the notice in the file as the new (replacement) string, instead of\n        the hard coded value in the script.\n\n    --dry-run\n        Don't actually make the changes, but print out the list of files that\n        would change.  When used with -v, a status will be printed for every\n        file.\n\n    -v / --verbose\n        Print a message for every file looked at, indicating whether the file\n        is changed or not.\n"
+OLD_NOTICE = '/***********************************************************\nCopyright (c) 2000, BeOpen.com.\nCopyright (c) 1995-2000, Corporation for National Research Initiatives.\nCopyright (c) 1990-1995, Stichting Mathematisch Centrum.\nAll rights reserved.\n\nSee the file "Misc/COPYRIGHT" for information on usage and\nredistribution of this file, and for a DISCLAIMER OF ALL WARRANTIES.\n******************************************************************/\n'
 import os
 import sys
 import getopt
@@ -49,8 +9,8 @@ DRYRUN = 0
 VERBOSE = 0
 
 
-def usage(code, msg=''):
-    print(__doc__ % globals())
+def usage(code, msg=""):
+    print((__doc__ % globals()))
     if msg:
         print(msg)
     sys.exit(code)
@@ -59,26 +19,26 @@ def usage(code, msg=''):
 def main():
     global DRYRUN, OLD_NOTICE, NEW_NOTICE, VERBOSE
     try:
-        opts, args = getopt.getopt(sys.argv[1:], 'hv',
-                                   ['help', 'oldnotice=', 'newnotice=',
-                                    'dry-run', 'verbose'])
+        (opts, args) = getopt.getopt(
+            sys.argv[1:],
+            "hv",
+            ["help", "oldnotice=", "newnotice=", "dry-run", "verbose"],
+        )
     except getopt.error as msg:
         usage(1, msg)
-
-    for opt, arg in opts:
-        if opt in ('-h', '--help'):
+    for (opt, arg) in opts:
+        if opt in ("-h", "--help"):
             usage(0)
-        elif opt in ('-v', '--verbose'):
+        elif opt in ("-v", "--verbose"):
             VERBOSE = 1
-        elif opt == '--dry-run':
+        elif opt == "--dry-run":
             DRYRUN = 1
-        elif opt == '--oldnotice':
+        elif opt == "--oldnotice":
             with open(arg) as fp:
                 OLD_NOTICE = fp.read()
-        elif opt == '--newnotice':
+        elif opt == "--newnotice":
             with open(arg) as fp:
                 NEW_NOTICE = fp.read()
-
     for arg in args:
         process(arg)
 
@@ -89,14 +49,13 @@ def process(file):
     i = data.find(OLD_NOTICE)
     if i < 0:
         if VERBOSE:
-            print('no change:', file)
+            print("no change:", file)
         return
     elif DRYRUN or VERBOSE:
-        print('   change:', file)
+        print("   change:", file)
     if DRYRUN:
-        # Don't actually change the file
         return
-    data = data[:i] + NEW_NOTICE + data[i+len(OLD_NOTICE):]
+    data = (data[:i] + NEW_NOTICE) + data[(i + len(OLD_NOTICE)) :]
     new = file + ".new"
     backup = file + ".bak"
     with open(new, "w") as f:
@@ -105,5 +64,5 @@ def process(file):
     os.rename(new, file)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

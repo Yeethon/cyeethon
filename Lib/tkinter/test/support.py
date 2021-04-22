@@ -3,8 +3,8 @@ import re
 import tkinter
 import unittest
 
-class AbstractTkTest:
 
+class AbstractTkTest:
     @classmethod
     def setUpClass(cls):
         cls._old_support_default_root = tkinter._support_default_root
@@ -12,11 +12,9 @@ class AbstractTkTest:
         tkinter.NoDefaultRoot()
         cls.root = tkinter.Tk()
         cls.wantobjects = cls.root.wantobjects()
-        # De-maximize main window.
-        # Some window managers can maximize new windows.
-        cls.root.wm_state('normal')
+        cls.root.wm_state("normal")
         try:
-            cls.root.wm_attributes('-zoomed', False)
+            cls.root.wm_attributes("-zoomed", False)
         except tkinter.TclError:
             pass
 
@@ -38,7 +36,6 @@ class AbstractTkTest:
 
 
 class AbstractDefaultRootTest:
-
     def setUp(self):
         self._old_support_default_root = tkinter._support_default_root
         destroy_default_root()
@@ -51,7 +48,6 @@ class AbstractDefaultRootTest:
         tkinter._support_default_root = self._old_support_default_root
 
     def _test_widget(self, constructor):
-        # no master passing
         x = constructor()
         self.assertIsNotNone(tkinter._default_root)
         self.assertIs(x.master, tkinter._default_root)
@@ -60,67 +56,75 @@ class AbstractDefaultRootTest:
         destroy_default_root()
         tkinter.NoDefaultRoot()
         self.assertRaises(RuntimeError, constructor)
-        self.assertFalse(hasattr(tkinter, '_default_root'))
+        self.assertFalse(hasattr(tkinter, "_default_root"))
 
 
 def destroy_default_root():
-    if getattr(tkinter, '_default_root', None):
+    if getattr(tkinter, "_default_root", None):
         tkinter._default_root.update_idletasks()
         tkinter._default_root.destroy()
         tkinter._default_root = None
 
+
 def simulate_mouse_click(widget, x, y):
-    """Generate proper events to click at the x, y position (tries to act
-    like an X server)."""
-    widget.event_generate('<Enter>', x=0, y=0)
-    widget.event_generate('<Motion>', x=x, y=y)
-    widget.event_generate('<ButtonPress-1>', x=x, y=y)
-    widget.event_generate('<ButtonRelease-1>', x=x, y=y)
+    "Generate proper events to click at the x, y position (tries to act\n    like an X server)."
+    widget.event_generate("<Enter>", x=0, y=0)
+    widget.event_generate("<Motion>", x=x, y=y)
+    widget.event_generate("<ButtonPress-1>", x=x, y=y)
+    widget.event_generate("<ButtonRelease-1>", x=x, y=y)
 
 
 import _tkinter
-tcl_version = tuple(map(int, _tkinter.TCL_VERSION.split('.')))
+
+tcl_version = tuple(map(int, _tkinter.TCL_VERSION.split(".")))
+
 
 def requires_tcl(*version):
     if len(version) <= 2:
-        return unittest.skipUnless(tcl_version >= version,
-            'requires Tcl version >= ' + '.'.join(map(str, version)))
+        return unittest.skipUnless(
+            (tcl_version >= version),
+            ("requires Tcl version >= " + ".".join(map(str, version))),
+        )
 
     def deco(test):
         @functools.wraps(test)
         def newtest(self):
             if get_tk_patchlevel() < version:
-                self.skipTest('requires Tcl version >= ' +
-                                '.'.join(map(str, version)))
+                self.skipTest(
+                    ("requires Tcl version >= " + ".".join(map(str, version)))
+                )
             test(self)
+
         return newtest
+
     return deco
 
+
 _tk_patchlevel = None
+
+
 def get_tk_patchlevel():
     global _tk_patchlevel
     if _tk_patchlevel is None:
         tcl = tkinter.Tcl()
-        patchlevel = tcl.call('info', 'patchlevel')
-        m = re.fullmatch(r'(\d+)\.(\d+)([ab.])(\d+)', patchlevel)
-        major, minor, releaselevel, serial = m.groups()
-        major, minor, serial = int(major), int(minor), int(serial)
-        releaselevel = {'a': 'alpha', 'b': 'beta', '.': 'final'}[releaselevel]
-        if releaselevel == 'final':
-            _tk_patchlevel = major, minor, serial, releaselevel, 0
+        patchlevel = tcl.call("info", "patchlevel")
+        m = re.fullmatch("(\\d+)\\.(\\d+)([ab.])(\\d+)", patchlevel)
+        (major, minor, releaselevel, serial) = m.groups()
+        (major, minor, serial) = (int(major), int(minor), int(serial))
+        releaselevel = {"a": "alpha", "b": "beta", ".": "final"}[releaselevel]
+        if releaselevel == "final":
+            _tk_patchlevel = (major, minor, serial, releaselevel, 0)
         else:
-            _tk_patchlevel = major, minor, 0, releaselevel, serial
+            _tk_patchlevel = (major, minor, 0, releaselevel, serial)
     return _tk_patchlevel
 
-units = {
-    'c': 72 / 2.54,     # centimeters
-    'i': 72,            # inches
-    'm': 72 / 25.4,     # millimeters
-    'p': 1,             # points
-}
+
+units = {"c": (72 / 2.54), "i": 72, "m": (72 / 25.4), "p": 1}
+
 
 def pixels_conv(value):
-    return float(value[:-1]) * units[value[-1:]]
+    return float(value[:(-1)]) * units[value[(-1):]]
+
 
 def tcl_obj_eq(actual, expected):
     if actual == expected:
@@ -130,10 +134,11 @@ def tcl_obj_eq(actual, expected):
             return str(actual) == expected
     if isinstance(actual, tuple):
         if isinstance(expected, tuple):
-            return (len(actual) == len(expected) and
-                    all(tcl_obj_eq(act, exp)
-                        for act, exp in zip(actual, expected)))
+            return (len(actual) == len(expected)) and all(
+                (tcl_obj_eq(act, exp) for (act, exp) in zip(actual, expected))
+            )
     return False
+
 
 def widget_eq(actual, expected):
     if actual == expected:

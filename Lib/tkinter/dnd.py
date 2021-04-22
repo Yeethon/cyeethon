@@ -1,110 +1,8 @@
-"""Drag-and-drop support for Tkinter.
-
-This is very preliminary.  I currently only support dnd *within* one
-application, between different windows (or within the same window).
-
-I am trying to make this as generic as possible -- not dependent on
-the use of a particular widget or icon type, etc.  I also hope that
-this will work with Pmw.
-
-To enable an object to be dragged, you must create an event binding
-for it that starts the drag-and-drop process. Typically, you should
-bind <ButtonPress> to a callback function that you write. The function
-should call Tkdnd.dnd_start(source, event), where 'source' is the
-object to be dragged, and 'event' is the event that invoked the call
-(the argument to your callback function).  Even though this is a class
-instantiation, the returned instance should not be stored -- it will
-be kept alive automatically for the duration of the drag-and-drop.
-
-When a drag-and-drop is already in process for the Tk interpreter, the
-call is *ignored*; this normally averts starting multiple simultaneous
-dnd processes, e.g. because different button callbacks all
-dnd_start().
-
-The object is *not* necessarily a widget -- it can be any
-application-specific object that is meaningful to potential
-drag-and-drop targets.
-
-Potential drag-and-drop targets are discovered as follows.  Whenever
-the mouse moves, and at the start and end of a drag-and-drop move, the
-Tk widget directly under the mouse is inspected.  This is the target
-widget (not to be confused with the target object, yet to be
-determined).  If there is no target widget, there is no dnd target
-object.  If there is a target widget, and it has an attribute
-dnd_accept, this should be a function (or any callable object).  The
-function is called as dnd_accept(source, event), where 'source' is the
-object being dragged (the object passed to dnd_start() above), and
-'event' is the most recent event object (generally a <Motion> event;
-it can also be <ButtonPress> or <ButtonRelease>).  If the dnd_accept()
-function returns something other than None, this is the new dnd target
-object.  If dnd_accept() returns None, or if the target widget has no
-dnd_accept attribute, the target widget's parent is considered as the
-target widget, and the search for a target object is repeated from
-there.  If necessary, the search is repeated all the way up to the
-root widget.  If none of the target widgets can produce a target
-object, there is no target object (the target object is None).
-
-The target object thus produced, if any, is called the new target
-object.  It is compared with the old target object (or None, if there
-was no old target widget).  There are several cases ('source' is the
-source object, and 'event' is the most recent event object):
-
-- Both the old and new target objects are None.  Nothing happens.
-
-- The old and new target objects are the same object.  Its method
-dnd_motion(source, event) is called.
-
-- The old target object was None, and the new target object is not
-None.  The new target object's method dnd_enter(source, event) is
-called.
-
-- The new target object is None, and the old target object is not
-None.  The old target object's method dnd_leave(source, event) is
-called.
-
-- The old and new target objects differ and neither is None.  The old
-target object's method dnd_leave(source, event), and then the new
-target object's method dnd_enter(source, event) is called.
-
-Once this is done, the new target object replaces the old one, and the
-Tk mainloop proceeds.  The return value of the methods mentioned above
-is ignored; if they raise an exception, the normal exception handling
-mechanisms take over.
-
-The drag-and-drop processes can end in two ways: a final target object
-is selected, or no final target object is selected.  When a final
-target object is selected, it will always have been notified of the
-potential drop by a call to its dnd_enter() method, as described
-above, and possibly one or more calls to its dnd_motion() method; its
-dnd_leave() method has not been called since the last call to
-dnd_enter().  The target is notified of the drop by a call to its
-method dnd_commit(source, event).
-
-If no final target object is selected, and there was an old target
-object, its dnd_leave(source, event) method is called to complete the
-dnd sequence.
-
-Finally, the source object is notified that the drag-and-drop process
-is over, by a call to source.dnd_end(target, event), specifying either
-the selected target object, or None if no target object was selected.
-The source object can use this to implement the commit action; this is
-sometimes simpler than to do it in the target's dnd_commit().  The
-target's dnd_commit() method could then simply be aliased to
-dnd_leave().
-
-At any time during a dnd sequence, the application can cancel the
-sequence by calling the cancel() method on the object returned by
-dnd_start().  This will call dnd_leave() if a target is currently
-active; it will never call dnd_commit().
-
-"""
-
+"Drag-and-drop support for Tkinter.\n\nThis is very preliminary.  I currently only support dnd *within* one\napplication, between different windows (or within the same window).\n\nI am trying to make this as generic as possible -- not dependent on\nthe use of a particular widget or icon type, etc.  I also hope that\nthis will work with Pmw.\n\nTo enable an object to be dragged, you must create an event binding\nfor it that starts the drag-and-drop process. Typically, you should\nbind <ButtonPress> to a callback function that you write. The function\nshould call Tkdnd.dnd_start(source, event), where 'source' is the\nobject to be dragged, and 'event' is the event that invoked the call\n(the argument to your callback function).  Even though this is a class\ninstantiation, the returned instance should not be stored -- it will\nbe kept alive automatically for the duration of the drag-and-drop.\n\nWhen a drag-and-drop is already in process for the Tk interpreter, the\ncall is *ignored*; this normally averts starting multiple simultaneous\ndnd processes, e.g. because different button callbacks all\ndnd_start().\n\nThe object is *not* necessarily a widget -- it can be any\napplication-specific object that is meaningful to potential\ndrag-and-drop targets.\n\nPotential drag-and-drop targets are discovered as follows.  Whenever\nthe mouse moves, and at the start and end of a drag-and-drop move, the\nTk widget directly under the mouse is inspected.  This is the target\nwidget (not to be confused with the target object, yet to be\ndetermined).  If there is no target widget, there is no dnd target\nobject.  If there is a target widget, and it has an attribute\ndnd_accept, this should be a function (or any callable object).  The\nfunction is called as dnd_accept(source, event), where 'source' is the\nobject being dragged (the object passed to dnd_start() above), and\n'event' is the most recent event object (generally a <Motion> event;\nit can also be <ButtonPress> or <ButtonRelease>).  If the dnd_accept()\nfunction returns something other than None, this is the new dnd target\nobject.  If dnd_accept() returns None, or if the target widget has no\ndnd_accept attribute, the target widget's parent is considered as the\ntarget widget, and the search for a target object is repeated from\nthere.  If necessary, the search is repeated all the way up to the\nroot widget.  If none of the target widgets can produce a target\nobject, there is no target object (the target object is None).\n\nThe target object thus produced, if any, is called the new target\nobject.  It is compared with the old target object (or None, if there\nwas no old target widget).  There are several cases ('source' is the\nsource object, and 'event' is the most recent event object):\n\n- Both the old and new target objects are None.  Nothing happens.\n\n- The old and new target objects are the same object.  Its method\ndnd_motion(source, event) is called.\n\n- The old target object was None, and the new target object is not\nNone.  The new target object's method dnd_enter(source, event) is\ncalled.\n\n- The new target object is None, and the old target object is not\nNone.  The old target object's method dnd_leave(source, event) is\ncalled.\n\n- The old and new target objects differ and neither is None.  The old\ntarget object's method dnd_leave(source, event), and then the new\ntarget object's method dnd_enter(source, event) is called.\n\nOnce this is done, the new target object replaces the old one, and the\nTk mainloop proceeds.  The return value of the methods mentioned above\nis ignored; if they raise an exception, the normal exception handling\nmechanisms take over.\n\nThe drag-and-drop processes can end in two ways: a final target object\nis selected, or no final target object is selected.  When a final\ntarget object is selected, it will always have been notified of the\npotential drop by a call to its dnd_enter() method, as described\nabove, and possibly one or more calls to its dnd_motion() method; its\ndnd_leave() method has not been called since the last call to\ndnd_enter().  The target is notified of the drop by a call to its\nmethod dnd_commit(source, event).\n\nIf no final target object is selected, and there was an old target\nobject, its dnd_leave(source, event) method is called to complete the\ndnd sequence.\n\nFinally, the source object is notified that the drag-and-drop process\nis over, by a call to source.dnd_end(target, event), specifying either\nthe selected target object, or None if no target object was selected.\nThe source object can use this to implement the commit action; this is\nsometimes simpler than to do it in the target's dnd_commit().  The\ntarget's dnd_commit() method could then simply be aliased to\ndnd_leave().\n\nAt any time during a dnd sequence, the application can cancel the\nsequence by calling the cancel() method on the object returned by\ndnd_start().  This will call dnd_leave() if a target is currently\nactive; it will never call dnd_commit().\n\n"
 import tkinter
 
 __all__ = ["dnd_start", "DndHandler"]
 
-
-# The factory function
 
 def dnd_start(source, event):
     h = DndHandler(source, event)
@@ -114,10 +12,7 @@ def dnd_start(source, event):
         return None
 
 
-# The class that does the work
-
 class DndHandler:
-
     root = None
 
     def __init__(self, source, event):
@@ -126,7 +21,7 @@ class DndHandler:
         root = event.widget._root()
         try:
             root.__dnd
-            return # Don't start recursive dnd
+            return
         except AttributeError:
             root.__dnd = self
             self.root = root
@@ -135,10 +30,10 @@ class DndHandler:
         self.initial_button = button = event.num
         self.initial_widget = widget = event.widget
         self.release_pattern = "<B%d-ButtonRelease-%d>" % (button, button)
-        self.save_cursor = widget['cursor'] or ""
+        self.save_cursor = widget["cursor"] or ""
         widget.bind(self.release_pattern, self.on_release)
         widget.bind("<Motion>", self.on_motion)
-        widget['cursor'] = "hand2"
+        widget["cursor"] = "hand2"
 
     def __del__(self):
         root = self.root
@@ -150,7 +45,7 @@ class DndHandler:
                 pass
 
     def on_motion(self, event):
-        x, y = event.x_root, event.y_root
+        (x, y) = (event.x_root, event.y_root)
         target_widget = self.initial_widget.winfo_containing(x, y)
         source = self.source
         new_target = None
@@ -191,7 +86,7 @@ class DndHandler:
             del root.__dnd
             self.initial_widget.unbind(self.release_pattern)
             self.initial_widget.unbind("<Motion>")
-            widget['cursor'] = self.save_cursor
+            widget["cursor"] = self.save_cursor
             self.target = self.source = self.initial_widget = self.root = None
             if target is not None:
                 if commit:
@@ -202,11 +97,7 @@ class DndHandler:
             source.dnd_end(target, event)
 
 
-# ----------------------------------------------------------------------
-# The rest is here for testing and demonstration purposes only!
-
 class Icon:
-
     def __init__(self, name):
         self.name = name
         self.canvas = self.label = self.id = None
@@ -219,8 +110,7 @@ class Icon:
             self.detach()
         if canvas is None:
             return
-        label = tkinter.Label(canvas, text=self.name,
-                              borderwidth=2, relief="raised")
+        label = tkinter.Label(canvas, text=self.name, borderwidth=2, relief="raised")
         id = canvas.create_window(x, y, window=label, anchor="nw")
         self.canvas = canvas
         self.label = label
@@ -239,35 +129,29 @@ class Icon:
 
     def press(self, event):
         if dnd_start(self, event):
-            # where the pointer is relative to the label widget:
             self.x_off = event.x
             self.y_off = event.y
-            # where the widget is relative to the canvas:
-            self.x_orig, self.y_orig = self.canvas.coords(self.id)
+            (self.x_orig, self.y_orig) = self.canvas.coords(self.id)
 
     def move(self, event):
-        x, y = self.where(self.canvas, event)
+        (x, y) = self.where(self.canvas, event)
         self.canvas.coords(self.id, x, y)
 
     def putback(self):
         self.canvas.coords(self.id, self.x_orig, self.y_orig)
 
     def where(self, canvas, event):
-        # where the corner of the canvas is relative to the screen:
         x_org = canvas.winfo_rootx()
         y_org = canvas.winfo_rooty()
-        # where the pointer is relative to the canvas widget:
         x = event.x_root - x_org
         y = event.y_root - y_org
-        # compensate for initial pointer offset
-        return x - self.x_off, y - self.y_off
+        return ((x - self.x_off), (y - self.y_off))
 
     def dnd_end(self, target, event):
         pass
 
 
 class Tester:
-
     def __init__(self, root):
         self.top = tkinter.Toplevel(root)
         self.canvas = tkinter.Canvas(self.top, width=100, height=100)
@@ -278,26 +162,26 @@ class Tester:
         return self
 
     def dnd_enter(self, source, event):
-        self.canvas.focus_set() # Show highlight border
-        x, y = source.where(self.canvas, event)
-        x1, y1, x2, y2 = source.canvas.bbox(source.id)
-        dx, dy = x2-x1, y2-y1
-        self.dndid = self.canvas.create_rectangle(x, y, x+dx, y+dy)
+        self.canvas.focus_set()
+        (x, y) = source.where(self.canvas, event)
+        (x1, y1, x2, y2) = source.canvas.bbox(source.id)
+        (dx, dy) = ((x2 - x1), (y2 - y1))
+        self.dndid = self.canvas.create_rectangle(x, y, (x + dx), (y + dy))
         self.dnd_motion(source, event)
 
     def dnd_motion(self, source, event):
-        x, y = source.where(self.canvas, event)
-        x1, y1, x2, y2 = self.canvas.bbox(self.dndid)
-        self.canvas.move(self.dndid, x-x1, y-y1)
+        (x, y) = source.where(self.canvas, event)
+        (x1, y1, x2, y2) = self.canvas.bbox(self.dndid)
+        self.canvas.move(self.dndid, (x - x1), (y - y1))
 
     def dnd_leave(self, source, event):
-        self.top.focus_set() # Hide highlight border
+        self.top.focus_set()
         self.canvas.delete(self.dndid)
         self.dndid = None
 
     def dnd_commit(self, source, event):
         self.dnd_leave(source, event)
-        x, y = source.where(self.canvas, event)
+        (x, y) = source.where(self.canvas, event)
         source.attach(self.canvas, x, y)
 
 
@@ -320,5 +204,5 @@ def test():
     root.mainloop()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     test()

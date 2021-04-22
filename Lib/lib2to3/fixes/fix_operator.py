@@ -1,17 +1,5 @@
-"""Fixer for operator functions.
-
-operator.isCallable(obj)       -> callable(obj)
-operator.sequenceIncludes(obj) -> operator.contains(obj)
-operator.isSequenceType(obj)   -> isinstance(obj, collections.abc.Sequence)
-operator.isMappingType(obj)    -> isinstance(obj, collections.abc.Mapping)
-operator.isNumberType(obj)     -> isinstance(obj, numbers.Number)
-operator.repeat(obj, n)        -> operator.mul(obj, n)
-operator.irepeat(obj, n)       -> operator.imul(obj, n)
-"""
-
+"Fixer for operator functions.\n\noperator.isCallable(obj)       -> callable(obj)\noperator.sequenceIncludes(obj) -> operator.contains(obj)\noperator.isSequenceType(obj)   -> isinstance(obj, collections.abc.Sequence)\noperator.isMappingType(obj)    -> isinstance(obj, collections.abc.Mapping)\noperator.isNumberType(obj)     -> isinstance(obj, numbers.Number)\noperator.repeat(obj, n)        -> operator.mul(obj, n)\noperator.irepeat(obj, n)       -> operator.imul(obj, n)\n"
 import collections.abc
-
-# Local imports
 from lib2to3 import fixer_base
 from lib2to3.fixer_util import Call, Name, String, touch_import
 
@@ -20,25 +8,19 @@ def invocation(s):
     def dec(f):
         f.invocation = s
         return f
+
     return dec
 
 
 class FixOperator(fixer_base.BaseFix):
     BM_compatible = True
     order = "pre"
-
-    methods = """
-              method=('isCallable'|'sequenceIncludes'
-                     |'isSequenceType'|'isMappingType'|'isNumberType'
-                     |'repeat'|'irepeat')
-              """
+    methods = "\n              method=('isCallable'|'sequenceIncludes'\n                     |'isSequenceType'|'isMappingType'|'isNumberType'\n                     |'repeat'|'irepeat')\n              "
     obj = "'(' obj=any ')'"
-    PATTERN = """
-              power< module='operator'
-                trailer< '.' %(methods)s > trailer< %(obj)s > >
-              |
-              power< %(methods)s trailer< %(obj)s > >
-              """ % dict(methods=methods, obj=obj)
+    PATTERN = (
+        "\n              power< module='operator'\n                trailer< '.' %(methods)s > trailer< %(obj)s > >\n              |\n              power< %(methods)s trailer< %(obj)s > >\n              "
+        % dict(methods=methods, obj=obj)
+    )
 
     def transform(self, node, results):
         method = self._check_method(node, results)
@@ -82,16 +64,16 @@ class FixOperator(fixer_base.BaseFix):
     def _handle_type2abc(self, node, results, module, abc):
         touch_import(None, module, node)
         obj = results["obj"]
-        args = [obj.clone(), String(", " + ".".join([module, abc]))]
+        args = [obj.clone(), String((", " + ".".join([module, abc])))]
         return Call(Name("isinstance"), args, prefix=node.prefix)
 
     def _check_method(self, node, results):
-        method = getattr(self, "_" + results["method"][0].value)
+        method = getattr(self, ("_" + results["method"][0].value))
         if isinstance(method, collections.abc.Callable):
             if "module" in results:
                 return method
             else:
                 sub = (str(results["obj"]),)
                 invocation_str = method.invocation % sub
-                self.warning(node, "You should use '%s' here." % invocation_str)
+                self.warning(node, ("You should use '%s' here." % invocation_str))
         return None

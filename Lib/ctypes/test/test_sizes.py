@@ -1,7 +1,4 @@
-# Test specifically-sized containers.
-
 from ctypes import *
-
 import unittest
 
 

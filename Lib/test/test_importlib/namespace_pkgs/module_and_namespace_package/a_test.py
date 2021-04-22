@@ -1,1 +1,1 @@
-attr = 'in module'
+attr = "in module"

@@ -1,13 +1,8 @@
-"""Unit tests for the PickleBuffer object.
-
-Pickling tests themselves are in pickletester.py.
-"""
-
+"Unit tests for the PickleBuffer object.\n\nPickling tests themselves are in pickletester.py.\n"
 import gc
 from pickle import PickleBuffer
 import weakref
 import unittest
-
 from test.support import import_helper
 
 
@@ -16,7 +11,6 @@ class B(bytes):
 
 
 class PickleBufferTest(unittest.TestCase):
-
     def check_memoryview(self, pb, equiv):
         with memoryview(pb) as m:
             with memoryview(equiv) as expected:
@@ -35,7 +29,6 @@ class PickleBufferTest(unittest.TestCase):
             PickleBuffer()
         with self.assertRaises(TypeError):
             PickleBuffer("foo")
-        # Released memoryview fails taking a buffer
         m = memoryview(b"foo")
         m.release()
         with self.assertRaises(ValueError):
@@ -46,7 +39,6 @@ class PickleBufferTest(unittest.TestCase):
         self.assertEqual(b"foo", bytes(pb))
         with memoryview(pb) as m:
             self.assertTrue(m.readonly)
-
         pb = PickleBuffer(bytearray(b"foo"))
         self.assertEqual(b"foo", bytes(pb))
         with memoryview(pb) as m:
@@ -59,9 +51,9 @@ class PickleBufferTest(unittest.TestCase):
         pb.release()
         with self.assertRaises(ValueError) as raises:
             memoryview(pb)
-        self.assertIn("operation forbidden on released PickleBuffer object",
-                      str(raises.exception))
-        # Idempotency
+        self.assertIn(
+            "operation forbidden on released PickleBuffer object", str(raises.exception)
+        )
         pb.release()
 
     def test_cycle(self):
@@ -74,27 +66,22 @@ class PickleBufferTest(unittest.TestCase):
         self.assertIsNone(wpb())
 
     def test_ndarray_2d(self):
-        # C-contiguous
         ndarray = import_helper.import_module("_testbuffer").ndarray
-        arr = ndarray(list(range(12)), shape=(4, 3), format='<i')
+        arr = ndarray(list(range(12)), shape=(4, 3), format="<i")
         self.assertTrue(arr.c_contiguous)
         self.assertFalse(arr.f_contiguous)
         pb = PickleBuffer(arr)
         self.check_memoryview(pb, arr)
-        # Non-contiguous
         arr = arr[::2]
         self.assertFalse(arr.c_contiguous)
         self.assertFalse(arr.f_contiguous)
         pb = PickleBuffer(arr)
         self.check_memoryview(pb, arr)
-        # F-contiguous
-        arr = ndarray(list(range(12)), shape=(3, 4), strides=(4, 12), format='<i')
+        arr = ndarray(list(range(12)), shape=(3, 4), strides=(4, 12), format="<i")
         self.assertTrue(arr.f_contiguous)
         self.assertFalse(arr.c_contiguous)
         pb = PickleBuffer(arr)
         self.check_memoryview(pb, arr)
-
-    # Tests for PickleBuffer.raw()
 
     def check_raw(self, obj, equiv):
         pb = PickleBuffer(obj)
@@ -108,24 +95,18 @@ class PickleBufferTest(unittest.TestCase):
                 self.check_raw(obj, obj)
 
     def test_raw_ndarray(self):
-        # 1-D, contiguous
         ndarray = import_helper.import_module("_testbuffer").ndarray
-        arr = ndarray(list(range(3)), shape=(3,), format='<h')
+        arr = ndarray(list(range(3)), shape=(3,), format="<h")
         equiv = b"\x00\x00\x01\x00\x02\x00"
         self.check_raw(arr, equiv)
-        # 2-D, C-contiguous
-        arr = ndarray(list(range(6)), shape=(2, 3), format='<h')
+        arr = ndarray(list(range(6)), shape=(2, 3), format="<h")
         equiv = b"\x00\x00\x01\x00\x02\x00\x03\x00\x04\x00\x05\x00"
         self.check_raw(arr, equiv)
-        # 2-D, F-contiguous
-        arr = ndarray(list(range(6)), shape=(2, 3), strides=(2, 4),
-                      format='<h')
-        # Note this is different from arr.tobytes()
+        arr = ndarray(list(range(6)), shape=(2, 3), strides=(2, 4), format="<h")
         equiv = b"\x00\x00\x01\x00\x02\x00\x03\x00\x04\x00\x05\x00"
         self.check_raw(arr, equiv)
-        # 0-D
-        arr = ndarray(456, shape=(), format='<i')
-        equiv = b'\xc8\x01\x00\x00'
+        arr = ndarray(456, shape=(), format="<i")
+        equiv = b"\xc8\x01\x00\x00"
         self.check_raw(arr, equiv)
 
     def check_raw_non_contiguous(self, obj):
@@ -134,12 +115,10 @@ class PickleBufferTest(unittest.TestCase):
             pb.raw()
 
     def test_raw_non_contiguous(self):
-        # 1-D
         ndarray = import_helper.import_module("_testbuffer").ndarray
-        arr = ndarray(list(range(6)), shape=(6,), format='<i')[::2]
+        arr = ndarray(list(range(6)), shape=(6,), format="<i")[::2]
         self.check_raw_non_contiguous(arr)
-        # 2-D
-        arr = ndarray(list(range(12)), shape=(4, 3), format='<i')[::2]
+        arr = ndarray(list(range(12)), shape=(4, 3), format="<i")[::2]
         self.check_raw_non_contiguous(arr)
 
     def test_raw_released(self):

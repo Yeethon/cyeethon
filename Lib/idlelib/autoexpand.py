@@ -1,23 +1,10 @@
-'''Complete the current word before the cursor with words in the editor.
-
-Each menu selection or shortcut key selection replaces the word with a
-different word with the same prefix. The search for matches begins
-before the target and moves toward the top of the editor. It then starts
-after the cursor and moves down. It then returns to the original word and
-the cycle starts again.
-
-Changing the current text line or leaving the cursor in a different
-place before requesting the next selection causes AutoExpand to reset
-its state.
-
-There is only one instance of Autoexpand.
-'''
+"Complete the current word before the cursor with words in the editor.\n\nEach menu selection or shortcut key selection replaces the word with a\ndifferent word with the same prefix. The search for matches begins\nbefore the target and moves toward the top of the editor. It then starts\nafter the cursor and moves down. It then returns to the original word and\nthe cycle starts again.\n\nChanging the current text line or leaving the cursor in a different\nplace before requesting the next selection causes AutoExpand to reset\nits state.\n\nThere is only one instance of Autoexpand.\n"
 import re
 import string
 
 
 class AutoExpand:
-    wordchars = string.ascii_letters + string.digits + "_"
+    wordchars = (string.ascii_letters + string.digits) + "_"
 
     def __init__(self, editwin):
         self.text = editwin.text
@@ -32,23 +19,23 @@ class AutoExpand:
             words = self.getwords()
             index = 0
         else:
-            words, index, insert, line = self.state
-            if insert != curinsert or line != curline:
+            (words, index, insert, line) = self.state
+            if (insert != curinsert) or (line != curline):
                 words = self.getwords()
                 index = 0
         if not words:
             self.bell()
             return "break"
         word = self.getprevword()
-        self.text.delete("insert - %d chars" % len(word), "insert")
+        self.text.delete(("insert - %d chars" % len(word)), "insert")
         newword = words[index]
         index = (index + 1) % len(words)
         if index == 0:
-            self.bell()            # Warn we cycled around
+            self.bell()
         self.text.insert("insert", newword)
         curinsert = self.text.index("insert")
         curline = self.text.get("insert linestart", "insert lineend")
-        self.state = words, index, curinsert, curline
+        self.state = (words, index, curinsert, curline)
         return "break"
 
     def getwords(self):
@@ -57,23 +44,21 @@ class AutoExpand:
         if not word:
             return []
         before = self.text.get("1.0", "insert wordstart")
-        wbefore = re.findall(r"\b" + word + r"\w+\b", before)
+        wbefore = re.findall((("\\b" + word) + "\\w+\\b"), before)
         del before
         after = self.text.get("insert wordend", "end")
-        wafter = re.findall(r"\b" + word + r"\w+\b", after)
+        wafter = re.findall((("\\b" + word) + "\\w+\\b"), after)
         del after
-        if not wbefore and not wafter:
+        if (not wbefore) and (not wafter):
             return []
         words = []
         dict = {}
-        # search backwards through words before
         wbefore.reverse()
         for w in wbefore:
             if dict.get(w):
                 continue
             words.append(w)
             dict[w] = w
-        # search onwards through words after
         for w in wafter:
             if dict.get(w):
                 continue
@@ -86,11 +71,12 @@ class AutoExpand:
         "Return the word prefix before the cursor."
         line = self.text.get("insert linestart", "insert")
         i = len(line)
-        while i > 0 and line[i-1] in self.wordchars:
-            i = i-1
+        while (i > 0) and (line[(i - 1)] in self.wordchars):
+            i = i - 1
         return line[i:]
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     from unittest import main
-    main('idlelib.idle_test.test_autoexpand', verbosity=2)
+
+    main("idlelib.idle_test.test_autoexpand", verbosity=2)

@@ -1,27 +1,22 @@
-#!/usr/bin/env python3
-"""       turtle-example-suite:
-
-              tdemo_peace.py
-
-A simple drawing suitable as a beginner's
-programming example. Aside from the
-peacecolors assignment and the for loop,
-it only uses turtle commands.
-"""
-
+"       turtle-example-suite:\n\n              tdemo_peace.py\n\nA simple drawing suitable as a beginner's\nprogramming example. Aside from the\npeacecolors assignment and the for loop,\nit only uses turtle commands.\n"
 from turtle import *
 
-def main():
-    peacecolors = ("red3",  "orange", "yellow",
-                   "seagreen4", "orchid4",
-                   "royalblue1", "dodgerblue4")
 
+def main():
+    peacecolors = (
+        "red3",
+        "orange",
+        "yellow",
+        "seagreen4",
+        "orchid4",
+        "royalblue1",
+        "dodgerblue4",
+    )
     reset()
     Screen()
     up()
-    goto(-320,-195)
+    goto((-320), (-195))
     width(70)
-
     for pcolor in peacecolors:
         color(pcolor)
         down()
@@ -31,12 +26,10 @@ def main():
         left(90)
         forward(66)
         right(90)
-
     width(25)
     color("white")
-    goto(0,-170)
+    goto(0, (-170))
     down()
-
     circle(170)
     left(90)
     forward(340)
@@ -52,9 +45,9 @@ def main():
     down()
     forward(170)
     up()
-
-    goto(0,300) # vanish if hideturtle() is not available ;-)
+    goto(0, 300)
     return "Done!"
+
 
 if __name__ == "__main__":
     main()

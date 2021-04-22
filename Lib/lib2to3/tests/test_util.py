@@ -1,22 +1,18 @@
-""" Test suite for the code in fixer_util """
-
-# Testing imports
+" Test suite for the code in fixer_util "
 from . import support
-
-# Local imports
 from lib2to3.pytree import Node, Leaf
 from lib2to3 import fixer_util
 from lib2to3.fixer_util import Attr, Name, Call, Comma
 from lib2to3.pgen2 import token
 
+
 def parse(code, strip_levels=0):
-    # The topmost node is file_input, which we don't care about.
-    # The next-topmost node is a *_stmt node, which we also don't care about
     tree = support.parse_string(code)
     for i in range(strip_levels):
         tree = tree.children[0]
     tree.parent = None
     return tree
+
 
 class MacroTestCase(support.TestCase):
     def assertStr(self, node, string):
@@ -59,7 +55,6 @@ class Test_is_list(support.TestCase):
 class Test_Attr(MacroTestCase):
     def test(self):
         call = parse("foo()", strip_levels=2)
-
         self.assertStr(Attr(Name("a"), Name("b")), "a.b")
         self.assertStr(Attr(call, Name("b")), "foo().b")
 
@@ -77,7 +72,7 @@ class Test_Name(MacroTestCase):
 
 class Test_Call(MacroTestCase):
     def _Call(self, name, args=None, prefix=None):
-        """Help the next test"""
+        "Help the next test"
         children = []
         if isinstance(args, list):
             for arg in args:
@@ -87,13 +82,17 @@ class Test_Call(MacroTestCase):
         return Call(Name(name), children, prefix)
 
     def test(self):
-        kids = [None,
-                [Leaf(token.NUMBER, 1), Leaf(token.NUMBER, 2),
-                 Leaf(token.NUMBER, 3)],
-                [Leaf(token.NUMBER, 1), Leaf(token.NUMBER, 3),
-                 Leaf(token.NUMBER, 2), Leaf(token.NUMBER, 4)],
-                [Leaf(token.STRING, "b"), Leaf(token.STRING, "j", prefix=" ")]
-                ]
+        kids = [
+            None,
+            [Leaf(token.NUMBER, 1), Leaf(token.NUMBER, 2), Leaf(token.NUMBER, 3)],
+            [
+                Leaf(token.NUMBER, 1),
+                Leaf(token.NUMBER, 3),
+                Leaf(token.NUMBER, 2),
+                Leaf(token.NUMBER, 4),
+            ],
+            [Leaf(token.STRING, "b"), Leaf(token.STRING, "j", prefix=" ")],
+        ]
         self.assertStr(self._Call("A"), "A()")
         self.assertStr(self._Call("b", kids[1]), "b(1,2,3)")
         self.assertStr(self._Call("a.b().c", kids[2]), "a.b().c(1,3,2,4)")
@@ -102,47 +101,50 @@ class Test_Call(MacroTestCase):
 
 class Test_does_tree_import(support.TestCase):
     def _find_bind_rec(self, name, node):
-        # Search a tree for a binding -- used to find the starting
-        # point for these tests.
         c = fixer_util.find_binding(name, node)
-        if c: return c
+        if c:
+            return c
         for child in node.children:
             c = self._find_bind_rec(name, child)
-            if c: return c
+            if c:
+                return c
 
     def does_tree_import(self, package, name, string):
         node = parse(string)
-        # Find the binding of start -- that's what we'll go from
-        node = self._find_bind_rec('start', node)
+        node = self._find_bind_rec("start", node)
         return fixer_util.does_tree_import(package, name, node)
 
     def try_with(self, string):
-        failing_tests = (("a", "a", "from a import b"),
-                         ("a.d", "a", "from a.d import b"),
-                         ("d.a", "a", "from d.a import b"),
-                         (None, "a", "import b"),
-                         (None, "a", "import b, c, d"))
-        for package, name, import_ in failing_tests:
-            n = self.does_tree_import(package, name, import_ + "\n" + string)
+        failing_tests = (
+            ("a", "a", "from a import b"),
+            ("a.d", "a", "from a.d import b"),
+            ("d.a", "a", "from d.a import b"),
+            (None, "a", "import b"),
+            (None, "a", "import b, c, d"),
+        )
+        for (package, name, import_) in failing_tests:
+            n = self.does_tree_import(package, name, ((import_ + "\n") + string))
             self.assertFalse(n)
-            n = self.does_tree_import(package, name, string + "\n" + import_)
+            n = self.does_tree_import(package, name, ((string + "\n") + import_))
             self.assertFalse(n)
-
-        passing_tests = (("a", "a", "from a import a"),
-                         ("x", "a", "from x import a"),
-                         ("x", "a", "from x import b, c, a, d"),
-                         ("x.b", "a", "from x.b import a"),
-                         ("x.b", "a", "from x.b import b, c, a, d"),
-                         (None, "a", "import a"),
-                         (None, "a", "import b, c, a, d"))
-        for package, name, import_ in passing_tests:
-            n = self.does_tree_import(package, name, import_ + "\n" + string)
+        passing_tests = (
+            ("a", "a", "from a import a"),
+            ("x", "a", "from x import a"),
+            ("x", "a", "from x import b, c, a, d"),
+            ("x.b", "a", "from x.b import a"),
+            ("x.b", "a", "from x.b import b, c, a, d"),
+            (None, "a", "import a"),
+            (None, "a", "import b, c, a, d"),
+        )
+        for (package, name, import_) in passing_tests:
+            n = self.does_tree_import(package, name, ((import_ + "\n") + string))
             self.assertTrue(n)
-            n = self.does_tree_import(package, name, string + "\n" + import_)
+            n = self.does_tree_import(package, name, ((string + "\n") + import_))
             self.assertTrue(n)
 
     def test_in_function(self):
         self.try_with("def foo():\n\tbar.baz()\n\tstart=3")
+
 
 class Test_find_binding(support.TestCase):
     def find_binding(self, name, string, package=None):
@@ -234,9 +236,6 @@ class Test_find_binding(support.TestCase):
         self.assertFalse(self.find_binding("a", "import a as f", "a"))
 
     def test_from_import_as_with_package(self):
-        # Because it would take a lot of special-case code in the fixers
-        # to deal with from foo import bar as baz, we'll simply always
-        # fail if there is an "from ... import ... as ..."
         self.assertFalse(self.find_binding("a", "from x import b as a", "x"))
         self.assertFalse(self.find_binding("a", "from x import g as a, d as b", "x"))
         self.assertFalse(self.find_binding("a", "from x.b import t as a", "x.b"))
@@ -253,11 +252,7 @@ class Test_find_binding(support.TestCase):
         self.assertFalse(self.find_binding("a", "def d(a=7): pass"))
         self.assertFalse(self.find_binding("a", "def d(a): pass"))
         self.assertFalse(self.find_binding("a", "def d(): a = 7"))
-
-        s = """
-            def d():
-                def a():
-                    pass"""
+        s = "\n            def d():\n                def a():\n                    pass"
         self.assertFalse(self.find_binding("a", s))
 
     def test_class_def(self):
@@ -271,11 +266,7 @@ class Test_find_binding(support.TestCase):
         self.assertFalse(self.find_binding("a", "class d(b, *a): pass"))
         self.assertFalse(self.find_binding("a", "class d(b, **a): pass"))
         self.assertFalse(self.find_binding("a", "class d: a = 7"))
-
-        s = """
-            class d():
-                class a():
-                    pass"""
+        s = "\n            class d():\n                class a():\n                    pass"
         self.assertFalse(self.find_binding("a", s))
 
     def test_for(self):
@@ -288,52 +279,21 @@ class Test_find_binding(support.TestCase):
         self.assertFalse(self.find_binding("a", "for c in a: pass"))
 
     def test_for_nested(self):
-        s = """
-            for b in r:
-                for a in b:
-                    pass"""
+        s = "\n            for b in r:\n                for a in b:\n                    pass"
         self.assertTrue(self.find_binding("a", s))
-
-        s = """
-            for b in r:
-                for a, c in b:
-                    pass"""
+        s = "\n            for b in r:\n                for a, c in b:\n                    pass"
         self.assertTrue(self.find_binding("a", s))
-
-        s = """
-            for b in r:
-                for (a, c) in b:
-                    pass"""
+        s = "\n            for b in r:\n                for (a, c) in b:\n                    pass"
         self.assertTrue(self.find_binding("a", s))
-
-        s = """
-            for b in r:
-                for (a,) in b:
-                    pass"""
+        s = "\n            for b in r:\n                for (a,) in b:\n                    pass"
         self.assertTrue(self.find_binding("a", s))
-
-        s = """
-            for b in r:
-                for c, (a, d) in b:
-                    pass"""
+        s = "\n            for b in r:\n                for c, (a, d) in b:\n                    pass"
         self.assertTrue(self.find_binding("a", s))
-
-        s = """
-            for b in r:
-                for c in b:
-                    a = 7"""
+        s = "\n            for b in r:\n                for c in b:\n                    a = 7"
         self.assertTrue(self.find_binding("a", s))
-
-        s = """
-            for b in r:
-                for c in b:
-                    d = a"""
+        s = "\n            for b in r:\n                for c in b:\n                    d = a"
         self.assertFalse(self.find_binding("a", s))
-
-        s = """
-            for b in r:
-                for c in a:
-                    d = 7"""
+        s = "\n            for b in r:\n                for c in a:\n                    d = 7"
         self.assertFalse(self.find_binding("a", s))
 
     def test_if(self):
@@ -341,16 +301,9 @@ class Test_find_binding(support.TestCase):
         self.assertFalse(self.find_binding("a", "if a in r: d = e"))
 
     def test_if_nested(self):
-        s = """
-            if b in r:
-                if c in d:
-                    a = c"""
+        s = "\n            if b in r:\n                if c in d:\n                    a = c"
         self.assertTrue(self.find_binding("a", s))
-
-        s = """
-            if b in r:
-                if c in d:
-                    c = a"""
+        s = "\n            if b in r:\n                if c in d:\n                    c = a"
         self.assertFalse(self.find_binding("a", s))
 
     def test_while(self):
@@ -358,196 +311,57 @@ class Test_find_binding(support.TestCase):
         self.assertFalse(self.find_binding("a", "while a in r: d = e"))
 
     def test_while_nested(self):
-        s = """
-            while b in r:
-                while c in d:
-                    a = c"""
+        s = "\n            while b in r:\n                while c in d:\n                    a = c"
         self.assertTrue(self.find_binding("a", s))
-
-        s = """
-            while b in r:
-                while c in d:
-                    c = a"""
+        s = "\n            while b in r:\n                while c in d:\n                    c = a"
         self.assertFalse(self.find_binding("a", s))
 
     def test_try_except(self):
-        s = """
-            try:
-                a = 6
-            except:
-                b = 8"""
+        s = "\n            try:\n                a = 6\n            except:\n                b = 8"
         self.assertTrue(self.find_binding("a", s))
-
-        s = """
-            try:
-                b = 8
-            except:
-                a = 6"""
+        s = "\n            try:\n                b = 8\n            except:\n                a = 6"
         self.assertTrue(self.find_binding("a", s))
-
-        s = """
-            try:
-                b = 8
-            except KeyError:
-                pass
-            except:
-                a = 6"""
+        s = "\n            try:\n                b = 8\n            except KeyError:\n                pass\n            except:\n                a = 6"
         self.assertTrue(self.find_binding("a", s))
-
-        s = """
-            try:
-                b = 8
-            except:
-                b = 6"""
+        s = "\n            try:\n                b = 8\n            except:\n                b = 6"
         self.assertFalse(self.find_binding("a", s))
 
     def test_try_except_nested(self):
-        s = """
-            try:
-                try:
-                    a = 6
-                except:
-                    pass
-            except:
-                b = 8"""
+        s = "\n            try:\n                try:\n                    a = 6\n                except:\n                    pass\n            except:\n                b = 8"
         self.assertTrue(self.find_binding("a", s))
-
-        s = """
-            try:
-                b = 8
-            except:
-                try:
-                    a = 6
-                except:
-                    pass"""
+        s = "\n            try:\n                b = 8\n            except:\n                try:\n                    a = 6\n                except:\n                    pass"
         self.assertTrue(self.find_binding("a", s))
-
-        s = """
-            try:
-                b = 8
-            except:
-                try:
-                    pass
-                except:
-                    a = 6"""
+        s = "\n            try:\n                b = 8\n            except:\n                try:\n                    pass\n                except:\n                    a = 6"
         self.assertTrue(self.find_binding("a", s))
-
-        s = """
-            try:
-                try:
-                    b = 8
-                except KeyError:
-                    pass
-                except:
-                    a = 6
-            except:
-                pass"""
+        s = "\n            try:\n                try:\n                    b = 8\n                except KeyError:\n                    pass\n                except:\n                    a = 6\n            except:\n                pass"
         self.assertTrue(self.find_binding("a", s))
-
-        s = """
-            try:
-                pass
-            except:
-                try:
-                    b = 8
-                except KeyError:
-                    pass
-                except:
-                    a = 6"""
+        s = "\n            try:\n                pass\n            except:\n                try:\n                    b = 8\n                except KeyError:\n                    pass\n                except:\n                    a = 6"
         self.assertTrue(self.find_binding("a", s))
-
-        s = """
-            try:
-                b = 8
-            except:
-                b = 6"""
+        s = "\n            try:\n                b = 8\n            except:\n                b = 6"
         self.assertFalse(self.find_binding("a", s))
-
-        s = """
-            try:
-                try:
-                    b = 8
-                except:
-                    c = d
-            except:
-                try:
-                    b = 6
-                except:
-                    t = 8
-                except:
-                    o = y"""
+        s = "\n            try:\n                try:\n                    b = 8\n                except:\n                    c = d\n            except:\n                try:\n                    b = 6\n                except:\n                    t = 8\n                except:\n                    o = y"
         self.assertFalse(self.find_binding("a", s))
 
     def test_try_except_finally(self):
-        s = """
-            try:
-                c = 6
-            except:
-                b = 8
-            finally:
-                a = 9"""
+        s = "\n            try:\n                c = 6\n            except:\n                b = 8\n            finally:\n                a = 9"
         self.assertTrue(self.find_binding("a", s))
-
-        s = """
-            try:
-                b = 8
-            finally:
-                a = 6"""
+        s = "\n            try:\n                b = 8\n            finally:\n                a = 6"
         self.assertTrue(self.find_binding("a", s))
-
-        s = """
-            try:
-                b = 8
-            finally:
-                b = 6"""
+        s = "\n            try:\n                b = 8\n            finally:\n                b = 6"
         self.assertFalse(self.find_binding("a", s))
-
-        s = """
-            try:
-                b = 8
-            except:
-                b = 9
-            finally:
-                b = 6"""
+        s = "\n            try:\n                b = 8\n            except:\n                b = 9\n            finally:\n                b = 6"
         self.assertFalse(self.find_binding("a", s))
 
     def test_try_except_finally_nested(self):
-        s = """
-            try:
-                c = 6
-            except:
-                b = 8
-            finally:
-                try:
-                    a = 9
-                except:
-                    b = 9
-                finally:
-                    c = 9"""
+        s = "\n            try:\n                c = 6\n            except:\n                b = 8\n            finally:\n                try:\n                    a = 9\n                except:\n                    b = 9\n                finally:\n                    c = 9"
         self.assertTrue(self.find_binding("a", s))
-
-        s = """
-            try:
-                b = 8
-            finally:
-                try:
-                    pass
-                finally:
-                    a = 6"""
+        s = "\n            try:\n                b = 8\n            finally:\n                try:\n                    pass\n                finally:\n                    a = 6"
         self.assertTrue(self.find_binding("a", s))
-
-        s = """
-            try:
-                b = 8
-            finally:
-                try:
-                    b = 6
-                finally:
-                    b = 7"""
+        s = "\n            try:\n                b = 8\n            finally:\n                try:\n                    b = 6\n                finally:\n                    b = 7"
         self.assertFalse(self.find_binding("a", s))
 
-class Test_touch_import(support.TestCase):
 
+class Test_touch_import(support.TestCase):
     def test_after_docstring(self):
         node = parse('"""foo"""\nbar()')
         fixer_util.touch_import(None, "foo", node)
@@ -559,22 +373,22 @@ class Test_touch_import(support.TestCase):
         self.assertEqual(str(node), '"""foo"""\nimport bar\nimport foo\nbar()\n\n')
 
     def test_beginning(self):
-        node = parse('bar()')
+        node = parse("bar()")
         fixer_util.touch_import(None, "foo", node)
-        self.assertEqual(str(node), 'import foo\nbar()\n\n')
+        self.assertEqual(str(node), "import foo\nbar()\n\n")
 
     def test_from_import(self):
-        node = parse('bar()')
+        node = parse("bar()")
         fixer_util.touch_import("html", "escape", node)
-        self.assertEqual(str(node), 'from html import escape\nbar()\n\n')
+        self.assertEqual(str(node), "from html import escape\nbar()\n\n")
 
     def test_name_import(self):
-        node = parse('bar()')
+        node = parse("bar()")
         fixer_util.touch_import(None, "cgi", node)
-        self.assertEqual(str(node), 'import cgi\nbar()\n\n')
+        self.assertEqual(str(node), "import cgi\nbar()\n\n")
+
 
 class Test_find_indentation(support.TestCase):
-
     def test_nothing(self):
         fi = fixer_util.find_indentation
         node = parse("node()")

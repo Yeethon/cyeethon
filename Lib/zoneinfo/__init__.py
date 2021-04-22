@@ -6,15 +6,13 @@ __all__ = [
     "ZoneInfoNotFoundError",
     "InvalidTZPathWarning",
 ]
-
 from . import _tzpath
 from ._common import ZoneInfoNotFoundError
 
 try:
     from _zoneinfo import ZoneInfo
-except ImportError:  # pragma: nocover
+except ImportError:
     from ._zoneinfo import ZoneInfo
-
 reset_tzpath = _tzpath.reset_tzpath
 available_timezones = _tzpath.available_timezones
 InvalidTZPathWarning = _tzpath.InvalidTZPathWarning
@@ -28,4 +26,4 @@ def __getattr__(name):
 
 
 def __dir__():
-    return sorted(list(globals()) + ["TZPATH"])
+    return sorted((list(globals()) + ["TZPATH"]))

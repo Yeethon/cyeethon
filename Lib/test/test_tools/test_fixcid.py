@@ -1,5 +1,4 @@
-'''Test Tools/scripts/fixcid.py.'''
-
+"Test Tools/scripts/fixcid.py."
 from io import StringIO
 import os, os.path
 import runpy
@@ -11,50 +10,30 @@ import unittest
 
 skip_if_missing()
 
+
 class Test(unittest.TestCase):
     def test_parse_strings(self):
         old1 = 'int xx = "xx\\"xx"[xx];\n'
         old2 = "int xx = 'x\\'xx' + xx;\n"
-        output = self.run_script(old1 + old2)
+        output = self.run_script((old1 + old2))
         new1 = 'int yy = "xx\\"xx"[yy];\n'
         new2 = "int yy = 'x\\'xx' + yy;\n"
-        self.assertMultiLineEqual(output,
-            "1\n"
-            "< {old1}"
-            "> {new1}"
-            "{new1}"
-            "2\n"
-            "< {old2}"
-            "> {new2}"
-            "{new2}".format(old1=old1, old2=old2, new1=new1, new2=new2)
+        self.assertMultiLineEqual(
+            output,
+            "1\n< {old1}> {new1}{new1}2\n< {old2}> {new2}{new2}".format(
+                old1=old1, old2=old2, new1=new1, new2=new2
+            ),
         )
 
     def test_alter_comments(self):
         output = self.run_script(
-            substfile=
-                "xx yy\n"
-                "*aa bb\n",
-            args=("-c", "-",),
-            input=
-                "/* xx altered */\n"
-                "int xx;\n"
-                "/* aa unaltered */\n"
-                "int aa;\n",
+            substfile="xx yy\n*aa bb\n",
+            args=("-c", "-"),
+            input="/* xx altered */\nint xx;\n/* aa unaltered */\nint aa;\n",
         )
-        self.assertMultiLineEqual(output,
-            "1\n"
-            "< /* xx altered */\n"
-            "> /* yy altered */\n"
-            "/* yy altered */\n"
-            "2\n"
-            "< int xx;\n"
-            "> int yy;\n"
-            "int yy;\n"
-            "/* aa unaltered */\n"
-            "4\n"
-            "< int aa;\n"
-            "> int bb;\n"
-            "int bb;\n"
+        self.assertMultiLineEqual(
+            output,
+            "1\n< /* xx altered */\n> /* yy altered */\n/* yy altered */\n2\n< int xx;\n> int yy;\nint yy;\n/* aa unaltered */\n4\n< int aa;\n> int bb;\nint bb;\n",
         )
 
     def test_directory(self):
@@ -67,11 +46,8 @@ class Test(unittest.TestCase):
             file.write("xx = 'unaltered'\n")
         script = os.path.join(scriptsdir, "fixcid.py")
         output = self.run_script(args=(os_helper.TESTFN,))
-        self.assertMultiLineEqual(output,
-            "{}:\n"
-            "1\n"
-            '< int xx;\n'
-            '> int yy;\n'.format(c_filename)
+        self.assertMultiLineEqual(
+            output, "{}:\n1\n< int xx;\n> int yy;\n".format(c_filename)
         )
 
     def run_script(self, input="", *, args=("-",), substfile="xx yy\n"):
@@ -79,13 +55,11 @@ class Test(unittest.TestCase):
         with open(substfilename, "w") as file:
             file.write(substfile)
         self.addCleanup(os_helper.unlink, substfilename)
-
         argv = ["fixcid.py", "-s", substfilename] + list(args)
         script = os.path.join(scriptsdir, "fixcid.py")
-        with support.swap_attr(sys, "argv", argv), \
-                support.swap_attr(sys, "stdin", StringIO(input)), \
-                support.captured_stdout() as output, \
-                support.captured_stderr():
+        with support.swap_attr(sys, "argv", argv), support.swap_attr(
+            sys, "stdin", StringIO(input)
+        ), support.captured_stdout() as output, support.captured_stderr():
             try:
                 runpy.run_path(script, run_name="__main__")
             except SystemExit as exit:

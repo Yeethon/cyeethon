@@ -1,31 +1,13 @@
-"""
-Create and delete FILES_PER_THREAD temp files (via tempfile.TemporaryFile)
-in each of NUM_THREADS threads, recording the number of successes and
-failures.  A failure is a bug in tempfile, and may be due to:
-
-+ Trying to create more than one tempfile with the same name.
-+ Trying to delete a tempfile that doesn't still exist.
-+ Something we've never seen before.
-
-By default, NUM_THREADS == 20 and FILES_PER_THREAD == 50.  This is enough to
-create about 150 failures per run under Win98SE in 2.0, and runs pretty
-quickly. Guido reports needing to boost FILES_PER_THREAD to 500 before
-provoking a 2.0 failure under Linux.
-"""
-
+"\nCreate and delete FILES_PER_THREAD temp files (via tempfile.TemporaryFile)\nin each of NUM_THREADS threads, recording the number of successes and\nfailures.  A failure is a bug in tempfile, and may be due to:\n\n+ Trying to create more than one tempfile with the same name.\n+ Trying to delete a tempfile that doesn't still exist.\n+ Something we've never seen before.\n\nBy default, NUM_THREADS == 20 and FILES_PER_THREAD == 50.  This is enough to\ncreate about 150 failures per run under Win98SE in 2.0, and runs pretty\nquickly. Guido reports needing to boost FILES_PER_THREAD to 500 before\nprovoking a 2.0 failure under Linux.\n"
 import tempfile
-
 from test.support import threading_helper
 import unittest
 import io
 import threading
 from traceback import print_exc
 
-
 NUM_THREADS = 20
 FILES_PER_THREAD = 50
-
-
 startEvent = threading.Event()
 
 
@@ -52,14 +34,14 @@ class ThreadedTempFileTest(unittest.TestCase):
         threads = [TempFileGreedy() for i in range(NUM_THREADS)]
         with threading_helper.start_threads(threads, startEvent.set):
             pass
-        ok = sum(t.ok_count for t in threads)
-        errors = [str(t.name) + str(t.errors.getvalue())
-                  for t in threads if t.error_count]
-
-        msg = "Errors: errors %d ok %d\n%s" % (len(errors), ok,
-            '\n'.join(errors))
+        ok = sum((t.ok_count for t in threads))
+        errors = [
+            (str(t.name) + str(t.errors.getvalue())) for t in threads if t.error_count
+        ]
+        msg = "Errors: errors %d ok %d\n%s" % (len(errors), ok, "\n".join(errors))
         self.assertEqual(errors, [], msg)
-        self.assertEqual(ok, NUM_THREADS * FILES_PER_THREAD)
+        self.assertEqual(ok, (NUM_THREADS * FILES_PER_THREAD))
+
 
 if __name__ == "__main__":
     unittest.main()

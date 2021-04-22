@@ -1,7 +1,6 @@
 import ast
 import sys
 import time
-
 from pegen.testutil import print_memstats
 
 

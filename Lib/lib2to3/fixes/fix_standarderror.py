@@ -1,18 +1,11 @@
-# Copyright 2007 Google, Inc. All Rights Reserved.
-# Licensed to PSF under a Contributor Agreement.
-
-"""Fixer for StandardError -> Exception."""
-
-# Local imports
+"Fixer for StandardError -> Exception."
 from .. import fixer_base
 from ..fixer_util import Name
 
 
 class FixStandarderror(fixer_base.BaseFix):
     BM_compatible = True
-    PATTERN = """
-              'StandardError'
-              """
+    PATTERN = "\n              'StandardError'\n              "
 
     def transform(self, node, results):
         return Name("Exception", prefix=node.prefix)
