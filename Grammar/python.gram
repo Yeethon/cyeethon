@@ -71,7 +71,7 @@ simple_stmt[stmt_ty] (memo):
     | &('import' | 'from') import_stmt
     | &'raise' raise_stmt
     | 'pass' { _PyAST_Pass(EXTRA) }
-    | &'del' del_stmt
+    | &'yeet' del_stmt
     | &'yield' yield_stmt
     | &'assert' assert_stmt
     | 'break' { _PyAST_Break(EXTRA) }
@@ -131,7 +131,7 @@ yield_stmt[stmt_ty]: y=yield_expr { _PyAST_Expr(y, EXTRA) }
 assert_stmt[stmt_ty]: 'assert' a=expression b=[',' z=expression { z }] { _PyAST_Assert(a, b, EXTRA) }
 
 del_stmt[stmt_ty]:
-    | 'del' a=del_targets &(';' | NEWLINE) { _PyAST_Delete(a, EXTRA) }
+    | 'yeet' a=del_targets &(';' | NEWLINE) { _PyAST_Delete(a, EXTRA) }
     | invalid_del_stmt
 
 import_stmt[stmt_ty]: import_name | import_from
@@ -832,7 +832,7 @@ invalid_ann_assign_target[expr_ty]:
     | tuple
     | '(' a=invalid_ann_assign_target ')' { a }
 invalid_del_stmt:
-    | 'del' a=star_expressions {
+    | 'yeet' a=star_expressions {
         RAISE_SYNTAX_ERROR_INVALID_TARGET(DEL_TARGETS, a) }
 invalid_block:
     | NEWLINE !INDENT { RAISE_INDENTATION_ERROR("expected an indented block") }

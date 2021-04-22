@@ -19,7 +19,6 @@ static KeywordToken *reserved_keywords[] = {
         {NULL, -1},
     },
     (KeywordToken[]) {
-        {"del", 503},
         {"try", 511},
         {"for", 517},
         {"def", 526},
@@ -29,6 +28,7 @@ static KeywordToken *reserved_keywords[] = {
     },
     (KeywordToken[]) {
         {"pass", 502},
+        {"yeet", 503},
         {"from", 514},
         {"elif", 515},
         {"else", 516},
@@ -1694,7 +1694,7 @@ simple_stmts_rule(Parser *p)
 //     | &('import' | 'from') import_stmt
 //     | &'raise' raise_stmt
 //     | 'pass'
-//     | &'del' del_stmt
+//     | &'yeet' del_stmt
 //     | &'yield' yield_stmt
 //     | &'assert' assert_stmt
 //     | 'break'
@@ -1872,26 +1872,26 @@ simple_stmt_rule(Parser *p)
         D(fprintf(stderr, "%*c%s simple_stmt[%d-%d]: %s failed!\n", p->level, ' ',
                   p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "'pass'"));
     }
-    { // &'del' del_stmt
+    { // &'yeet' del_stmt
         if (p->error_indicator) {
             D(p->level--);
             return NULL;
         }
-        D(fprintf(stderr, "%*c> simple_stmt[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "&'del' del_stmt"));
+        D(fprintf(stderr, "%*c> simple_stmt[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "&'yeet' del_stmt"));
         stmt_ty del_stmt_var;
         if (
-            _PyPegen_lookahead_with_int(1, _PyPegen_expect_token, p, 503)  // token='del'
+            _PyPegen_lookahead_with_int(1, _PyPegen_expect_token, p, 503)  // token='yeet'
             &&
             (del_stmt_var = del_stmt_rule(p))  // del_stmt
         )
         {
-            D(fprintf(stderr, "%*c+ simple_stmt[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "&'del' del_stmt"));
+            D(fprintf(stderr, "%*c+ simple_stmt[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "&'yeet' del_stmt"));
             _res = del_stmt_var;
             goto done;
         }
         p->mark = _mark;
         D(fprintf(stderr, "%*c%s simple_stmt[%d-%d]: %s failed!\n", p->level, ' ',
-                  p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "&'del' del_stmt"));
+                  p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "&'yeet' del_stmt"));
     }
     { // &'yield' yield_stmt
         if (p->error_indicator) {
@@ -3052,7 +3052,7 @@ assert_stmt_rule(Parser *p)
     return _res;
 }
 
-// del_stmt: 'del' del_targets &(';' | NEWLINE) | invalid_del_stmt
+// del_stmt: 'yeet' del_targets &(';' | NEWLINE) | invalid_del_stmt
 static stmt_ty
 del_stmt_rule(Parser *p)
 {
@@ -3072,23 +3072,23 @@ del_stmt_rule(Parser *p)
     UNUSED(_start_lineno); // Only used by EXTRA macro
     int _start_col_offset = p->tokens[_mark]->col_offset;
     UNUSED(_start_col_offset); // Only used by EXTRA macro
-    { // 'del' del_targets &(';' | NEWLINE)
+    { // 'yeet' del_targets &(';' | NEWLINE)
         if (p->error_indicator) {
             D(p->level--);
             return NULL;
         }
-        D(fprintf(stderr, "%*c> del_stmt[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "'del' del_targets &(';' | NEWLINE)"));
+        D(fprintf(stderr, "%*c> del_stmt[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "'yeet' del_targets &(';' | NEWLINE)"));
         Token * _keyword;
         asdl_expr_seq* a;
         if (
-            (_keyword = _PyPegen_expect_token(p, 503))  // token='del'
+            (_keyword = _PyPegen_expect_token(p, 503))  // token='yeet'
             &&
             (a = del_targets_rule(p))  // del_targets
             &&
             _PyPegen_lookahead(1, _tmp_30_rule, p)
         )
         {
-            D(fprintf(stderr, "%*c+ del_stmt[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "'del' del_targets &(';' | NEWLINE)"));
+            D(fprintf(stderr, "%*c+ del_stmt[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "'yeet' del_targets &(';' | NEWLINE)"));
             Token *_token = _PyPegen_get_last_nonnwhitespace_token(p);
             if (_token == NULL) {
                 D(p->level--);
@@ -3108,7 +3108,7 @@ del_stmt_rule(Parser *p)
         }
         p->mark = _mark;
         D(fprintf(stderr, "%*c%s del_stmt[%d-%d]: %s failed!\n", p->level, ' ',
-                  p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "'del' del_targets &(';' | NEWLINE)"));
+                  p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "'yeet' del_targets &(';' | NEWLINE)"));
     }
     if (p->call_invalid_rules) { // invalid_del_stmt
         if (p->error_indicator) {
@@ -18127,7 +18127,7 @@ invalid_ann_assign_target_rule(Parser *p)
     return _res;
 }
 
-// invalid_del_stmt: 'del' star_expressions
+// invalid_del_stmt: 'yeet' star_expressions
 static void *
 invalid_del_stmt_rule(Parser *p)
 {
@@ -18138,21 +18138,21 @@ invalid_del_stmt_rule(Parser *p)
     }
     void * _res = NULL;
     int _mark = p->mark;
-    { // 'del' star_expressions
+    { // 'yeet' star_expressions
         if (p->error_indicator) {
             D(p->level--);
             return NULL;
         }
-        D(fprintf(stderr, "%*c> invalid_del_stmt[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "'del' star_expressions"));
+        D(fprintf(stderr, "%*c> invalid_del_stmt[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "'yeet' star_expressions"));
         Token * _keyword;
         expr_ty a;
         if (
-            (_keyword = _PyPegen_expect_token(p, 503))  // token='del'
+            (_keyword = _PyPegen_expect_token(p, 503))  // token='yeet'
             &&
             (a = star_expressions_rule(p))  // star_expressions
         )
         {
-            D(fprintf(stderr, "%*c+ invalid_del_stmt[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "'del' star_expressions"));
+            D(fprintf(stderr, "%*c+ invalid_del_stmt[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "'yeet' star_expressions"));
             _res = RAISE_SYNTAX_ERROR_INVALID_TARGET ( DEL_TARGETS , a );
             if (_res == NULL && PyErr_Occurred()) {
                 p->error_indicator = 1;
@@ -18163,7 +18163,7 @@ invalid_del_stmt_rule(Parser *p)
         }
         p->mark = _mark;
         D(fprintf(stderr, "%*c%s invalid_del_stmt[%d-%d]: %s failed!\n", p->level, ' ',
-                  p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "'del' star_expressions"));
+                  p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "'yeet' star_expressions"));
     }
     _res = NULL;
   done:
