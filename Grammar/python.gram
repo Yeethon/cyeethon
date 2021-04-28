@@ -42,7 +42,7 @@ type_expressions[asdl_expr_seq*]:
             CHECK(asdl_seq*, _PyPegen_seq_append_to_end(p, a, b)),
             c) }
     | a=','.expression+ ',' '*' b=expression { (asdl_expr_seq*)_PyPegen_seq_append_to_end(p, a, b) }
-    | a=','.expression+ ',' '**' b=expression { (asdl_expr_seq*)_PyPegen_seq_append_to_end(p, expressiona, b) }
+    | a=','.expression+ ',' '**' b=expression { (asdl_expr_seq*)_PyPegen_seq_append_to_end(p, a, b) }
     | '*' a=expression ',' '**' b=expression {
         (asdl_expr_seq*)_PyPegen_seq_append_to_end(
             p,
