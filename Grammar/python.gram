@@ -42,7 +42,7 @@ type_expressions[asdl_expr_seq*]:
             CHECK(asdl_seq*, _PyPegen_seq_append_to_end(p, a, b)),
             c) }
     | a=','.expression+ ',' '*' b=expression { (asdl_expr_seq*)_PyPegen_seq_append_to_end(p, a, b) }
-    | a=','.expression+ ',' '**' b=expression { (asdl_expr_seq*)_PyPegen_seq_append_to_end(p, a, b) }
+    | a=','.expression+ ',' '**' b=expression { (asdl_expr_seq*)_PyPegen_seq_append_to_end(p, expressiona, b) }
     | '*' a=expression ',' '**' b=expression {
         (asdl_expr_seq*)_PyPegen_seq_append_to_end(
             p,
@@ -131,7 +131,7 @@ yield_stmt[stmt_ty]: y=yield_expr { _PyAST_Expr(y, EXTRA) }
 assert_stmt[stmt_ty]: 'assert' a=expression b=[',' z=expression { z }] { _PyAST_Assert(a, b, EXTRA) }
 
 del_stmt[stmt_ty]:
-    | ('de', 'yeet') a=del_targets &(';' | NEWLINE) { _PyAST_Delete(a, EXTRA) }
+    | ('del', 'yeet') a=del_targets &(';' | NEWLINE) { _PyAST_Delete(a, EXTRA) }
     | invalid_del_stmt
 
 import_stmt[stmt_ty]: import_name | import_from
