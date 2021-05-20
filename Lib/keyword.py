@@ -50,6 +50,7 @@ kwlist = [
     'try',
     'while',
     'with',
+    'yeet',
     'yield'
 ]
 
