@@ -50,14 +50,14 @@ kwlist = [
     'try',
     'while',
     'with',
-    'yeet',
     'yield'
 ]
 
 softkwlist = [
     '_',
     'case',
-    'match'
+    'match',
+    'yeet'
 ]
 
 iskeyword = frozenset(kwlist).__contains__

@@ -15,7 +15,7 @@ static KeywordToken *reserved_keywords[] = {
         {"in", 517},
         {"as", 519},
         {"is", 529},
-        {"or", 532},
+        {"or", 531},
         {NULL, -1},
     },
     (KeywordToken[]) {
@@ -24,7 +24,7 @@ static KeywordToken *reserved_keywords[] = {
         {"def", 525},
         {"not", 528},
         {"del", 530},
-        {"and", 533},
+        {"and", 532},
         {NULL, -1},
     },
     (KeywordToken[]) {
@@ -35,7 +35,6 @@ static KeywordToken *reserved_keywords[] = {
         {"with", 518},
         {"None", 522},
         {"True", 523},
-        {"yeet", 531},
         {NULL, -1},
     },
     (KeywordToken[]) {
@@ -70,6 +69,7 @@ static char *soft_keywords[] = {
     "_",
     "case",
     "match",
+    "yeet",
     NULL,
 };
 #define file_type 1000
@@ -1713,7 +1713,7 @@ simple_stmts_rule(Parser *p)
 //     | &('import' | 'from') import_stmt
 //     | &'raise' raise_stmt
 //     | 'pass'
-//     | &('del' | 'yeet') del_stmt
+//     | &('del' | "yeet") del_stmt
 //     | &'yield' yield_stmt
 //     | &'assert' assert_stmt
 //     | 'break'
@@ -1891,12 +1891,12 @@ simple_stmt_rule(Parser *p)
         D(fprintf(stderr, "%*c%s simple_stmt[%d-%d]: %s failed!\n", p->level, ' ',
                   p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "'pass'"));
     }
-    { // &('del' | 'yeet') del_stmt
+    { // &('del' | "yeet") del_stmt
         if (p->error_indicator) {
             D(p->level--);
             return NULL;
         }
-        D(fprintf(stderr, "%*c> simple_stmt[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "&('del' | 'yeet') del_stmt"));
+        D(fprintf(stderr, "%*c> simple_stmt[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "&('del' | \"yeet\") del_stmt"));
         stmt_ty del_stmt_var;
         if (
             _PyPegen_lookahead(1, _tmp_15_rule, p)
@@ -1904,13 +1904,13 @@ simple_stmt_rule(Parser *p)
             (del_stmt_var = del_stmt_rule(p))  // del_stmt
         )
         {
-            D(fprintf(stderr, "%*c+ simple_stmt[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "&('del' | 'yeet') del_stmt"));
+            D(fprintf(stderr, "%*c+ simple_stmt[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "&('del' | \"yeet\") del_stmt"));
             _res = del_stmt_var;
             goto done;
         }
         p->mark = _mark;
         D(fprintf(stderr, "%*c%s simple_stmt[%d-%d]: %s failed!\n", p->level, ' ',
-                  p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "&('del' | 'yeet') del_stmt"));
+                  p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "&('del' | \"yeet\") del_stmt"));
     }
     { // &'yield' yield_stmt
         if (p->error_indicator) {
@@ -3071,7 +3071,7 @@ assert_stmt_rule(Parser *p)
     return _res;
 }
 
-// del_stmt: ('del' | 'yeet') del_targets &(';' | NEWLINE) | invalid_del_stmt
+// del_stmt: ('del' | "yeet") del_targets &(';' | NEWLINE) | invalid_del_stmt
 static stmt_ty
 del_stmt_rule(Parser *p)
 {
@@ -3091,23 +3091,23 @@ del_stmt_rule(Parser *p)
     UNUSED(_start_lineno); // Only used by EXTRA macro
     int _start_col_offset = p->tokens[_mark]->col_offset;
     UNUSED(_start_col_offset); // Only used by EXTRA macro
-    { // ('del' | 'yeet') del_targets &(';' | NEWLINE)
+    { // ('del' | "yeet") del_targets &(';' | NEWLINE)
         if (p->error_indicator) {
             D(p->level--);
             return NULL;
         }
-        D(fprintf(stderr, "%*c> del_stmt[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "('del' | 'yeet') del_targets &(';' | NEWLINE)"));
+        D(fprintf(stderr, "%*c> del_stmt[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "('del' | \"yeet\") del_targets &(';' | NEWLINE)"));
         void *_tmp_31_var;
         asdl_expr_seq* a;
         if (
-            (_tmp_31_var = _tmp_31_rule(p))  // 'del' | 'yeet'
+            (_tmp_31_var = _tmp_31_rule(p))  // 'del' | "yeet"
             &&
             (a = del_targets_rule(p))  // del_targets
             &&
             _PyPegen_lookahead(1, _tmp_32_rule, p)
         )
         {
-            D(fprintf(stderr, "%*c+ del_stmt[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "('del' | 'yeet') del_targets &(';' | NEWLINE)"));
+            D(fprintf(stderr, "%*c+ del_stmt[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "('del' | \"yeet\") del_targets &(';' | NEWLINE)"));
             Token *_token = _PyPegen_get_last_nonnwhitespace_token(p);
             if (_token == NULL) {
                 D(p->level--);
@@ -3127,7 +3127,7 @@ del_stmt_rule(Parser *p)
         }
         p->mark = _mark;
         D(fprintf(stderr, "%*c%s del_stmt[%d-%d]: %s failed!\n", p->level, ' ',
-                  p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "('del' | 'yeet') del_targets &(';' | NEWLINE)"));
+                  p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "('del' | \"yeet\") del_targets &(';' | NEWLINE)"));
     }
     if (p->call_invalid_rules) { // invalid_del_stmt
         if (p->error_indicator) {
@@ -21903,7 +21903,7 @@ _tmp_14_rule(Parser *p)
     return _res;
 }
 
-// _tmp_15: 'del' | 'yeet'
+// _tmp_15: 'del' | "yeet"
 static void *
 _tmp_15_rule(Parser *p)
 {
@@ -21933,24 +21933,24 @@ _tmp_15_rule(Parser *p)
         D(fprintf(stderr, "%*c%s _tmp_15[%d-%d]: %s failed!\n", p->level, ' ',
                   p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "'del'"));
     }
-    { // 'yeet'
+    { // "yeet"
         if (p->error_indicator) {
             D(p->level--);
             return NULL;
         }
-        D(fprintf(stderr, "%*c> _tmp_15[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "'yeet'"));
-        Token * _keyword;
+        D(fprintf(stderr, "%*c> _tmp_15[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "\"yeet\""));
+        expr_ty _keyword;
         if (
-            (_keyword = _PyPegen_expect_token(p, 531))  // token='yeet'
+            (_keyword = _PyPegen_expect_soft_keyword(p, "yeet"))  // soft_keyword='"yeet"'
         )
         {
-            D(fprintf(stderr, "%*c+ _tmp_15[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "'yeet'"));
+            D(fprintf(stderr, "%*c+ _tmp_15[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "\"yeet\""));
             _res = _keyword;
             goto done;
         }
         p->mark = _mark;
         D(fprintf(stderr, "%*c%s _tmp_15[%d-%d]: %s failed!\n", p->level, ' ',
-                  p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "'yeet'"));
+                  p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "\"yeet\""));
     }
     _res = NULL;
   done:
@@ -22804,7 +22804,7 @@ _tmp_30_rule(Parser *p)
     return _res;
 }
 
-// _tmp_31: 'del' | 'yeet'
+// _tmp_31: 'del' | "yeet"
 static void *
 _tmp_31_rule(Parser *p)
 {
@@ -22834,24 +22834,24 @@ _tmp_31_rule(Parser *p)
         D(fprintf(stderr, "%*c%s _tmp_31[%d-%d]: %s failed!\n", p->level, ' ',
                   p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "'del'"));
     }
-    { // 'yeet'
+    { // "yeet"
         if (p->error_indicator) {
             D(p->level--);
             return NULL;
         }
-        D(fprintf(stderr, "%*c> _tmp_31[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "'yeet'"));
-        Token * _keyword;
+        D(fprintf(stderr, "%*c> _tmp_31[%d-%d]: %s\n", p->level, ' ', _mark, p->mark, "\"yeet\""));
+        expr_ty _keyword;
         if (
-            (_keyword = _PyPegen_expect_token(p, 531))  // token='yeet'
+            (_keyword = _PyPegen_expect_soft_keyword(p, "yeet"))  // soft_keyword='"yeet"'
         )
         {
-            D(fprintf(stderr, "%*c+ _tmp_31[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "'yeet'"));
+            D(fprintf(stderr, "%*c+ _tmp_31[%d-%d]: %s succeeded!\n", p->level, ' ', _mark, p->mark, "\"yeet\""));
             _res = _keyword;
             goto done;
         }
         p->mark = _mark;
         D(fprintf(stderr, "%*c%s _tmp_31[%d-%d]: %s failed!\n", p->level, ' ',
-                  p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "'yeet'"));
+                  p->error_indicator ? "ERROR!" : "-", _mark, p->mark, "\"yeet\""));
     }
     _res = NULL;
   done:
@@ -32113,7 +32113,7 @@ _tmp_185_rule(Parser *p)
         Token * _keyword;
         expr_ty c;
         if (
-            (_keyword = _PyPegen_expect_token(p, 532))  // token='or'
+            (_keyword = _PyPegen_expect_token(p, 531))  // token='or'
             &&
             (c = conjunction_rule(p))  // conjunction
         )
@@ -32157,7 +32157,7 @@ _tmp_186_rule(Parser *p)
         Token * _keyword;
         expr_ty c;
         if (
-            (_keyword = _PyPegen_expect_token(p, 533))  // token='and'
+            (_keyword = _PyPegen_expect_token(p, 532))  // token='and'
             &&
             (c = inversion_rule(p))  // inversion
         )
